@@ -5,6 +5,7 @@ import { useActiveWorkout } from '../hooks/useActiveWorkout';
 import { Layout } from '../components/Layout';
 import { TimerDisplay } from '../components/TimerDisplay';
 import { PhaseIndicator } from '../components/PhaseIndicator';
+import { ProgressBar } from '../components/ProgressBar';
 import { ControlButtons } from '../components/ControlButtons';
 import { FinishedView } from '../components/FinishedView';
 
@@ -72,17 +73,9 @@ export function WorkoutActiveScreen() {
     if (round > currentRound) return 'upcoming';
     if (phase === 'idle') return 'upcoming';
     if (index < currentExerciseIndex) return 'done';
-    if (index === currentExerciseIndex && phase !== 'finished') return 'current';
+    if (index === currentExerciseIndex && phase === 'exercise') return 'current';
     return 'upcoming';
   };
-
-  const circleColor = (status: 'done' | 'current' | 'upcoming') =>
-    status === 'done' ? 'bg-primary' :
-    status === 'current' ? 'bg-rest' :
-    'bg-red-500';
-
-  const currentStep = (currentRound - 1) * totalExercises + currentExerciseIndex + 1;
-  const totalSteps = totalRounds * totalExercises;
 
   return (
     <Layout>
@@ -161,47 +154,58 @@ export function WorkoutActiveScreen() {
           )}
 
           {phase !== 'idle' && (
-            <p className="text-sm text-text-muted">
-              Round {currentRound}/{totalRounds} &middot; Exercise {currentExerciseIndex + 1}/{totalExercises} &middot; Step {currentStep}/{totalSteps}
-            </p>
-          )}
+            <div className="w-full space-y-4">
+              <ProgressBar
+                currentRound={currentRound}
+                totalRounds={totalRounds}
+                currentExerciseIndex={currentExerciseIndex}
+                totalExercises={totalExercises}
+              />
 
-          {phase !== 'idle' && (
-            <div className="w-full space-y-3">
-              {Array.from({ length: totalRounds }, (_, roundIdx) => {
-                const round = roundIdx + 1;
-                const isCurrentRound = round === currentRound;
-                return (
-                  <div
-                    key={round}
-                    className={`flex items-center gap-3 py-2 px-3 rounded-lg transition-colors ${
-                      isCurrentRound ? 'bg-surface ring-1 ring-primary/30' : ''
-                    }`}
-                  >
-                    <span
-                      className={`text-xs font-semibold w-10 shrink-0 ${
-                        isCurrentRound ? 'text-primary' : 'text-text-muted'
+              <div className="bg-surface rounded-xl p-3 space-y-1">
+                {config.exercises.map((ex, idx) => {
+                  const status = getExerciseStatus(currentRound, idx);
+                  return (
+                    <div
+                      key={ex.id}
+                      className={`flex items-center gap-3 py-2 px-2 rounded-lg transition-colors ${
+                        status === 'current' ? 'bg-background ring-1 ring-primary/30' : ''
                       }`}
                     >
-                      R{round}
-                    </span>
-                    <div className="flex gap-2">
-                      {config.exercises.map((ex, idx) => {
-                        const status = getExerciseStatus(round, idx);
-                        return (
-                          <span
-                            key={ex.id}
-                            title={ex.name}
-                            className={`w-4 h-4 rounded-full ${
-                              status === 'current' ? `${circleColor(status)} animate-pulse` : circleColor(status)
-                            }`}
-                          />
-                        );
-                      })}
+                      <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                        status === 'done' ? 'bg-primary' :
+                        status === 'current' ? (phase === 'exercise' ? 'bg-primary animate-pulse' : 'bg-rest animate-pulse') :
+                        'bg-text-muted/30'
+                      }`} />
+                      <span className={`text-sm flex-1 truncate ${
+                        status === 'current' ? 'font-semibold' :
+                        status === 'done' ? 'text-text' :
+                        'text-text-muted'
+                      }`}>
+                        {ex.name}
+                      </span>
+                      <span className="text-xs text-text-muted shrink-0">{ex.durationSeconds}s</span>
+                      {totalRounds > 1 && (
+                        <div className="flex gap-1 shrink-0">
+                          {Array.from({ length: totalRounds }, (_, r) => {
+                            const rs = getExerciseStatus(r + 1, idx);
+                            return (
+                              <span
+                                key={r}
+                                className={`w-1.5 h-1.5 rounded-full ${
+                                  rs === 'done' ? 'bg-primary' :
+                                  rs === 'current' ? (phase === 'exercise' ? 'bg-primary' : 'bg-rest') :
+                                  'bg-text-muted/20'
+                                }`}
+                              />
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>

@@ -226,38 +226,36 @@ export function WorkoutEditScreen() {
           {nameError && <span className="text-xs text-red-400">Name is required</span>}
         </label>
 
-        <div className="flex gap-3">
-          <label className="flex-1 flex flex-col gap-1">
-            <span className="text-sm text-text-muted">Rounds</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={form.rounds}
-              onChange={(e) => {
-                dispatch({ type: 'SET_ROUNDS', rounds: e.target.value });
-                checkBlank('rounds', e.target.value);
-              }}
-              onBlur={(e) => checkBlank('rounds', e.target.value)}
-              className={numClass(roundsError)}
-            />
-            {roundsError && <span className="text-xs text-red-400">Value is required</span>}
-          </label>
-          <label className="flex-1 flex flex-col gap-1">
-            <span className="text-sm text-text-muted">Rest between rounds (sec)</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={form.restBetweenRoundsSeconds}
-              onChange={(e) => {
-                dispatch({ type: 'SET_REST_BETWEEN_ROUNDS', restBetweenRoundsSeconds: e.target.value });
-                checkBlank('restBetweenRounds', e.target.value);
-              }}
-              onBlur={(e) => checkBlank('restBetweenRounds', e.target.value)}
-              className={numClass(restRoundError)}
-            />
-            {restRoundError && <span className="text-xs text-red-400">Value is required</span>}
-          </label>
-        </div>
+        <label className="flex flex-col gap-1">
+          <span className="text-sm text-text-muted">Rounds</span>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={form.rounds}
+            onChange={(e) => {
+              dispatch({ type: 'SET_ROUNDS', rounds: e.target.value });
+              checkBlank('rounds', e.target.value);
+            }}
+            onBlur={(e) => checkBlank('rounds', e.target.value)}
+            className={numClass(roundsError)}
+          />
+          {roundsError && <span className="text-xs text-red-400">Value is required</span>}
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-sm text-text-muted">Rest between rounds (sec)</span>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={form.restBetweenRoundsSeconds}
+            onChange={(e) => {
+              dispatch({ type: 'SET_REST_BETWEEN_ROUNDS', restBetweenRoundsSeconds: e.target.value });
+              checkBlank('restBetweenRounds', e.target.value);
+            }}
+            onBlur={(e) => checkBlank('restBetweenRounds', e.target.value)}
+            className={numClass(restRoundError)}
+          />
+          {restRoundError && <span className="text-xs text-red-400">Value is required</span>}
+        </label>
 
         <label className="flex flex-col gap-1">
           <span className="text-sm text-text-muted">Rest between exercises (sec)</span>
