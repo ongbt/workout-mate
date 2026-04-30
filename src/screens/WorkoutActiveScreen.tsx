@@ -1,0 +1,252 @@
+import { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useWorkoutConfig } from '../context/WorkoutConfigContext';
+import { useActiveWorkout } from '../hooks/useActiveWorkout';
+import { Layout } from '../components/Layout';
+import { TimerDisplay } from '../components/TimerDisplay';
+import { PhaseIndicator } from '../components/PhaseIndicator';
+import { ControlButtons } from '../components/ControlButtons';
+import { FinishedView } from '../components/FinishedView';
+
+export function WorkoutActiveScreen() {
+  const { workoutId } = useParams<{ workoutId: string }>();
+  const navigate = useNavigate();
+  const { workouts } = useWorkoutConfig();
+
+  const config = workouts.find((w) => w.id === workoutId);
+
+  if (!config) {
+    return (
+      <Layout>
+        <div className="flex flex-col items-center justify-center flex-1 gap-4">
+          <p className="text-text-muted">Workout not found</p>
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="px-6 py-3 rounded-xl bg-surface text-text font-semibold"
+          >
+            Back to Home
+          </button>
+        </div>
+      </Layout>
+    );
+  }
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const {
+    sessionState,
+    totalDurationMs,
+    isRunning,
+    currentExercise,
+    nextExercise,
+    handleStart,
+    handlePause,
+    handleResume,
+    handleStop,
+    handleSkip,
+  } = useActiveWorkout(config);
+
+  const { phase, currentRound, currentExerciseIndex, timeRemainingMs, totalRounds, totalExercises } = sessionState;
+
+  const [showStopConfirm, setShowStopConfirm] = useState(false);
+  const isActive = phase !== 'idle' && phase !== 'finished';
+
+  const requestStop = () => setShowStopConfirm(true);
+
+  const confirmStop = () => {
+    setShowStopConfirm(false);
+    handleStop();
+    navigate('/');
+  };
+
+  const handleBack = () => {
+    if (isActive) {
+      requestStop();
+    } else {
+      navigate('/');
+    }
+  };
+
+  const getExerciseStatus = (round: number, index: number): 'done' | 'current' | 'upcoming' => {
+    if (round < currentRound) return 'done';
+    if (round > currentRound) return 'upcoming';
+    if (phase === 'idle') return 'upcoming';
+    if (index < currentExerciseIndex) return 'done';
+    if (index === currentExerciseIndex && phase !== 'finished') return 'current';
+    return 'upcoming';
+  };
+
+  const circleColor = (status: 'done' | 'current' | 'upcoming') =>
+    status === 'done' ? 'bg-primary' :
+    status === 'current' ? 'bg-rest' :
+    'bg-red-500';
+
+  const currentStep = (currentRound - 1) * totalExercises + currentExerciseIndex + 1;
+  const totalSteps = totalRounds * totalExercises;
+
+  return (
+    <Layout>
+      <header className="py-4 flex items-center gap-3">
+        <button
+          type="button"
+          onClick={handleBack}
+          className="w-10 h-10 flex items-center justify-center rounded-lg text-text-muted hover:bg-surface shrink-0"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <h2 className="text-lg font-semibold truncate">{config.name}</h2>
+      </header>
+
+      {phase !== 'finished' ? (
+        <div className="flex flex-col items-center gap-5 flex-1 min-h-0 overflow-y-auto scrollbar-hide pb-4">
+          <PhaseIndicator phase={phase} />
+
+          {phase === 'exercise' && currentExercise && (
+            <div className="flex flex-col items-center gap-3">
+              <TimerDisplay
+                timeRemainingMs={timeRemainingMs}
+                totalDurationMs={totalDurationMs}
+                phase={phase}
+              />
+              <h3 className="text-xl font-bold text-center">{currentExercise.name}</h3>
+              {nextExercise && (
+                <p className="text-sm text-text-muted -mt-2">Next: {nextExercise.name}</p>
+              )}
+            </div>
+          )}
+
+          {phase === 'rest' && currentExercise && (
+            <div className="flex flex-col items-center gap-3">
+              <TimerDisplay
+                timeRemainingMs={timeRemainingMs}
+                totalDurationMs={totalDurationMs}
+                phase={phase}
+              />
+              <p className="text-sm text-text-muted">Rest</p>
+              {nextExercise && (
+                <p className="text-lg font-semibold text-center -mt-2">Up next: {nextExercise.name}</p>
+              )}
+            </div>
+          )}
+
+          {phase === 'idle' && (
+            <div className="flex flex-col gap-5 flex-1 justify-center w-full">
+              <h3 className="text-xl font-bold text-center">{config.name}</h3>
+
+              <div className="bg-surface rounded-xl p-4 space-y-3">
+                <p className="text-sm font-semibold text-text-muted uppercase tracking-wider">
+                  Exercises — {config.rounds} round{config.rounds !== 1 ? 's' : ''}
+                </p>
+                <ul className="space-y-2">
+                  {config.exercises.map((ex) => (
+                    <li key={ex.id} className="flex items-center justify-between">
+                      <span className="text-sm">{ex.name}</span>
+                      <span className="text-xs text-text-muted">{ex.durationSeconds}s</span>
+                    </li>
+                  ))}
+                </ul>
+                <hr className="border-text-muted/20" />
+                <div className="flex justify-between text-sm">
+                  <span className="text-text-muted">Rest between exercises</span>
+                  <span>{config.restSeconds}s</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-text-muted">Rest between rounds</span>
+                  <span>{config.restBetweenRoundsSeconds}s</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {phase !== 'idle' && (
+            <p className="text-sm text-text-muted">
+              Round {currentRound}/{totalRounds} &middot; Exercise {currentExerciseIndex + 1}/{totalExercises} &middot; Step {currentStep}/{totalSteps}
+            </p>
+          )}
+
+          {phase !== 'idle' && (
+            <div className="w-full space-y-3">
+              {Array.from({ length: totalRounds }, (_, roundIdx) => {
+                const round = roundIdx + 1;
+                const isCurrentRound = round === currentRound;
+                return (
+                  <div
+                    key={round}
+                    className={`flex items-center gap-3 py-2 px-3 rounded-lg transition-colors ${
+                      isCurrentRound ? 'bg-surface ring-1 ring-primary/30' : ''
+                    }`}
+                  >
+                    <span
+                      className={`text-xs font-semibold w-10 shrink-0 ${
+                        isCurrentRound ? 'text-primary' : 'text-text-muted'
+                      }`}
+                    >
+                      R{round}
+                    </span>
+                    <div className="flex gap-2">
+                      {config.exercises.map((ex, idx) => {
+                        const status = getExerciseStatus(round, idx);
+                        return (
+                          <span
+                            key={ex.id}
+                            title={ex.name}
+                            className={`w-4 h-4 rounded-full ${
+                              status === 'current' ? `${circleColor(status)} animate-pulse` : circleColor(status)
+                            }`}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      ) : (
+        <FinishedView />
+      )}
+
+      <div className="py-4">
+        <ControlButtons
+          phase={phase}
+          isRunning={isRunning}
+          onStart={handleStart}
+          onPause={handlePause}
+          onResume={handleResume}
+          onSkip={handleSkip}
+          onStop={requestStop}
+        />
+      </div>
+
+      {showStopConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div className="bg-surface rounded-xl p-6 w-full max-w-sm flex flex-col gap-4">
+            <h3 className="text-lg font-semibold">Stop Workout?</h3>
+            <p className="text-sm text-text-muted">
+              Your progress will be lost. Are you sure you want to stop?
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setShowStopConfirm(false)}
+                className="flex-1 py-3 rounded-xl bg-primary text-background font-semibold"
+              >
+                Continue Workout
+              </button>
+              <button
+                type="button"
+                onClick={confirmStop}
+                className="flex-1 py-3 rounded-xl bg-red-500/20 text-red-400 font-semibold border border-red-500/30"
+              >
+                Stop
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </Layout>
+  );
+}

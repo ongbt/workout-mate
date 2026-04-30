@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #22c55e;
+  --color-rest: #f59e0b;
+  --color-surface: #1e293b;
+  --color-background: #0f172a;
+  --color-text: #f8fafc;
+  --color-text-muted: #94a3b8;
+}
+
+html, body, #root {
+  @apply h-full w-full m-0 p-0;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  @apply bg-background text-text font-sans antialiased;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+button, a {
+  @apply min-h-[44px] min-w-[44px];
+}
+
+.no-spinner {
+  -moz-appearance: textfield;
+}
+
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
