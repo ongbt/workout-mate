@@ -8,6 +8,10 @@ interface Props {
   onBlur: () => void;
   onDelete: () => void;
   canDelete: boolean;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
 }
 
 const textClass = (error: boolean) =>
@@ -17,7 +21,10 @@ const textClass = (error: boolean) =>
 
 const numClass = 'w-16 bg-surface border border-text-muted/30 rounded-lg px-2 py-2.5 text-center text-text';
 
-export function ExerciseFormRow({ exercise, error, onChange, onBlur, onDelete, canDelete }: Props) {
+const moveBtnClass =
+  'w-8 h-8 flex items-center justify-center rounded-lg text-text-muted hover:text-text hover:bg-surface shrink-0 disabled:opacity-20 disabled:cursor-not-allowed';
+
+export function ExerciseFormRow({ exercise, error, onChange, onBlur, onDelete, canDelete, onMoveUp, onMoveDown, canMoveUp, canMoveDown }: Props) {
   const [durStr, setDurStr] = useState(String(exercise.durationSeconds));
 
   const handleDurChange = useCallback(
@@ -39,7 +46,29 @@ export function ExerciseFormRow({ exercise, error, onChange, onBlur, onDelete, c
   }, [durStr, exercise.durationSeconds]);
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1">
+      <button
+        type="button"
+        onClick={onMoveUp}
+        disabled={!canMoveUp}
+        className={moveBtnClass}
+        aria-label="Move up"
+      >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+        </svg>
+      </button>
+      <button
+        type="button"
+        onClick={onMoveDown}
+        disabled={!canMoveDown}
+        className={moveBtnClass}
+        aria-label="Move down"
+      >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
       <input
         type="text"
         value={exercise.name}

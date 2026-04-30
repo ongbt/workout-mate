@@ -22,7 +22,9 @@ type FormAction =
   | { type: 'SET_ROUNDS'; rounds: string }
   | { type: 'SET_EXERCISE'; index: number; exercise: Exercise }
   | { type: 'ADD_EXERCISE' }
-  | { type: 'DELETE_EXERCISE'; index: number };
+  | { type: 'DELETE_EXERCISE'; index: number }
+  | { type: 'MOVE_UP'; index: number }
+  | { type: 'MOVE_DOWN'; index: number };
 
 function formReducer(state: FormState, action: FormAction): FormState {
   switch (action.type) {
@@ -50,6 +52,24 @@ function formReducer(state: FormState, action: FormAction): FormState {
         ...state,
         exercises: state.exercises.filter((_, i) => i !== action.index),
       };
+    }
+    case 'MOVE_UP': {
+      if (action.index <= 0) return state;
+      const exercises = [...state.exercises];
+      [exercises[action.index - 1], exercises[action.index]] = [
+        exercises[action.index]!,
+        exercises[action.index - 1]!,
+      ];
+      return { ...state, exercises };
+    }
+    case 'MOVE_DOWN': {
+      if (action.index >= state.exercises.length - 1) return state;
+      const exercises = [...state.exercises];
+      [exercises[action.index], exercises[action.index + 1]] = [
+        exercises[action.index + 1]!,
+        exercises[action.index]!,
+      ];
+      return { ...state, exercises };
     }
   }
 }
@@ -280,6 +300,10 @@ export function WorkoutEditScreen() {
               }}
               onDelete={() => dispatch({ type: 'DELETE_EXERCISE', index: i })}
               canDelete={form.exercises.length > MIN_EXERCISES}
+              onMoveUp={() => dispatch({ type: 'MOVE_UP', index: i })}
+              onMoveDown={() => dispatch({ type: 'MOVE_DOWN', index: i })}
+              canMoveUp={i > 0}
+              canMoveDown={i < form.exercises.length - 1}
             />
           ))}
         </div>

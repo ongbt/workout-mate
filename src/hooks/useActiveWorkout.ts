@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useTimer } from './useTimer';
 import { useSpeechSynthesis } from './useSpeechSynthesis';
 import { useBeep } from './useBeep';
+import { useWakeLock } from './useWakeLock';
 import { COUNTDOWN_WARN_THRESHOLD, TEN_SECOND_INTERVAL } from '../constants';
 import type { WorkoutConfig, Exercise } from '../types';
 import type { WorkoutPhase, WorkoutSessionState } from '../types';
@@ -12,6 +13,7 @@ export function useActiveWorkout(config: WorkoutConfig) {
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const { speak, isSpeaking } = useSpeechSynthesis();
   const beep = useBeep();
+  const wakeLock = useWakeLock();
   const configRef = useRef(config);
   configRef.current = config;
 
@@ -81,6 +83,7 @@ export function useActiveWorkout(config: WorkoutConfig) {
       if (round >= cfg.rounds) {
         setPhase('finished');
         speak('Workout complete! Great job!');
+        wakeLock.release();
         return;
       }
       setCurrentRound((r) => r + 1);
@@ -128,11 +131,12 @@ export function useActiveWorkout(config: WorkoutConfig) {
     if (secs <= COUNTDOWN_WARN_THRESHOLD) {
       beep(1200, 100);
     } else if (secs % TEN_SECOND_INTERVAL === 0) {
-      beep(880, 150);
+      speak(`${secs} seconds`);
     }
-  }, [timeRemainingMs, isRunning, phase, beep, isSpeaking]);
+  }, [timeRemainingMs, isRunning, phase, beep, isSpeaking, speak]);
 
   const handleStart = useCallback(() => {
+    wakeLock.request();
     const firstExercise = config.exercises[0]!;
     setPhase('exercise');
     setCurrentRound(1);
@@ -141,22 +145,25 @@ export function useActiveWorkout(config: WorkoutConfig) {
       `Round 1. ${firstExercise.name}. Go!`,
       firstExercise.durationSeconds * 1000,
     );
-  }, [config, startTimerAfterSpeech]);
+  }, [config, startTimerAfterSpeech, wakeLock]);
 
   const handlePause = useCallback(() => {
+    wakeLock.release();
     pause();
-  }, [pause]);
+  }, [pause, wakeLock]);
 
   const handleResume = useCallback(() => {
+    wakeLock.request();
     resume();
-  }, [resume]);
+  }, [resume, wakeLock]);
 
   const handleStop = useCallback(() => {
+    wakeLock.release();
     stopTimer();
     setPhase('idle');
     setCurrentRound(1);
     setCurrentExerciseIndex(0);
-  }, [stopTimer]);
+  }, [stopTimer, wakeLock]);
 
   const handleSkip = useCallback(() => {
     stopTimer();
