@@ -42,12 +42,14 @@ export function useActiveWorkout(config: WorkoutConfig) {
     return null;
   }, []);
 
-  // Start the timer after speech announcement completes
+  // Start the timer after speech announcement completes.
+  // Optional afterText is spoken while the timer is running (non-blocking).
   const startTimerAfterSpeech = useCallback(
-    (text: string, durationMs: number) => {
+    (text: string, durationMs: number, afterText?: string) => {
       suppressFirstReadoutRef.current = true;
       speak(text, () => {
         startTimerRef.current(durationMs);
+        if (afterText) speak(afterText);
       });
     },
     [speak],
@@ -66,12 +68,19 @@ export function useActiveWorkout(config: WorkoutConfig) {
       restDurationRef.current = restSecs * 1000;
       setPhase('rest');
       if (isLastExercise) {
+        const nextRoundEx = cfg.exercises[0]!;
         startTimerAfterSpeech(
           `Round ${round} complete. Rest for ${restSecs} seconds`,
           restSecs * 1000,
+          `Next: ${nextRoundEx.name}`,
         );
       } else {
-        startTimerAfterSpeech(`Rest for ${restSecs} seconds`, restSecs * 1000);
+        const nextEx = cfg.exercises[idx + 1]!;
+        startTimerAfterSpeech(
+          `Rest for ${restSecs} seconds`,
+          restSecs * 1000,
+          `Next: ${nextEx.name}`,
+        );
       }
       return;
     }
