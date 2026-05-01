@@ -68,11 +68,9 @@ export function useActiveWorkout(config: WorkoutConfig) {
       restDurationRef.current = restSecs * 1000;
       setPhase('rest');
       if (isLastExercise) {
-        const nextRoundEx = cfg.exercises[0]!;
         startTimerAfterSpeech(
           `Round ${round} complete. Rest for ${restSecs} seconds`,
           restSecs * 1000,
-          `Next: ${nextRoundEx.name}`,
         );
       } else {
         const nextEx = cfg.exercises[idx + 1]!;
