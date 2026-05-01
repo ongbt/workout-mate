@@ -93,7 +93,7 @@ function initForm(workout?: WorkoutConfig): FormState {
   };
 }
 
-const baseInput = 'bg-surface border rounded-lg px-3 py-2.5 text-text placeholder:text-text-muted/50';
+const baseInput = 'bg-surface border rounded-lg px-3 py-2.5 text-text placeholder:text-text-muted/50 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/30';
 const textClass = (error: boolean) => `${baseInput} ${error ? 'border-red-500' : 'border-text-muted/30'}`;
 const numClass = (error: boolean) =>
   `${baseInput} text-center ${error ? 'border-red-500' : 'border-text-muted/30'}`;
@@ -283,6 +283,12 @@ export function WorkoutEditScreen() {
             >
               + Add
             </button>
+          </div>
+          <div className="flex items-center gap-1 px-0.5">
+            <span className="w-[72px] shrink-0" />
+            <span className="text-xs text-text-muted flex-1 min-w-0">Name</span>
+            <span className="text-xs text-text-muted w-16 text-center">Sec</span>
+            <span className="w-10 shrink-0" />
           </div>
           {form.exercises.map((ex, i) => (
             <ExerciseFormRow

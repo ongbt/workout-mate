@@ -153,6 +153,33 @@ Hash-based routing (`HashRouter`) ensures the PWA handles refreshes and direct U
 | Testing | Vitest + @testing-library/react + happy-dom |
 | Package manager | pnpm |
 
+## Design Principles
+
+### Progressive enhancement for browser APIs
+
+Every browser API used by the app (Speech Synthesis, Wake Lock, Web Audio) follows the same pattern: feature-detect with a falsy guard, wrap calls in try/catch, and fail silently. There are no "your browser doesn't support X" banners or fallback UI. The app is fully usable without any browser API — it just gets quieter.
+
+Applies to:
+- **Web Speech API** — `useSpeechSynthesis` checks `'speechSynthesis' in window` and returns no-ops if missing. All call sites call `speak()` unconditionally.
+- **Wake Lock API** — `useWakeLock` checks `'wakeLock' in navigator` and catches all errors silently. Low battery, device policy, or missing support all degrade gracefully.
+- **Web Audio API** — `useBeep` wraps `AudioContext` construction in try/catch and returns a no-op on failure.
+
+### Two-tier announcement timing
+
+Voice announcements fall into two categories with different timing semantics:
+
+| Tier | Behavior | Examples |
+|---|---|---|
+| **Blocking** | Timer pauses until speech completes, then timer starts | *"Rest for 45 seconds"*, *"Push-ups. Go!"* |
+| **Non-blocking** | Speech plays while timer is counting down | *"Next: Push-ups"*, countdown *"30 seconds"* |
+
+Blocking announcements use `startTimerAfterSpeech(text, durationMs)` which passes the timer start as the `onEnd` callback to `speak()`. Non-blocking announcements use `speak()` directly with no callback. The `isSpeaking` flag in the countdown effect suppresses countdown ticks while any speech is active, preventing overlaps.
+
+Edge cases handled:
+- Starting a new blocking announcement cancels any in-flight utterance (via `speechSynthesis.cancel()` inside `speak()`)
+- Non-blocking countdown speech (`"30 seconds"`) won't overlap with phase transitions because `isSpeaking` suppresses the tick
+- The first countdown tick after a phase transition is suppressed (`suppressFirstReadoutRef`) regardless of tier
+
 ## Edge Cases & Behavior
 
 | Scenario | Behavior |

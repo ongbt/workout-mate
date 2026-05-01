@@ -15,11 +15,11 @@ interface Props {
 }
 
 const textClass = (error: boolean) =>
-  `flex-1 bg-surface border rounded-lg px-3 py-2.5 text-text placeholder:text-text-muted/50 min-w-0 ${
+  `flex-1 bg-surface border rounded-lg px-3 py-2.5 text-text placeholder:text-text-muted/50 min-w-0 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/30 ${
     error ? 'border-red-500' : 'border-text-muted/30'
   }`;
 
-const numClass = 'w-16 bg-surface border border-text-muted/30 rounded-lg px-2 py-2.5 text-center text-text';
+const numClass = 'w-16 bg-surface border border-text-muted/30 rounded-lg px-2 py-2.5 text-center text-text focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/30';
 
 const moveBtnClass =
   'w-8 h-8 flex items-center justify-center rounded-lg text-text-muted hover:text-text hover:bg-surface shrink-0 disabled:opacity-20 disabled:cursor-not-allowed';
@@ -85,7 +85,6 @@ export function ExerciseFormRow({ exercise, error, onChange, onBlur, onDelete, c
         onBlur={handleDurBlur}
         className={numClass}
       />
-      <span className="text-xs text-text-muted w-8 shrink-0">sec</span>
       <button
         type="button"
         onClick={onDelete}
