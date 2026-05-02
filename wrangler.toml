@@ -1,0 +1,17 @@
+# Cloudflare Pages configuration for workout-mate
+# Staging branch: auto-deploys as preview
+# Main branch: auto-deploys to production
+
+[pages]
+build_dir = "dist"
+build_command = "pnpm build"
+
+[env.staging.vars]
+# Staging Convex deployment — set via `npx convex deploy` from staging branch
+# VITE_CONVEX_URL = ""
+# VITE_CONVEX_SITE_URL = ""
+
+[env.production.vars]
+# Production Convex deployment — set after `npx convex deploy --cmd "pnpm build"`
+# VITE_CONVEX_URL = ""
+# VITE_CONVEX_SITE_URL = ""
