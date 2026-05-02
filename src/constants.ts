@@ -6,4 +6,3 @@ export const TIMER_INTERVAL_MS = 100;
 export const COUNTDOWN_WARN_THRESHOLD = 5;
 export const TEN_SECOND_INTERVAL = 10;
 export const DEFAULT_REST_BETWEEN_ROUNDS = 60;
-export const STORAGE_KEY = 'workout-mate-configs';

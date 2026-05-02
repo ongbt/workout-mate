@@ -203,3 +203,90 @@ Edge cases handled:
 | Rounds | 2 |
 | Timer tick interval | 100ms |
 | Countdown warning threshold | 5 seconds |
+
+## Auth Setup Guide (Convex + Google OAuth)
+
+### Prerequisites
+
+Before running `npx convex dev` for the first time, create the following:
+
+**Google Cloud Console:**
+1. Create a project at https://console.cloud.google.com
+2. Configure the OAuth consent screen (External, add your email as a test user)
+3. Create an OAuth client (Web application type)
+4. Authorized JavaScript origins: `http://localhost:5173` and `https://<your-project>.convex.site`
+5. Authorized redirect URI: `https://<your-project>.convex.site/api/auth/callback/google`
+   - Note: Google does NOT accept wildcards (`*`) in redirect URIs. Use your exact Convex deployment URL.
+
+### Files Required
+
+| File | Purpose |
+|---|---|
+| `convex/auth.ts` | Named exports: `auth`, `signIn`, `signOut`, `store` from `convexAuth({ providers: [Google] })` |
+| `convex/auth.config.ts` | Default export: plain config `{ providers: [{ domain, applicationID }] }` for token validation |
+| `convex/http.ts` | HTTP router with `auth.addHttpRoutes(http)` — enables OAuth callback endpoints |
+
+### Environment Variables
+
+All set via `npx convex env set <KEY> <VALUE>`:
+
+| Variable | How to generate | Notes |
+|---|---|---|
+| `SITE_URL` | `http://localhost:5173` (dev) | Must match your Vite dev server |
+| `AUTH_GOOGLE_ID` | Copy from Google Cloud Console | |
+| `AUTH_GOOGLE_SECRET` | Copy from Google Cloud Console | |
+| `AUTH_SECRET` | `base64` of 32 random bytes | Used internally by auth library |
+| `JWT_PRIVATE_KEY` | RSA 2048-bit PKCS#8 PEM | Must be RSA (not EC). Newlines replaced with spaces. |
+| `JWKS` | JSON Web Key Set from matching public key | Must correspond to `JWT_PRIVATE_KEY` |
+| `JWT_KID` | Random UUID (lowercase) | |
+
+**Generating JWT keys (requires `jose` package):**
+
+```js
+import { exportJWK, exportPKCS8, generateKeyPair } from "jose";
+
+const keys = await generateKeyPair("RS256", { extractable: true });
+const privateKey = await exportPKCS8(keys.privateKey);
+const publicKey = await exportJWK(keys.publicKey);
+
+// Set these via npx convex env set:
+// JWT_PRIVATE_KEY = privateKey with newlines → spaces
+// JWKS = JSON.stringify({ keys: [{ use: "sig", ...publicKey }] })
+```
+
+**Important:** `JWT_PRIVATE_KEY` must be an RSA key. EC/P-256 keys will fail with *"PrivateKeyInfo algorithm is not rsaEncryption"*. The key must be in PKCS#8 format, not a random base64 string (which fails with *"must be PKCS#8 formatted string"*).
+
+### Common Errors & Solutions
+
+| Error | Cause | Fix |
+|---|---|---|
+| `Missing environment variable SITE_URL` | Not set | `npx convex env set SITE_URL http://localhost:5173` |
+| `This Convex deployment does not have HTTP actions enabled` | Missing `convex/http.ts` | Create `convex/http.ts` with `auth.addHttpRoutes(http)` |
+| `Invalid Redirect: cannot contain a wildcard (*)` | Wildcard in Google redirect URI | Use your exact Convex deployment URL |
+| `No matching routes found` | Wrong redirect URI format in Google | Must be `https://<project>.convex.site/api/auth/callback/google` |
+| `Missing environment variable JWT_PRIVATE_KEY` | Not generated | Generate RSA PKCS#8 key pair |
+| `"pkcs8" must be PKCS#8 formatted string` | Used random base64, not a real key | Generate a proper RSA key pair with `crypto.generateKeyPairSync` or `jose` |
+| `PrivateKeyInfo algorithm is not rsaEncryption` | Used EC key instead of RSA | Use `"RS256"` algorithm (RSA 2048-bit) |
+| `Environment variable AUTH_SECRET is used but not set` | Missing config | Set with `base64` of 32 random bytes |
+| `No auth provider found matching the given token` | `auth.config.ts` missing or wrong format | Create with plain `export default { providers: [...] }` |
+| `Missing environment variable JWKS` | Only set private key, not public | Generate both from same key pair and set `JWKS` |
+| Login button stays after auth (client stuck) | `HashRouter` intercepts OAuth callback URL params | Use `useConvexAuth()` hook directly instead of `Authenticated`/`Unauthenticated` wrapper components inside `HashRouter` |
+
+### Client-Side Pattern
+
+The `Authenticated`/`Unauthenticated` wrapper components from `convex/react` conflict with `HashRouter` because the router strips query parameters from the OAuth callback URL before the auth provider can process them. Solution: use the `useConvexAuth()` hook directly and conditionally render:
+
+```tsx
+function App() {
+  const { isLoading, isAuthenticated } = useConvexAuth();
+
+  if (isLoading) return <Spinner />;
+  if (!isAuthenticated) return <LoginScreen />;
+
+  return (
+    <HashRouter>
+      <Routes>...</Routes>
+    </HashRouter>
+  );
+}
+```

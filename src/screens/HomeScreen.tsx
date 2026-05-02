@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router-dom';
-import { useWorkoutConfig } from '../context/WorkoutConfigContext';
+import { useWorkouts } from '../hooks/useWorkouts';
 import { Layout } from '../components/Layout';
 import { WorkoutSetCard } from '../components/WorkoutSetCard';
 import { EmptyState } from '../components/EmptyState';
 
 export function HomeScreen() {
-  const { workouts } = useWorkoutConfig();
+  const { workouts } = useWorkouts();
   const navigate = useNavigate();
 
   return (

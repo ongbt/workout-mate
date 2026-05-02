@@ -1,7 +1,7 @@
 import { useReducer, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
-import { useWorkoutConfig } from '../context/WorkoutConfigContext';
+import { useWorkouts, useDefaultWorkouts } from '../hooks/useWorkouts';
 import { Layout } from '../components/Layout';
 import { ExerciseFormRow } from '../components/ExerciseFormRow';
 import { DEFAULT_EXERCISE_DURATION, DEFAULT_REST_DURATION, DEFAULT_ROUNDS, DEFAULT_REST_BETWEEN_ROUNDS, MIN_EXERCISES } from '../constants';
@@ -24,7 +24,8 @@ type FormAction =
   | { type: 'ADD_EXERCISE' }
   | { type: 'DELETE_EXERCISE'; index: number }
   | { type: 'MOVE_UP'; index: number }
-  | { type: 'MOVE_DOWN'; index: number };
+  | { type: 'MOVE_DOWN'; index: number }
+  | { type: 'IMPORT_TEMPLATE'; name: string; exercises: Exercise[]; restSeconds: number; restBetweenRoundsSeconds: number; rounds: number };
 
 function formReducer(state: FormState, action: FormAction): FormState {
   switch (action.type) {
@@ -71,6 +72,15 @@ function formReducer(state: FormState, action: FormAction): FormState {
       ];
       return { ...state, exercises };
     }
+    case 'IMPORT_TEMPLATE':
+      return {
+        ...state,
+        name: action.name,
+        exercises: action.exercises.map((e) => ({ ...e })),
+        restSeconds: String(action.restSeconds),
+        restBetweenRoundsSeconds: String(action.restBetweenRoundsSeconds),
+        rounds: String(action.rounds),
+      };
   }
 }
 
@@ -113,12 +123,14 @@ function parseMinOne(s: string): number | null {
 export function WorkoutEditScreen() {
   const { workoutId } = useParams<{ workoutId: string }>();
   const navigate = useNavigate();
-  const { workouts, addWorkout, updateWorkout, deleteWorkout } = useWorkoutConfig();
+  const { workouts, addWorkout, updateWorkout, deleteWorkout } = useWorkouts();
 
   const existing = workoutId ? workouts.find((w) => w.id === workoutId) : undefined;
   const [form, dispatch] = useReducer(formReducer, existing, initForm);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [blanks, setBlanks] = useState<Set<string>>(new Set());
+  const defaultWorkouts = useDefaultWorkouts();
 
   const checkBlank = useCallback((key: string, value: string) => {
     setBlanks((prev) => {
@@ -276,13 +288,24 @@ export function WorkoutEditScreen() {
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <span className="text-sm text-text-muted">Exercises</span>
-            <button
-              type="button"
-              onClick={() => dispatch({ type: 'ADD_EXERCISE' })}
-              className="text-sm text-primary font-medium px-3 py-1 rounded-lg hover:bg-primary/10"
-            >
-              + Add
-            </button>
+            <div className="flex items-center gap-2">
+              {!existing && defaultWorkouts.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowImportModal(true)}
+                  className="text-sm text-text-muted hover:text-text px-2 py-1 rounded-lg hover:bg-surface transition-colors"
+                >
+                  Import template
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => dispatch({ type: 'ADD_EXERCISE' })}
+                className="text-sm text-primary font-medium px-3 py-1 rounded-lg hover:bg-primary/10"
+              >
+                + Add
+              </button>
+            </div>
           </div>
           <div className="flex items-center gap-1 px-0.5">
             <span className="w-[72px] shrink-0" />
@@ -360,6 +383,52 @@ export function WorkoutEditScreen() {
                 Delete
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showImportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div className="bg-surface rounded-xl p-6 w-full max-w-sm flex flex-col gap-4 max-h-[70vh]">
+            <h3 className="text-lg font-semibold">Import from Template</h3>
+            <p className="text-sm text-text-muted">
+              Select a template to pre-fill the exercises, rest times, and rounds.
+            </p>
+            <div className="flex flex-col gap-2 overflow-y-auto">
+              {defaultWorkouts.map((dw) => (
+                <button
+                  key={dw.id}
+                  type="button"
+                  onClick={() => {
+                    dispatch({
+                      type: 'IMPORT_TEMPLATE',
+                      name: dw.name,
+                      exercises: dw.exercises,
+                      restSeconds: dw.restSeconds,
+                      restBetweenRoundsSeconds: dw.restBetweenRoundsSeconds,
+                      rounds: dw.rounds,
+                    });
+                    setShowImportModal(false);
+                  }}
+                  className="flex items-center justify-between p-3 rounded-lg hover:bg-background transition-colors text-left"
+                >
+                  <div>
+                    <p className="text-sm font-medium">{dw.name}</p>
+                    <p className="text-xs text-text-muted">
+                      {dw.exercises.length} exercises &middot; {dw.rounds} round{dw.rounds !== 1 ? 's' : ''}
+                    </p>
+                  </div>
+                  <span className="text-xs text-primary font-medium">Import</span>
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowImportModal(false)}
+              className="py-3 rounded-xl bg-text-muted/20 text-text font-semibold"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}

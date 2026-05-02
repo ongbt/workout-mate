@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useWorkoutConfig } from '../context/WorkoutConfigContext';
+import { useWorkouts } from '../hooks/useWorkouts';
 import { useActiveWorkout } from '../hooks/useActiveWorkout';
 import { Layout } from '../components/Layout';
 import { TimerDisplay } from '../components/TimerDisplay';
@@ -12,7 +12,7 @@ import { FinishedView } from '../components/FinishedView';
 export function WorkoutActiveScreen() {
   const { workoutId } = useParams<{ workoutId: string }>();
   const navigate = useNavigate();
-  const { workouts } = useWorkoutConfig();
+  const { workouts } = useWorkouts();
 
   const config = workouts.find((w) => w.id === workoutId);
 
