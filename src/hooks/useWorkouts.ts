@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { WorkoutConfig } from '../types';
@@ -50,5 +50,13 @@ export function useWorkouts() {
 
 export function useDefaultWorkouts(): WorkoutConfig[] {
   const data = useQuery(api.workouts.getDefaults);
+  const seed = useMutation(api.workouts.seedDefaults);
+
+  useEffect(() => {
+    if (data !== undefined && data.length === 0) {
+      seed();
+    }
+  }, [data, seed]);
+
   return (data ?? []).map(toWorkoutConfig);
 }
