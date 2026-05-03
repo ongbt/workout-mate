@@ -27,6 +27,10 @@
     "react-router-dom": "^7.14.2",
     "uuid": "^14.0.0"
   },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": "eslint --fix",
+    "*.{json,css,md,html}": "prettier --write"
+  },
   "pnpm": {
     "onlyBuiltDependencies": [
       "esbuild",

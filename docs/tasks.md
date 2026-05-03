@@ -4,7 +4,7 @@
 
 - [x] **README.md** — How to run + project overview (required by global rules)
 - [x] **LICENSE** — Add license file at project root
-- [ ] **Husky + lint-staged** — Pre-commit hook for linting on staged files
+- [x] **Husky + lint-staged** — Pre-commit hook for linting on staged files
 - [ ] **E2E tests** — Add `playwright.config.ts`, `e2e/` directory, auth + home specs
 - [ ] **E2E in CI** — Add `e2e` job to `.github/workflows/ci.yml` (needs `check` job)
 
@@ -13,8 +13,8 @@
 - [ ] **Sentry** — Error tracking (`@sentry/react`)
 - [ ] **GA4** — Acquisition analytics with consent gating
 - [ ] **PostHog** — Product analytics
-- [ ] **i18next** — Internationalization (mandatory per global rules)
-- [ ] **CSP** — `public/_headers` with strict Content Security Policy
+- [x] **i18next** — Internationalization (mandatory per global rules)
+- [x] **CSP** — `public/_headers` with strict Content Security Policy
 
 ## Medium — Missing routes
 
@@ -25,7 +25,7 @@
 ## Low — Testing & SEO
 
 - [ ] **Test coverage** — Expand from 4 test files toward 80-90% unit / 60-80% integration
-- [ ] **SEO** — Add `<meta name="description">` to `index.html`, per-page title management
+- [x] **SEO** — Add `<meta name="description">` to `index.html`, per-page title management
 - [ ] **Dark/Light theme** — Add `dark:` Tailwind classes and theme toggle
 
 ## Low — Misc
