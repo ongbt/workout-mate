@@ -24,7 +24,7 @@
 
 ## Low — Testing & SEO
 
-- [ ] **Test coverage** — Expand from 4 test files toward 80-90% unit / 60-80% integration
+- [x] **Test coverage** — Expand from 4 test files toward 80-90% unit / 60-80% integration
 - [x] **SEO** — Add `<meta name="description">` to `index.html`, per-page title management
 - [ ] **Dark/Light theme** — Add `dark:` Tailwind classes and theme toggle
 
