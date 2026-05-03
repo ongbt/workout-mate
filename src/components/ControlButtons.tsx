@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { WorkoutPhase } from '../types';
 
 interface Props {
@@ -11,6 +12,8 @@ interface Props {
 }
 
 export function ControlButtons({ phase, isRunning, onStart, onPause, onResume, onSkip, onStop }: Props) {
+  const { t } = useTranslation();
+
   if (phase === 'finished') return null;
 
   if (phase === 'idle') {
@@ -20,7 +23,7 @@ export function ControlButtons({ phase, isRunning, onStart, onPause, onResume, o
         onClick={onStart}
         className="w-full py-4 rounded-xl bg-primary text-background font-bold text-lg"
       >
-        Start Workout
+        {t('workout.start')}
       </button>
     );
   }
@@ -32,7 +35,7 @@ export function ControlButtons({ phase, isRunning, onStart, onPause, onResume, o
         onClick={onStop}
         className="flex-1 py-4 rounded-xl bg-red-500/20 text-red-400 font-semibold border border-red-500/30"
       >
-        Stop
+        {t('actions.stop')}
       </button>
       {isRunning ? (
         <button
@@ -40,7 +43,7 @@ export function ControlButtons({ phase, isRunning, onStart, onPause, onResume, o
           onClick={onPause}
           className="flex-1 py-4 rounded-xl bg-rest text-background font-bold"
         >
-          Pause
+          {t('actions.pause')}
         </button>
       ) : (
         <button
@@ -48,7 +51,7 @@ export function ControlButtons({ phase, isRunning, onStart, onPause, onResume, o
           onClick={onResume}
           className="flex-1 py-4 rounded-xl bg-primary text-background font-bold"
         >
-          Resume
+          {t('actions.resume')}
         </button>
       )}
       <button
@@ -56,7 +59,7 @@ export function ControlButtons({ phase, isRunning, onStart, onPause, onResume, o
         onClick={onSkip}
         className="flex-1 py-4 rounded-xl bg-surface text-text font-semibold"
       >
-        Skip
+        {t('actions.skip')}
       </button>
     </div>
   );

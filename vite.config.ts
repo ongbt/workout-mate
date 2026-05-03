@@ -33,5 +33,21 @@ export default defineConfig({
     environment: 'happy-dom',
     setupFiles: ['./tests/setup.ts'],
     include: ['tests/**/*.test.{ts,tsx}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov', 'html'],
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/types/**',
+        'src/vite-env.d.ts',
+        'src/main.tsx',
+        'src/App.tsx',
+        'src/i18n/**',
+        'src/components/LanguageWatcher.tsx',
+        'src/hooks/useActiveWorkout.ts',
+        'src/hooks/useWorkouts.ts',
+        'src/screens/**',
+      ],
+    },
   },
 })

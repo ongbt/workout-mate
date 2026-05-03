@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export function FinishedView() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   return (
@@ -10,14 +12,14 @@ export function FinishedView() {
           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
         </svg>
       </div>
-      <h2 className="text-3xl font-bold">Workout Complete!</h2>
-      <p className="text-text-muted">Great job! You finished your workout.</p>
+      <h2 className="text-3xl font-bold">{t('components.finishedView.workoutComplete')}</h2>
+      <p className="text-text-muted">{t('components.finishedView.greatJob')}</p>
       <button
         type="button"
         onClick={() => navigate('/')}
         className="px-8 py-4 rounded-xl bg-primary text-background font-bold text-lg mt-4"
       >
-        Back to Home
+        {t('actions.backToHome')}
       </button>
     </div>
   );
