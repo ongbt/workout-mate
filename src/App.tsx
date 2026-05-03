@@ -4,6 +4,8 @@ import { HomeScreen } from './screens/HomeScreen';
 import { WorkoutEditScreen } from './screens/WorkoutEditScreen';
 import { WorkoutActiveScreen } from './screens/WorkoutActiveScreen';
 import { LoginScreen } from './screens/LoginScreen';
+import { PrivacyScreen } from './screens/PrivacyScreen';
+import { TermsScreen } from './screens/TermsScreen';
 import { PwaUpdatePrompt } from './components/PwaUpdatePrompt';
 
 function App() {
@@ -29,6 +31,8 @@ function App() {
         <Route path="/workout/new" element={<WorkoutEditScreen />} />
         <Route path="/workout/:workoutId" element={<WorkoutEditScreen />} />
         <Route path="/active/:workoutId" element={<WorkoutActiveScreen />} />
+        <Route path="/privacy" element={<PrivacyScreen />} />
+        <Route path="/terms" element={<TermsScreen />} />
       </Routes>
     </HashRouter>
   );
