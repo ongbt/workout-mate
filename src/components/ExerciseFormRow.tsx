@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Exercise } from '../types';
 
 interface Props {
@@ -25,6 +26,7 @@ const moveBtnClass =
   'w-8 h-8 flex items-center justify-center rounded-lg text-text-muted hover:text-text hover:bg-surface shrink-0 disabled:opacity-20 disabled:cursor-not-allowed';
 
 export function ExerciseFormRow({ exercise, error, onChange, onBlur, onDelete, canDelete, onMoveUp, onMoveDown, canMoveUp, canMoveDown }: Props) {
+  const { t } = useTranslation();
   const [durStr, setDurStr] = useState(String(exercise.durationSeconds));
 
   const handleDurChange = useCallback(
@@ -52,7 +54,7 @@ export function ExerciseFormRow({ exercise, error, onChange, onBlur, onDelete, c
         onClick={onMoveUp}
         disabled={!canMoveUp}
         className={moveBtnClass}
-        aria-label="Move up"
+        aria-label={t('components.exerciseFormRow.moveUp')}
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
@@ -63,7 +65,7 @@ export function ExerciseFormRow({ exercise, error, onChange, onBlur, onDelete, c
         onClick={onMoveDown}
         disabled={!canMoveDown}
         className={moveBtnClass}
-        aria-label="Move down"
+        aria-label={t('components.exerciseFormRow.moveDown')}
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -74,7 +76,7 @@ export function ExerciseFormRow({ exercise, error, onChange, onBlur, onDelete, c
         value={exercise.name}
         onChange={(e) => onChange({ ...exercise, name: e.target.value })}
         onBlur={onBlur}
-        placeholder="Exercise name"
+        placeholder={t('components.exerciseFormRow.placeholder')}
         className={textClass(error)}
       />
       <input

@@ -1,5 +1,7 @@
 import { useReducer, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { Helmet } from 'react-helmet-async';
 import { v4 as uuid } from 'uuid';
 import { useWorkouts, useDefaultWorkouts } from '../hooks/useWorkouts';
 import { Layout } from '../components/Layout';
@@ -121,6 +123,7 @@ function parseMinOne(s: string): number | null {
 }
 
 export function WorkoutEditScreen() {
+  const { t } = useTranslation();
   const { workoutId } = useParams<{ workoutId: string }>();
   const navigate = useNavigate();
   const { workouts, addWorkout, updateWorkout, deleteWorkout } = useWorkouts();
@@ -208,22 +211,27 @@ export function WorkoutEditScreen() {
 
   return (
     <Layout>
+      <Helmet>
+        <title>{existing ? t('screens.workoutEdit.pageTitleEdit') : t('screens.workoutEdit.pageTitleNew')}</title>
+        <meta name="description" content={t('screens.workoutEdit.pageDescription')} />
+      </Helmet>
       <header className="py-4 flex items-center gap-3">
         <button
           type="button"
           onClick={() => navigate('/')}
           className="w-10 h-10 flex items-center justify-center rounded-lg text-text-muted hover:bg-surface"
+          aria-label={t('navigation.goBack')}
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <h2 className="text-xl font-bold truncate">{existing ? 'Edit Workout' : 'New Workout'}</h2>
+        <h2 className="text-xl font-bold truncate">{existing ? t('screens.workoutEdit.titleEdit') : t('screens.workoutEdit.titleNew')}</h2>
       </header>
 
       <div className="flex flex-col gap-5 flex-1 overflow-y-auto scrollbar-hide pb-4">
         <label className="flex flex-col gap-1">
-          <span className="text-sm text-text-muted">Name</span>
+          <span className="text-sm text-text-muted">{t('labels.name')}</span>
           <input
             type="text"
             value={form.name}
@@ -232,14 +240,14 @@ export function WorkoutEditScreen() {
               checkBlank('name', e.target.value);
             }}
             onBlur={(e) => checkBlank('name', e.target.value)}
-            placeholder="e.g. Upper Body"
+            placeholder={t('screens.workoutEdit.namePlaceholder')}
             className={textClass(nameError)}
           />
-          {nameError && <span className="text-xs text-red-400">Name is required</span>}
+          {nameError && <span className="text-xs text-red-400">{t('validation.nameRequired')}</span>}
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-sm text-text-muted">Rounds</span>
+          <span className="text-sm text-text-muted">{t('labels.rounds')}</span>
           <input
             type="text"
             inputMode="numeric"
@@ -251,10 +259,10 @@ export function WorkoutEditScreen() {
             onBlur={(e) => checkBlank('rounds', e.target.value)}
             className={numClass(roundsError)}
           />
-          {roundsError && <span className="text-xs text-red-400">Value is required</span>}
+          {roundsError && <span className="text-xs text-red-400">{t('validation.valueRequired')}</span>}
         </label>
         <label className="flex flex-col gap-1">
-          <span className="text-sm text-text-muted">Rest between rounds (sec)</span>
+          <span className="text-sm text-text-muted">{t('screens.workoutEdit.restBetweenRoundsLabel')}</span>
           <input
             type="text"
             inputMode="numeric"
@@ -266,11 +274,11 @@ export function WorkoutEditScreen() {
             onBlur={(e) => checkBlank('restBetweenRounds', e.target.value)}
             className={numClass(restRoundError)}
           />
-          {restRoundError && <span className="text-xs text-red-400">Value is required</span>}
+          {restRoundError && <span className="text-xs text-red-400">{t('validation.valueRequired')}</span>}
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-sm text-text-muted">Rest between exercises (sec)</span>
+          <span className="text-sm text-text-muted">{t('screens.workoutEdit.restBetweenExercisesLabel')}</span>
           <input
             type="text"
             inputMode="numeric"
@@ -282,12 +290,12 @@ export function WorkoutEditScreen() {
             onBlur={(e) => checkBlank('restSeconds', e.target.value)}
             className={numClass(restExError)}
           />
-          {restExError && <span className="text-xs text-red-400">Value is required</span>}
+          {restExError && <span className="text-xs text-red-400">{t('validation.valueRequired')}</span>}
         </label>
 
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-text-muted">Exercises</span>
+            <span className="text-sm text-text-muted">{t('screens.workoutActive.exercisesLabel')}</span>
             <div className="flex items-center gap-2">
               {!existing && defaultWorkouts.length > 0 && (
                 <button
@@ -295,7 +303,7 @@ export function WorkoutEditScreen() {
                   onClick={() => setShowImportModal(true)}
                   className="text-sm text-text-muted hover:text-text px-2 py-1 rounded-lg hover:bg-surface transition-colors"
                 >
-                  Import template
+                  {t('screens.workoutEdit.importTemplate')}
                 </button>
               )}
               <button
@@ -303,14 +311,14 @@ export function WorkoutEditScreen() {
                 onClick={() => dispatch({ type: 'ADD_EXERCISE' })}
                 className="text-sm text-primary font-medium px-3 py-1 rounded-lg hover:bg-primary/10"
               >
-                + Add
+                {t('screens.workoutEdit.addExercise')}
               </button>
             </div>
           </div>
           <div className="flex items-center gap-1 px-0.5">
             <span className="w-[72px] shrink-0" />
-            <span className="text-xs text-text-muted flex-1 min-w-0">Name</span>
-            <span className="text-xs text-text-muted w-16 text-center">Sec</span>
+            <span className="text-xs text-text-muted flex-1 min-w-0">{t('labels.name')}</span>
+            <span className="text-xs text-text-muted w-16 text-center">{t('labels.seconds')}</span>
             <span className="w-10 shrink-0" />
           </div>
           {form.exercises.map((ex, i) => (
@@ -343,7 +351,7 @@ export function WorkoutEditScreen() {
             onClick={handleDelete}
             className="px-4 py-4 rounded-xl bg-red-500/20 text-red-400 font-semibold border border-red-500/30"
           >
-            Delete
+            {t('actions.delete')}
           </button>
         )}
         <button
@@ -356,16 +364,16 @@ export function WorkoutEditScreen() {
               : 'bg-primary text-background'
           }`}
         >
-          Save
+          {t('actions.save')}
         </button>
       </div>
 
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
           <div className="bg-surface rounded-xl p-6 w-full max-w-sm flex flex-col gap-4">
-            <h3 className="text-lg font-semibold">Delete Workout?</h3>
+            <h3 className="text-lg font-semibold">{t('screens.workoutEdit.deleteConfirmTitle')}</h3>
             <p className="text-sm text-text-muted">
-              This will permanently delete "{form.name || 'this workout'}". This action cannot be undone.
+              {t('screens.workoutEdit.deleteConfirmMessage', { name: form.name || 'this workout' })}
             </p>
             <div className="flex gap-3">
               <button
@@ -373,14 +381,14 @@ export function WorkoutEditScreen() {
                 onClick={() => setShowDeleteConfirm(false)}
                 className="flex-1 py-3 rounded-xl bg-text-muted/20 text-text font-semibold"
               >
-                Cancel
+                {t('actions.cancel')}
               </button>
               <button
                 type="button"
                 onClick={confirmDelete}
                 className="flex-1 py-3 rounded-xl bg-red-500 text-white font-semibold"
               >
-                Delete
+                {t('actions.delete')}
               </button>
             </div>
           </div>
@@ -390,9 +398,9 @@ export function WorkoutEditScreen() {
       {showImportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
           <div className="bg-surface rounded-xl p-6 w-full max-w-sm flex flex-col gap-4 max-h-[70vh]">
-            <h3 className="text-lg font-semibold">Import from Template</h3>
+            <h3 className="text-lg font-semibold">{t('screens.workoutEdit.importModalTitle')}</h3>
             <p className="text-sm text-text-muted">
-              Select a template to pre-fill the exercises, rest times, and rounds.
+              {t('screens.workoutEdit.importModalDescription')}
             </p>
             <div className="flex flex-col gap-2 overflow-y-auto">
               {defaultWorkouts.map((dw) => (
@@ -415,10 +423,10 @@ export function WorkoutEditScreen() {
                   <div>
                     <p className="text-sm font-medium">{dw.name}</p>
                     <p className="text-xs text-text-muted">
-                      {dw.exercises.length} exercises &middot; {dw.rounds} round{dw.rounds !== 1 ? 's' : ''}
+                      {t('labels.exercises', { count: dw.exercises.length })} &middot; {t('labels.rounds', { count: dw.rounds })}
                     </p>
                   </div>
-                  <span className="text-xs text-primary font-medium">Import</span>
+                  <span className="text-xs text-primary font-medium">{t('actions.import')}</span>
                 </button>
               ))}
             </div>
@@ -427,7 +435,7 @@ export function WorkoutEditScreen() {
               onClick={() => setShowImportModal(false)}
               className="py-3 rounded-xl bg-text-muted/20 text-text font-semibold"
             >
-              Cancel
+              {t('actions.cancel')}
             </button>
           </div>
         </div>

@@ -1,4 +1,5 @@
-import { type WorkoutConfig } from '../types';
+import { useTranslation } from 'react-i18next';
+import type { WorkoutConfig } from '../types';
 
 interface Props {
   workout: WorkoutConfig;
@@ -7,6 +8,7 @@ interface Props {
 }
 
 export function WorkoutSetCard({ workout, onEdit, onPlay }: Props) {
+  const { t } = useTranslation();
   const totalExercises = workout.exercises.length;
 
   return (
@@ -24,8 +26,9 @@ export function WorkoutSetCard({ workout, onEdit, onPlay }: Props) {
         <div className="min-w-0">
           <h3 className="text-lg font-semibold truncate">{workout.name}</h3>
           <p className="text-sm text-text-muted">
-            {totalExercises} exercise{totalExercises !== 1 ? 's' : ''} &middot;
-            {' '}{workout.rounds} round{workout.rounds !== 1 ? 's' : ''}
+            {t('labels.exercises', { count: totalExercises })}
+            {' · '}
+            {t('labels.rounds', { count: workout.rounds })}
           </p>
         </div>
       </button>

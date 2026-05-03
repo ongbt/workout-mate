@@ -1,7 +1,9 @@
 import { type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuthActions } from '@convex-dev/auth/react';
 
 export function Layout({ children }: { children: ReactNode }) {
+  const { t } = useTranslation();
   const { signOut } = useAuthActions();
 
   return (
@@ -12,10 +14,12 @@ export function Layout({ children }: { children: ReactNode }) {
           onClick={() => void signOut()}
           className="text-xs text-text-muted hover:text-text px-2 py-1 rounded-lg hover:bg-surface transition-colors"
         >
-          Sign out
+          {t('actions.signOut')}
         </button>
       </div>
-      {children}
+      <main className="flex flex-col flex-1">
+        {children}
+      </main>
     </div>
   );
 }

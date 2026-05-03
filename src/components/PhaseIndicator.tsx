@@ -1,11 +1,5 @@
+import { useTranslation } from 'react-i18next';
 import type { WorkoutPhase } from '../types';
-
-const LABELS: Record<WorkoutPhase, string> = {
-  idle: 'Ready',
-  exercise: 'Exercise',
-  rest: 'Rest',
-  finished: 'Done',
-};
 
 const COLORS: Record<WorkoutPhase, string> = {
   idle: 'bg-text-muted',
@@ -19,11 +13,13 @@ interface Props {
 }
 
 export function PhaseIndicator({ phase }: Props) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex items-center justify-center gap-2">
       <span className={`w-3 h-3 rounded-full ${COLORS[phase]}`} />
       <span className="text-sm font-semibold uppercase tracking-wider text-text-muted">
-        {LABELS[phase]}
+        {t(`components.phaseIndicator.${phase}`)}
       </span>
     </div>
   );

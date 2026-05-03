@@ -1,17 +1,24 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { Helmet } from 'react-helmet-async';
 import { useWorkouts } from '../hooks/useWorkouts';
 import { Layout } from '../components/Layout';
 import { WorkoutSetCard } from '../components/WorkoutSetCard';
 import { EmptyState } from '../components/EmptyState';
 
 export function HomeScreen() {
+  const { t } = useTranslation();
   const { workouts } = useWorkouts();
   const navigate = useNavigate();
 
   return (
     <Layout>
+      <Helmet>
+        <title>{t('screens.home.pageTitle')}</title>
+        <meta name="description" content={t('screens.home.pageDescription')} />
+      </Helmet>
       <header className="py-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Workout Mate</h1>
+        <h1 className="text-2xl font-bold">{t('app.title')}</h1>
       </header>
 
       {workouts.length === 0 ? (
@@ -36,7 +43,7 @@ export function HomeScreen() {
           onClick={() => navigate('/workout/new')}
           className="w-full py-4 rounded-xl bg-primary text-background font-bold text-lg"
         >
-          Create New Workout
+          {t('screens.home.createNew')}
         </button>
       </div>
     </Layout>

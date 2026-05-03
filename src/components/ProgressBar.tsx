@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 interface Props {
   currentRound: number;
   totalRounds: number;
@@ -6,6 +8,7 @@ interface Props {
 }
 
 export function ProgressBar({ currentRound, totalRounds, currentExerciseIndex, totalExercises }: Props) {
+  const { t } = useTranslation();
   const totalSteps = totalRounds * totalExercises;
   const currentStep = (currentRound - 1) * totalExercises + currentExerciseIndex;
   const pct = totalSteps > 0 ? (currentStep / totalSteps) * 100 : 0;
@@ -19,8 +22,8 @@ export function ProgressBar({ currentRound, totalRounds, currentExerciseIndex, t
         />
       </div>
       <div className="flex justify-between w-full text-xs text-text-muted">
-        <span>Round {currentRound}/{totalRounds}</span>
-        <span>Ex {currentExerciseIndex + 1}/{totalExercises}</span>
+        <span>{t('components.progressBar.round', { current: currentRound, total: totalRounds })}</span>
+        <span>{t('components.progressBar.exercise', { current: currentExerciseIndex + 1, total: totalExercises })}</span>
       </div>
     </div>
   );
