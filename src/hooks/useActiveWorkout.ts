@@ -11,7 +11,7 @@ export function useActiveWorkout(config: WorkoutConfig) {
   const [phase, setPhase] = useState<WorkoutPhase>('idle');
   const [currentRound, setCurrentRound] = useState(1);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-  const { speak, isSpeaking } = useSpeechSynthesis();
+  const { speak, cancel: cancelSpeech, isSpeaking } = useSpeechSynthesis();
   const beep = useBeep();
   const wakeLock = useWakeLock();
   const configRef = useRef(config);
@@ -117,6 +117,9 @@ export function useActiveWorkout(config: WorkoutConfig) {
   const { timeRemainingMs, isRunning, start: startTimer, pause, resume, stop: stopTimer } = useTimer(handleTimerComplete);
   startTimerRef.current = startTimer;
 
+  // Cancel speech on unmount so audio doesn't outlive the component
+  useEffect(() => () => cancelSpeech(), [cancelSpeech]);
+
   const prevSecondsRef = useRef(-1);
 
   useEffect(() => {
@@ -165,12 +168,13 @@ export function useActiveWorkout(config: WorkoutConfig) {
   }, [resume, wakeLock]);
 
   const handleStop = useCallback(() => {
+    cancelSpeech();
     wakeLock.release();
     stopTimer();
     setPhase('idle');
     setCurrentRound(1);
     setCurrentExerciseIndex(0);
-  }, [stopTimer, wakeLock]);
+  }, [stopTimer, wakeLock, cancelSpeech]);
 
   const handleSkip = useCallback(() => {
     stopTimer();
