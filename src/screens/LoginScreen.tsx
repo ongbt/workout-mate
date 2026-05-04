@@ -1,10 +1,24 @@
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { useAuthActions } from '@convex-dev/auth/react';
+import { useError } from '../context/ErrorContext';
 
 export function LoginScreen() {
   const { t } = useTranslation();
   const { signIn } = useAuthActions();
+  const { showError } = useError();
+
+  const handleSignIn = useCallback(async () => {
+    try {
+      await signIn('google');
+    } catch (e) {
+      showError(
+        t('errors.signInFailed'),
+        e instanceof Error ? e.message : t('errors.tryAgain'),
+      );
+    }
+  }, [signIn, showError, t]);
 
   return (
     <div className="flex flex-col items-center justify-center h-full gap-8 px-5">
@@ -25,7 +39,7 @@ export function LoginScreen() {
       </div>
       <button
         type="button"
-        onClick={() => void signIn('google')}
+        onClick={handleSignIn}
         className="flex items-center gap-3 px-6 py-3.5 rounded-xl bg-surface border border-text-muted/20 text-text font-medium hover:bg-text-muted/10 transition-colors cursor-pointer"
       >
         <svg className="w-5 h-5" viewBox="0 0 24 24">

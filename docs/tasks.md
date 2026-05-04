@@ -36,7 +36,7 @@
 - [x] **Prettier** — Add `prettier` + `prettier-plugin-tailwindcss` as devDeps. Create `.prettierrc` and `.prettierignore`. Add `format`/`format:check` scripts to `package.json`. Add `format:check` to CI workflow. Update `lint-staged` to run Prettier on staged files.
 - [ ] **Framer Motion** — Add `framer-motion` dependency. Animate phase transitions in `WorkoutActiveScreen` (idle → exercise → rest → finished) using `AnimatePresence` + `motion.div`. Animate timer display, phase indicator, and finished screen.
 - [ ] **Centralized auth hook** — Create `src/hooks/useAuth.ts` that wraps `useConvexAuth` + user profile query. Components should import `useAuth` instead of calling `useConvexAuth`/`useAuthActions` directly.
-- [ ] **Error handling UI** — Create reusable `ErrorDialog` component (animated modal with title, message, close). Create `ErrorBoundary` class component and wrap the router. Wrap all mutation calls in try/catch with error dialog state.
+- [x] **Error handling UI** — Create reusable `ErrorDialog` component (animated modal with title, message, close). Create `ErrorBoundary` class component and wrap the router. Wrap all mutation calls in try/catch with error dialog state.
 - [x] **Lazy-loaded routes** — Wrap each screen import in `React.lazy()` in `App.tsx`. Wrap `Routes` in a second `Suspense` with `PageSpinner` fallback. Extract `PageSpinner` into a shared component.
 - [ ] **Multi-provider auth** — Add `Password` and `Anonymous` providers to `convex/auth.ts` (alongside existing Google). Add `signIn('password', {...})` and `signIn('anonymous')` flows to `LoginScreen`.
 - [x] **Multi-browser E2E** — Add Firefox project to `playwright.config.ts`. Optionally add `mobile-chrome` (Pixel 5) for mobile-specific testing.

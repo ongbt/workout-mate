@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { v4 as uuid } from 'uuid';
 import { useWorkouts, useDefaultWorkouts } from '../hooks/useWorkouts';
+import { useError } from '../context/ErrorContext';
 import { Layout } from '../components/Layout';
 import { ExerciseFormRow } from '../components/ExerciseFormRow';
 import { DEFAULT_EXERCISE_DURATION, DEFAULT_REST_DURATION, DEFAULT_ROUNDS, DEFAULT_REST_BETWEEN_ROUNDS, MIN_EXERCISES } from '../constants';
@@ -127,6 +128,7 @@ export function WorkoutEditScreen() {
   const { workoutId } = useParams<{ workoutId: string }>();
   const navigate = useNavigate();
   const { workouts, addWorkout, updateWorkout, deleteWorkout } = useWorkouts();
+  const { showError } = useError();
 
   const existing = workoutId ? workouts.find((w) => w.id === workoutId) : undefined;
   const [form, dispatch] = useReducer(formReducer, existing, initForm);
@@ -160,7 +162,7 @@ export function WorkoutEditScreen() {
     setBlanks(b);
   }, [form]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const rounds = parseMinOne(form.rounds);
     const restSec = parsePositiveInt(form.restSeconds);
     const restRound = parsePositiveInt(form.restBetweenRoundsSeconds);
@@ -183,20 +185,34 @@ export function WorkoutEditScreen() {
       rounds,
     };
 
-    if (existing) {
-      updateWorkout(config);
-    } else {
-      addWorkout(config);
+    try {
+      if (existing) {
+        await updateWorkout(config);
+      } else {
+        await addWorkout(config);
+      }
+      navigate('/');
+    } catch (e) {
+      showError(
+        t('errors.mutationFailed'),
+        e instanceof Error ? e.message : t('errors.tryAgain'),
+      );
     }
-    navigate('/');
   };
 
   const handleDelete = () => setShowDeleteConfirm(true);
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (existing) {
-      deleteWorkout(existing.id);
-      navigate('/');
+      try {
+        await deleteWorkout(existing.id);
+        navigate('/');
+      } catch (e) {
+        showError(
+          t('errors.mutationFailed'),
+          e instanceof Error ? e.message : t('errors.tryAgain'),
+        );
+      }
     }
   };
 

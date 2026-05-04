@@ -1,9 +1,12 @@
 import { useCallback, useEffect } from 'react';
 import { useQuery, useMutation } from 'convex/react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../convex/_generated/api';
+import type { Doc, Id } from '../../convex/_generated/dataModel';
+import { useError } from '../context/ErrorContext';
 import type { WorkoutConfig } from '../types';
 
-function toWorkoutConfig(doc: any): WorkoutConfig {
+function toWorkoutConfig(doc: Doc<'workouts'> | Doc<'defaultWorkouts'>): WorkoutConfig {
   return {
     id: doc._id,
     name: doc.name,
@@ -24,8 +27,7 @@ export function useWorkouts() {
 
   const addWorkout = useCallback(
     async (workout: Omit<WorkoutConfig, 'id'>) => {
-      const { id: _, ...fields } = workout as any;
-      await createMutation(fields);
+      await createMutation(workout);
     },
     [createMutation],
   );
@@ -33,14 +35,14 @@ export function useWorkouts() {
   const updateWorkout = useCallback(
     async (workout: WorkoutConfig) => {
       const { id, ...fields } = workout;
-      await updateMutation({ id: id as any, ...fields });
+      await updateMutation({ id: id as Id<'workouts'>, ...fields });
     },
     [updateMutation],
   );
 
   const deleteWorkout = useCallback(
     async (id: string) => {
-      await removeMutation({ id: id as any });
+      await removeMutation({ id: id as Id<'workouts'> });
     },
     [removeMutation],
   );
@@ -51,12 +53,19 @@ export function useWorkouts() {
 export function useDefaultWorkouts(): WorkoutConfig[] {
   const data = useQuery(api.workouts.getDefaults);
   const seed = useMutation(api.workouts.seedDefaults);
+  const { showError } = useError();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (data !== undefined && data.length === 0) {
-      seed();
+      seed().catch((e: unknown) => {
+        showError(
+          t('errors.unexpected'),
+          e instanceof Error ? e.message : t('errors.tryAgain'),
+        );
+      });
     }
-  }, [data, seed]);
+  }, [data, seed, showError, t]);
 
   return (data ?? []).map(toWorkoutConfig);
 }

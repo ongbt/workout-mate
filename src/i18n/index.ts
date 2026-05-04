@@ -36,6 +36,10 @@ const en = {
     'workout.stopConfirmTitle': 'Stop Workout?',
     'workout.stopConfirmMessage': 'Your progress will be lost. Are you sure you want to stop?',
     'workout.continue': 'Continue Workout',
+    'errors.unexpected': 'Something went wrong',
+    'errors.tryAgain': 'Please try again. If the problem persists, try reloading the app.',
+    'errors.mutationFailed': 'Save Failed',
+    'errors.signInFailed': 'Sign In Failed',
   },
   screens: {
     'home.createNew': 'Create New Workout',

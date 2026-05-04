@@ -6,6 +6,7 @@ import { ConvexReactClient } from 'convex/react'
 import './index.css'
 import './i18n'
 import { LanguageWatcher } from './components/LanguageWatcher'
+import { ErrorProvider } from './context/ErrorContext'
 import App from './App.tsx'
 
 const convex = new ConvexReactClient(import.meta.env['VITE_CONVEX_URL']!)
@@ -20,7 +21,9 @@ createRoot(document.getElementById('root')!).render(
       <HelmetProvider>
         <LanguageWatcher>
           <ConvexAuthProvider client={convex}>
-            <App />
+            <ErrorProvider>
+              <App />
+            </ErrorProvider>
           </ConvexAuthProvider>
         </LanguageWatcher>
       </HelmetProvider>

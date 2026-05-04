@@ -1,17 +1,30 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthActions } from '@convex-dev/auth/react';
+import { useError } from '../context/ErrorContext';
 
 export function Layout({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
   const { signOut } = useAuthActions();
+  const { showError } = useError();
+
+  const handleSignOut = useCallback(async () => {
+    try {
+      await signOut();
+    } catch (e) {
+      showError(
+        t('errors.unexpected'),
+        e instanceof Error ? e.message : t('errors.tryAgain'),
+      );
+    }
+  }, [signOut, showError, t]);
 
   return (
     <div className="flex flex-col h-full max-w-lg mx-auto px-5 pb-safe">
       <div className="flex items-center justify-end py-2">
         <button
           type="button"
-          onClick={() => void signOut()}
+          onClick={handleSignOut}
           className="text-xs text-text-muted hover:text-text px-2 py-1 rounded-lg hover:bg-surface transition-colors"
         >
           {t('actions.signOut')}
