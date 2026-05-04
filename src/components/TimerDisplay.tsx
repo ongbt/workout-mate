@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { formatTime } from '../utils/formatTime';
 import { COUNTDOWN_WARN_THRESHOLD } from '../constants';
 
@@ -22,7 +23,12 @@ export function TimerDisplay({ timeRemainingMs, totalDurationMs, phase }: Props)
   const textColor = isWarn ? '#f87171' : strokeColor;
 
   return (
-    <div className="relative inline-flex items-center justify-center">
+    <motion.div
+      className="relative inline-flex items-center justify-center"
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1, transition: { duration: 0.2, ease: 'easeOut' } }}
+      exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.15, ease: 'easeIn' } }}
+    >
       <svg
         width={VIEWBOX}
         height={VIEWBOX}
@@ -59,6 +65,6 @@ export function TimerDisplay({ timeRemainingMs, totalDurationMs, phase }: Props)
       >
         {formatTime(timeRemainingMs)}
       </span>
-    </div>
+    </motion.div>
   );
 }

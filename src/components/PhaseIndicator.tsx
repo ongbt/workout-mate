@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { AnimatePresence, motion } from 'framer-motion';
 import type { WorkoutPhase } from '../types';
 
 const COLORS: Record<WorkoutPhase, string> = {
@@ -17,10 +18,20 @@ export function PhaseIndicator({ phase }: Props) {
 
   return (
     <div className="flex items-center justify-center gap-2">
-      <span className={`w-3 h-3 rounded-full ${COLORS[phase]}`} />
-      <span className="text-sm font-semibold uppercase tracking-wider text-text-muted">
-        {t(`components.phaseIndicator.${phase}`)}
-      </span>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={phase}
+          className="flex items-center gap-2"
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0, transition: { duration: 0.15 } }}
+          exit={{ opacity: 0, y: 8, transition: { duration: 0.1 } }}
+        >
+          <span className={`w-3 h-3 rounded-full ${COLORS[phase]}`} />
+          <span className="text-sm font-semibold uppercase tracking-wider text-text-muted">
+            {t(`components.phaseIndicator.${phase}`)}
+          </span>
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }
