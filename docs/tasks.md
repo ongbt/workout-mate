@@ -5,8 +5,8 @@
 - [x] **README.md** — How to run + project overview (required by global rules)
 - [x] **LICENSE** — Add license file at project root
 - [x] **Husky + lint-staged** — Pre-commit hook for linting on staged files
-- [ ] **E2E tests** — Add `playwright.config.ts`, `e2e/` directory, auth + home specs
-- [ ] **E2E in CI** — Add `e2e` job to `.github/workflows/ci.yml` (needs `check` job)
+- [x] **E2E tests** — Add `playwright.config.ts`, `e2e/` directory, auth + home specs
+- [x] **E2E in CI** — Add `e2e` job to `.github/workflows/ci.yml` (needs `check` job)
 
 ## Medium — Missing services
 

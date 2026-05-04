@@ -23,6 +23,10 @@ coverage
 *.sln
 *.sw?
 
+# Playwright
+playwright-report/
+test-results/
+
 # Claude local settings
 .claude/settings.local.json
 client_secret_*.json
