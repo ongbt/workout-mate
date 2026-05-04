@@ -19,21 +19,21 @@ patterns proven across multiple Convex + React apps.
 
 ### 0.1 Universal rules
 
-| Rule                                        | Why                                                                                          |
-| ------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `pnpm install --frozen-lockfile` in CI      | Prevents silent lockfile drift between local and CI                                          |
-| `strictPort: true` in Vite config           | Prevents silent port switches that break WebSocket/OAuth redirects                           |
-| `@/*` path alias                            | Eliminates `../../../` relative import chains                                                |
-| `cn()` utility (clsx + tailwind-merge)      | Single source of truth for conditional classes; resolves Tailwind conflicts                  |
-| `React.lazy()` per route                    | Code-splits each page; costs 3 lines per route, pays for itself after 3 routes               |
-| ESLint flat config                          | Legacy `.eslintrc` format is deprecated; flat config is the only forward path                |
-| Pre-push lint + test gate                   | Catches non-auto-fixable lint errors that `lint-staged` misses; blocks broken code before CI |
-| Prettier with `prettier-plugin-tailwindcss` | Consistent formatting; Tailwind class sorting prevents diff noise                            |
-| `html[lang]` synced to i18n                 | Required for accessibility and SEO                                                           |
-| `<title>` + meta description per page       | Every route needs its own head tags (via `react-helmet-async`)                               |
-| Privacy + Terms pages                       | Legal requirement for app stores, OAuth verification, and compliance                         |
-| Touch targets ≥ 44×44px                     | WCAG 2.1 AA minimum for mobile                                                               |
-| `aria-label` on icon-only buttons           | Screen readers need labels                                                                   |
+| Rule                                        | Why                                                                                                                |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `pnpm install --frozen-lockfile` in CI      | Prevents silent lockfile drift between local and CI                                                                |
+| `strictPort: true` in Vite config           | Prevents silent port switches that break WebSocket/OAuth redirects                                                 |
+| `@/*` path alias                            | Eliminates `../../../` relative import chains                                                                      |
+| `cn()` utility (clsx + tailwind-merge)      | Single source of truth for conditional classes; resolves Tailwind conflicts                                        |
+| `React.lazy()` per route                    | Code-splits each page; costs 3 lines per route, pays for itself after 3 routes                                     |
+| ESLint flat config                          | Legacy `.eslintrc` format is deprecated; flat config is the only forward path                                      |
+| Pre-push lint + format + test gate          | Catches unformatted files and non-auto-fixable lint errors that `lint-staged` misses; blocks broken code before CI |
+| Prettier with `prettier-plugin-tailwindcss` | Consistent formatting; Tailwind class sorting prevents diff noise                                                  |
+| `html[lang]` synced to i18n                 | Required for accessibility and SEO                                                                                 |
+| `<title>` + meta description per page       | Every route needs its own head tags (via `react-helmet-async`)                                                     |
+| Privacy + Terms pages                       | Legal requirement for app stores, OAuth verification, and compliance                                               |
+| Touch targets ≥ 44×44px                     | WCAG 2.1 AA minimum for mobile                                                                                     |
+| `aria-label` on icon-only buttons           | Screen readers need labels                                                                                         |
 
 ### 0.2 Convex conventions
 
@@ -156,15 +156,16 @@ Husky creates hook scripts in `.husky/`. Two hooks are required:
 pnpm exec lint-staged
 ```
 
-**`.husky/pre-push`** — gate that runs full lint + tests before push:
+**`.husky/pre-push`** — gate that runs full lint + format check + tests before push:
 
 ```
-pnpm lint && pnpm test
+pnpm lint && pnpm format:check && pnpm test
 ```
 
-Why both: `lint-staged` only touches staged files and uses `--fix`, but
-non-auto-fixable lint errors (e.g., `react-hooks/refs`) can still slip through.
-The pre-push hook runs `eslint .` on the entire project, catching these before CI.
+Why three gates: `lint-staged` only runs on staged files (not the full project), and it
+skips non-auto-fixable lint errors. Prettier auto-formats on commit via `lint-staged`,
+but if someone bypasses the commit hook (e.g., `--no-verify`), the pre-push hook catches
+unformatted files before CI. The test gate blocks broken code from reaching CI.
 
 ---
 
