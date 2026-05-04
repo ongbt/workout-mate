@@ -61,6 +61,6 @@ describe('App', () => {
   it('renders home screen at / when authenticated', async () => {
     mockUseConvexAuth.mockReturnValue({ isLoading: false, isAuthenticated: true });
     await renderApp();
-    expect(screen.getByText('Home Screen')).toBeDefined();
+    expect(await screen.findByText('Home Screen')).toBeDefined();
   });
 });
