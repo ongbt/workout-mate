@@ -11,39 +11,33 @@ export function useActiveWorkout(config: WorkoutConfig) {
   const [phase, setPhase] = useState<WorkoutPhase>('idle');
   const [currentRound, setCurrentRound] = useState(1);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-  const { speak, isSpeaking } = useSpeechSynthesis();
+  const [restDurationMs, setRestDurationMs] = useState(0);
+  const { speak, cancel: cancelSpeech, isSpeaking } = useSpeechSynthesis();
   const beep = useBeep();
   const wakeLock = useWakeLock();
+
   const configRef = useRef(config);
-  configRef.current = config;
-
   const phaseRef = useRef(phase);
-  phaseRef.current = phase;
   const roundRef = useRef(currentRound);
-  roundRef.current = currentRound;
   const idxRef = useRef(currentExerciseIndex);
-  idxRef.current = currentExerciseIndex;
 
-  const restDurationRef = useRef(0);
+  // Sync refs for use in callbacks that need latest values without re-creating
+  useEffect(() => {
+    configRef.current = config;
+  });
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
+  useEffect(() => {
+    roundRef.current = currentRound;
+  }, [currentRound]);
+  useEffect(() => {
+    idxRef.current = currentExerciseIndex;
+  }, [currentExerciseIndex]);
+
   const suppressFirstReadoutRef = useRef(false);
   const startTimerRef = useRef<(ms: number) => void>(() => {});
 
-  const getCurrentExercise = useCallback(() => {
-    return configRef.current.exercises[idxRef.current];
-  }, []);
-
-  const getNextExercise = useCallback((): Exercise | null => {
-    const cfg = configRef.current;
-    const idx = idxRef.current;
-    const nextIdx = idx + 1;
-    if (nextIdx < cfg.exercises.length) return cfg.exercises[nextIdx]!;
-    const round = roundRef.current;
-    if (round < cfg.rounds) return cfg.exercises[0]!;
-    return null;
-  }, []);
-
-  // Start the timer after speech announcement completes.
-  // Optional afterText is spoken while the timer is running (non-blocking).
   const startTimerAfterSpeech = useCallback(
     (text: string, durationMs: number, afterText?: string) => {
       suppressFirstReadoutRef.current = true;
@@ -64,8 +58,11 @@ export function useActiveWorkout(config: WorkoutConfig) {
     if (p === 'exercise') {
       const isLastExercise = idx >= cfg.exercises.length - 1;
       const isLastRound = round >= cfg.rounds;
-      const restSecs = isLastExercise && !isLastRound ? cfg.restBetweenRoundsSeconds : cfg.restSeconds;
-      restDurationRef.current = restSecs * 1000;
+      const restSecs =
+        isLastExercise && !isLastRound
+          ? cfg.restBetweenRoundsSeconds
+          : cfg.restSeconds;
+      setRestDurationMs(restSecs * 1000);
       setPhase('rest');
       if (isLastExercise) {
         startTimerAfterSpeech(
@@ -108,14 +105,26 @@ export function useActiveWorkout(config: WorkoutConfig) {
     setPhase('exercise');
     const nextEx = cfg.exercises[nextIdx]!;
     startTimerAfterSpeech(`${nextEx.name}. Go!`, nextEx.durationSeconds * 1000);
-  }, [speak, startTimerAfterSpeech]);
+  }, [speak, startTimerAfterSpeech, wakeLock]);
 
   const handleTimerComplete = useCallback(() => {
     advancePhase();
   }, [advancePhase]);
 
-  const { timeRemainingMs, isRunning, start: startTimer, pause, resume, stop: stopTimer } = useTimer(handleTimerComplete);
-  startTimerRef.current = startTimer;
+  const {
+    timeRemainingMs,
+    isRunning,
+    start: startTimer,
+    pause,
+    resume,
+    stop: stopTimer,
+  } = useTimer(handleTimerComplete);
+
+  useEffect(() => {
+    startTimerRef.current = startTimer;
+  }, [startTimer]);
+
+  useEffect(() => () => cancelSpeech(), [cancelSpeech]);
 
   const prevSecondsRef = useRef(-1);
 
@@ -130,7 +139,6 @@ export function useActiveWorkout(config: WorkoutConfig) {
       return;
     }
 
-    // Suppress countdown while an announcement is playing
     if (isSpeaking) return;
 
     prevSecondsRef.current = secs;
@@ -165,12 +173,13 @@ export function useActiveWorkout(config: WorkoutConfig) {
   }, [resume, wakeLock]);
 
   const handleStop = useCallback(() => {
+    cancelSpeech();
     wakeLock.release();
     stopTimer();
     setPhase('idle');
     setCurrentRound(1);
     setCurrentExerciseIndex(0);
-  }, [stopTimer, wakeLock]);
+  }, [stopTimer, wakeLock, cancelSpeech]);
 
   const handleSkip = useCallback(() => {
     stopTimer();
@@ -187,19 +196,30 @@ export function useActiveWorkout(config: WorkoutConfig) {
     totalExercises: config.exercises.length,
   };
 
+  const currentExercise = config.exercises[currentExerciseIndex] ?? null;
+
+  const nextExercise = ((): Exercise | null => {
+    const nextIdx = currentExerciseIndex + 1;
+    if (nextIdx < config.exercises.length) return config.exercises[nextIdx]!;
+    if (currentRound < config.rounds) return config.exercises[0]!;
+    return null;
+  })();
+
   const totalDurationMs =
     phase === 'exercise'
-      ? (getCurrentExercise()?.durationSeconds ?? 0) * 1000
+      ? (currentExercise?.durationSeconds ?? 0) * 1000
       : phase === 'rest'
-        ? restDurationRef.current
+        ? restDurationMs
         : 0;
+
+  const showExerciseInfo = phase === 'exercise' || phase === 'rest';
 
   return {
     sessionState,
     totalDurationMs,
     isRunning,
-    currentExercise: phase === 'exercise' || phase === 'rest' ? getCurrentExercise() : null,
-    nextExercise: phase === 'exercise' || phase === 'rest' ? getNextExercise() : null,
+    currentExercise: showExerciseInfo ? currentExercise : null,
+    nextExercise: showExerciseInfo ? nextExercise : null,
     handleStart,
     handlePause,
     handleResume,

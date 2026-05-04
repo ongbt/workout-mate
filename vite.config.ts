@@ -1,10 +1,30 @@
 /// <reference types="vitest/config" />
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
-import { VitePWA } from 'vite-plugin-pwa'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import { VitePWA } from 'vite-plugin-pwa';
+import path from 'node:path';
+
+const isE2E = process.env['VITE_E2E'] === 'true';
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+      ...(isE2E
+        ? {
+            'convex/react': path.resolve('e2e/mocks/convex-react.ts'),
+            '@convex-dev/auth/react': path.resolve(
+              'e2e/mocks/convex-auth-react.ts',
+            ),
+          }
+        : {}),
+    },
+  },
+  server: {
+    port: 5173,
+    strictPort: true,
+  },
   plugins: [
     react(),
     tailwindcss(),
@@ -21,7 +41,12 @@ export default defineConfig({
         orientation: 'portrait',
         start_url: '/',
         icons: [
-          { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
+          {
+            src: '/favicon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'any',
+          },
         ],
       },
       workbox: {
@@ -50,4 +75,4 @@ export default defineConfig({
       ],
     },
   },
-})
+});

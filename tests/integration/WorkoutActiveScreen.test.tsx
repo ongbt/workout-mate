@@ -90,12 +90,16 @@ describe('WorkoutActiveScreen', () => {
 
   it('shows exercises label text in idle phase', () => {
     const { container } = renderActive();
-    expect(container.textContent).toContain('screens.workoutActive.exercisesLabel');
+    expect(container.textContent).toContain(
+      'screens.workoutActive.exercisesLabel',
+    );
   });
 
   it('shows rest between exercises info', () => {
     const { getByText } = renderActive();
-    expect(getByText('screens.workoutActive.restBetweenExercises')).toBeDefined();
+    expect(
+      getByText('screens.workoutActive.restBetweenExercises'),
+    ).toBeDefined();
     expect(getByText('10s')).toBeDefined();
   });
 });

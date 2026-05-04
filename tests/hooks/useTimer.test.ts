@@ -81,7 +81,9 @@ describe('useTimer', () => {
 
     expect(result.current.isRunning).toBe(true);
     // Time should be close to the remaining after pause
-    expect(result.current.timeRemainingMs).toBeLessThanOrEqual(remainingAfter2s);
+    expect(result.current.timeRemainingMs).toBeLessThanOrEqual(
+      remainingAfter2s,
+    );
   });
 
   it('stops and resets timer', () => {

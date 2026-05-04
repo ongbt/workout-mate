@@ -12,6 +12,7 @@
 - **Prod**: `prod:rapid-gull-240`
 
 Use `--env-file .env.production` when deploying to prod. Env files:
+
 - `.env.local` — dev (default)
 - `.env.staging` — staging
 - `.env.production` — production

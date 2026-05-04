@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(gh pr list --base main --head staging 2>$null)",
+      "PowerShell(gh pr list --base main --state open 2>$null)",
+      "PowerShell(git remote get-url origin)",
+      "Bash(Test-Path \"c:\\\\Users\\\\bengt\\\\Projects\\\\workout-mate\\\\.husky\\\\\")",
+      "Bash(Get-ChildItem -Recurse -Name \"node_modules/@convex-dev/auth\" -Depth 2)",
+      "Bash(pnpm test:e2e)"
+    ]
+  }
+}

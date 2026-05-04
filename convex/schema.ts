@@ -1,6 +1,6 @@
-import { defineSchema, defineTable } from "convex/server";
-import { v } from "convex/values";
-import { authTables } from "@convex-dev/auth/server";
+import { defineSchema, defineTable } from 'convex/server';
+import { v } from 'convex/values';
+import { authTables } from '@convex-dev/auth/server';
 
 export default defineSchema({
   ...authTables,
@@ -17,8 +17,8 @@ export default defineSchema({
     restSeconds: v.number(),
     restBetweenRoundsSeconds: v.number(),
     rounds: v.number(),
-    userId: v.id("users"),
-  }).index("by_user", ["userId"]),
+    userId: v.id('users'),
+  }).index('by_user', ['userId']),
 
   defaultWorkouts: defineTable({
     name: v.string(),

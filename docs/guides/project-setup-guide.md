@@ -1,14 +1,68 @@
-# AI Project Setup Guide — React + Convex + Cloudflare Pages + Google Auth
+# Project Setup Guide — React + Convex + Cloudflare Pages + Google Auth
 
-This guide documents the exact steps and conventions for spinning up a new project
-with the following stack, derived from the **Workout Mate** project:
+This guide documents the canonical setup for new projects with this stack,
+incorporating best practices from **Workout Mate** and **Pingo**:
 
 - **Frontend**: React 19 + Vite + TypeScript (strict)
 - **Backend**: Convex (database, serverless functions, real-time)
-- **Auth**: Google OAuth via `@convex-dev/auth`
-- **CI**: GitHub Actions (build, lint, test)
+- **Auth**: Multi-provider via `@convex-dev/auth`
+- **CI**: GitHub Actions (build, lint, test, E2E)
 - **Deploy**: Cloudflare Pages (connected to GitHub, custom domain, `pnpm build`)
-- **Testing**: Vitest (unit) + Playwright (e2e)
+- **Testing**: Vitest (unit) + Playwright (E2E)
+
+---
+
+## 0. Guiding Principles
+
+These rules apply to every new project. They're not optional — each is backed by
+patterns proven across multiple Convex + React apps.
+
+### 0.1 Universal rules
+
+| Rule                                        | Why                                                                                                                |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `pnpm install --frozen-lockfile` in CI      | Prevents silent lockfile drift between local and CI                                                                |
+| `strictPort: true` in Vite config           | Prevents silent port switches that break WebSocket/OAuth redirects                                                 |
+| `@/*` path alias                            | Eliminates `../../../` relative import chains                                                                      |
+| `cn()` utility (clsx + tailwind-merge)      | Single source of truth for conditional classes; resolves Tailwind conflicts                                        |
+| `React.lazy()` per route                    | Code-splits each page; costs 3 lines per route, pays for itself after 3 routes                                     |
+| ESLint flat config                          | Legacy `.eslintrc` format is deprecated; flat config is the only forward path                                      |
+| Pre-push lint + format + test gate          | Catches unformatted files and non-auto-fixable lint errors that `lint-staged` misses; blocks broken code before CI |
+| Prettier with `prettier-plugin-tailwindcss` | Consistent formatting; Tailwind class sorting prevents diff noise                                                  |
+| `html[lang]` synced to i18n                 | Required for accessibility and SEO                                                                                 |
+| `<title>` + meta description per page       | Every route needs its own head tags (via `react-helmet-async`)                                                     |
+| Privacy + Terms pages                       | Legal requirement for app stores, OAuth verification, and compliance                                               |
+| Touch targets ≥ 44×44px                     | WCAG 2.1 AA minimum for mobile                                                                                     |
+| `aria-label` on icon-only buttons           | Screen readers need labels                                                                                         |
+
+### 0.2 Convex conventions
+
+| Rule                               | Why                                                                                     |
+| ---------------------------------- | --------------------------------------------------------------------------------------- |
+| `camelCase` column names in schema | Matches JS/TS convention; avoids impedance mismatch with frontend types                 |
+| `camelCase` in frontend types      | Same reason — one convention across the stack                                           |
+| Spread `authTables` in schema      | Required by `@convex-dev/auth` for user/session storage                                 |
+| Ownership check in every mutation  | Every mutation that reads user data must verify `userId` matches the authenticated user |
+| Idempotent seed mutations          | Check if data exists before inserting; safe to call repeatedly                          |
+| Separate file per domain entity    | `users.ts`, `games.ts`, `sheets.ts` — not one monolithic `mutations.ts`                 |
+
+### 0.3 Auth rules
+
+| Rule                                  | Why                                                                             |
+| ------------------------------------- | ------------------------------------------------------------------------------- |
+| Google OAuth + Email/Password minimum | Google-only excludes users; add password auth for reach                         |
+| Anonymous auth for quick onboarding   | Let users try the app before committing to sign-up                              |
+| Centralized `useAuth()` hook          | Wraps `useConvexAuth` + user profile query — one import everywhere              |
+| Auth guard in `App.tsx`               | Single gate that checks `isLoading` / `isAuthenticated` before rendering routes |
+| Client secret never committed         | `client_secret_*.json` in `.gitignore`; keys stored in Convex env vars          |
+
+### 0.4 Error handling rules
+
+| Rule                                 | Why                                                                        |
+| ------------------------------------ | -------------------------------------------------------------------------- |
+| Error boundary at router level       | Catches render crashes; shows recovery UI instead of white screen          |
+| Reusable `ErrorDialog` component     | Consistent error presentation; one animation/accessibility pattern         |
+| try/catch around every mutation call | Network failures, auth expiry, and Convex errors all surface through catch |
 
 ---
 
@@ -24,8 +78,26 @@ cd <project-name>
 ### 1.2 Install core dependencies
 
 ```bash
+# Runtime
 pnpm add react react-dom react-router-dom
 pnpm add convex @convex-dev/auth @auth/core
+
+# UI utilities (required)
+pnpm add clsx tailwind-merge
+
+# Animations (strongly recommended for UX)
+pnpm add framer-motion
+
+# Icons
+pnpm add lucide-react
+
+# i18n (required — start early)
+pnpm add i18next react-i18next i18next-browser-languagedetector
+
+# SEO
+pnpm add react-helmet-async
+
+# Dev tooling
 pnpm add -D vite typescript @vitejs/plugin-react
 ```
 
@@ -34,6 +106,8 @@ pnpm add -D vite typescript @vitejs/plugin-react
 ```bash
 pnpm add -D tailwindcss @tailwindcss/vite
 ```
+
+No PostCSS config needed — Tailwind v4's Vite plugin handles everything.
 
 ### 1.4 Install testing dependencies
 
@@ -46,14 +120,16 @@ pnpm add -D @playwright/test
 npx playwright install --with-deps
 ```
 
-### 1.5 Install linting
+### 1.5 Install linting & formatting
 
 ```bash
 pnpm add -D eslint @eslint/js typescript-eslint \
   eslint-plugin-react-hooks eslint-plugin-react-refresh globals
+
+pnpm add -D prettier prettier-plugin-tailwindcss
 ```
 
-### 1.6 Install PWA support (optional but recommended for mobile-first apps)
+### 1.6 Install PWA support (required for mobile-first apps)
 
 ```bash
 pnpm add -D vite-plugin-pwa workbox-window
@@ -64,6 +140,32 @@ pnpm add -D vite-plugin-pwa workbox-window
 ```bash
 pnpm add -D wrangler
 ```
+
+### 1.8 Install Git hooks
+
+```bash
+pnpm add -D husky lint-staged
+pnpm exec husky init
+```
+
+Husky creates hook scripts in `.husky/`. Two hooks are required:
+
+**`.husky/pre-commit`** — auto-fix staged files:
+
+```
+pnpm exec lint-staged
+```
+
+**`.husky/pre-push`** — gate that runs full lint + format check + tests before push:
+
+```
+pnpm lint && pnpm format:check && pnpm test
+```
+
+Why three gates: `lint-staged` only runs on staged files (not the full project), and it
+skips non-auto-fixable lint errors. Prettier auto-formats on commit via `lint-staged`,
+but if someone bypasses the commit hook (e.g., `--no-verify`), the pre-push hook catches
+unformatted files before CI. The test gate blocks broken code from reaching CI.
 
 ---
 
@@ -79,24 +181,34 @@ pnpm add -D wrangler
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "deploy:staging": "wrangler pages deploy dist --branch staging",
-    "deploy:prod": "wrangler pages deploy dist --branch main"
+    "deploy:prod": "wrangler pages deploy dist --branch main",
+    "prepare": "husky",
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild", "workerd"]
-  }
+    "onlyBuiltDependencies": ["esbuild", "workerd"],
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": ["eslint --fix", "prettier --write"],
+    "*.{json,css,md,html}": ["prettier --write"],
+  },
 }
 ```
 
 Key points:
+
 - `build` runs `tsc -b` **before** `vite build` for type-checking.
-- `test` runs Vitest headless; `test:watch` for development.
-- `deploy:staging` and `deploy:prod` are manual CLI deploys. In practice, Cloudflare
-  Pages auto-deploys from GitHub branches (see §4).
+- `format` / `format:check` for Prettier.
+- `prepare` runs Husky install after `pnpm install`.
+- `lint-staged` runs both ESLint and Prettier on staged files.
 
 ---
 
@@ -139,18 +251,25 @@ Use three tsconfig files with **project references**:
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src", "tests"]
 }
 ```
 
 Key flags:
+
 - `strict: true` — non-negotiable.
-- `noUncheckedIndexedAccess` — catches undefined from index access.
+- `noUncheckedIndexedAccess` — catches undefined from index access (e.g., `arr[0]` could be undefined).
+- `noPropertyAccessFromIndexSignature` — catches typos on dynamic objects.
 - `noUnusedLocals` / `noUnusedParameters` — keeps code clean.
-- `verbatimModuleSyntax` — enforces explicit `import type`.
+- `verbatimModuleSyntax` — enforces explicit `import type` (required for `erasableSyntaxOnly`).
 - `erasableSyntaxOnly` — bans enums, namespaces (TypeScript 6+).
+- `baseUrl` + `paths` — enables `@/` imports.
 
 ### 3.3 `tsconfig.node.json`
 
@@ -183,50 +302,89 @@ Key flags:
 
 ```typescript
 /// <reference types="vitest/config" />
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import { VitePWA } from 'vite-plugin-pwa';
+import path from 'node:path';
+
+const isE2E = process.env['VITE_E2E'] === 'true';
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+      // Swap in E2E mocks when running Playwright
+      ...(isE2E
+        ? {
+            'convex/react': path.resolve('e2e/mocks/convex-react.ts'),
+            '@convex-dev/auth/react': path.resolve(
+              'e2e/mocks/convex-auth-react.ts',
+            ),
+          }
+        : {}),
+    },
+  },
   plugins: [
     react(),
     tailwindcss(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.svg'],
+      manifest: {
+        name: '<App Name>',
+        short_name: '<ShortName>',
+        description: '<description>',
+        theme_color: '#0f172a',
+        background_color: '#0f172a',
+        display: 'standalone',
+        orientation: 'portrait',
+        start_url: '/',
+        icons: [
+          {
+            src: '/favicon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'any',
+          },
+        ],
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,woff2}'],
+      },
+    }),
   ],
+  server: {
+    port: 5173,
+    strictPort: true,
+  },
   test: {
     environment: 'happy-dom',
     setupFiles: ['./tests/setup.ts'],
     include: ['tests/**/*.test.{ts,tsx}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov', 'html'],
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/types/**',
+        'src/vite-env.d.ts',
+        'src/main.tsx',
+        'src/i18n/**',
+      ],
+    },
   },
-})
+});
 ```
 
-If adding PWA (recommended for mobile-first):
+Key additions over a bare scaffold:
 
-```typescript
-import { VitePWA } from 'vite-plugin-pwa'
-
-// Inside plugins array:
-VitePWA({
-  registerType: 'autoUpdate',
-  includeAssets: ['favicon.svg'],
-  manifest: {
-    name: '<App Name>',
-    short_name: '<ShortName>',
-    description: '<description>',
-    theme_color: '#0f172a',
-    background_color: '#0f172a',
-    display: 'standalone',
-    orientation: 'portrait',
-    start_url: '/',
-    icons: [
-      { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
-    ],
-  },
-  workbox: {
-    globPatterns: ['**/*.{js,css,html,svg,woff2}'],
-  },
-})
-```
+- `@/*` path alias — use `import { Button } from '@/components/Button'` everywhere.
+- E2E mock aliases — when `VITE_E2E=true`, Convex imports are swapped for mocks
+  so E2E tests run without a real backend.
+- `strictPort: true` — fails fast if port 5173 is busy instead of silently picking 5174.
+- PWA configured with auto-update and standalone display.
+- Coverage exclusions for boilerplate files.
 
 ---
 
@@ -235,12 +393,12 @@ VitePWA({
 Use the **flat config** format (`eslint.config.js`):
 
 ```javascript
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import tseslint from 'typescript-eslint'
-import { defineConfig, globalIgnores } from 'eslint/config'
+import js from '@eslint/js';
+import globals from 'globals';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import tseslint from 'typescript-eslint';
+import { defineConfig, globalIgnores } from 'eslint/config';
 
 export default defineConfig([
   globalIgnores(['dist']),
@@ -256,12 +414,40 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
-])
+]);
 ```
 
 ---
 
-## 6. `.gitignore`
+## 6. Prettier Configuration
+
+### 6.1 `.prettierrc`
+
+```json
+{
+  "semi": true,
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "all",
+  "plugins": ["prettier-plugin-tailwindcss"]
+}
+```
+
+### 6.2 `.prettierignore`
+
+```
+node_modules
+dist
+coverage
+pnpm-lock.yaml
+convex/_generated
+playwright-report
+test-results
+```
+
+---
+
+## 7. `.gitignore`
 
 ```
 # Dependencies
@@ -279,6 +465,16 @@ dist-ssr
 # Google OAuth client secret
 client_secret_*.json
 
+# Convex
+.convex
+
+# Playwright
+playwright-report/
+test-results/
+
+# Claude local settings
+.claude/settings.local.json
+
 # Editor
 .vscode/*
 !.vscode/extensions.json
@@ -288,91 +484,837 @@ client_secret_*.json
 
 ---
 
-## 7. Unit Tests (Vitest)
+## 8. Environment Example Files
 
-### 7.1 Directory structure
+Always provide `.example` files so new developers know what env vars to set:
+
+### 8.1 `.env.development.example`
+
+```env
+# Copy to .env.local and fill in values
+VITE_CONVEX_URL=https://<dev-slug>.convex.cloud
+VITE_CONVEX_SITE_URL=https://<dev-slug>.convex.site
+CONVEX_DEPLOYMENT=dev:<dev-slug>
+```
+
+### 8.2 `.env.production.example`
+
+```env
+# Copy to .env.production and fill in values
+VITE_CONVEX_URL=https://<prod-slug>.convex.cloud
+VITE_CONVEX_SITE_URL=https://<prod-slug>.convex.site
+CONVEX_DEPLOYMENT=prod:<prod-slug>
+```
+
+The `.gitignore` above allows `.example` files but blocks real env files.
+
+---
+
+## 9. Path Alias & Utility Setup
+
+### 9.1 `src/lib/utils.ts` — `cn()` helper
+
+```typescript
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+```
+
+Use `cn()` for ALL conditional class names. Never use template literals:
+
+```typescript
+// Bad — fragile, no conflict resolution
+className={`px-4 py-2 ${isActive ? 'bg-primary' : 'bg-surface'}`}
+
+// Good — uses cn()
+className={cn('px-4 py-2', isActive ? 'bg-primary' : 'bg-surface')}
+```
+
+### 9.2 Import convention
+
+With `@/*` aliases, imports look like:
+
+```typescript
+import { Button } from '@/components/Button';
+import { useAuth } from '@/hooks/useAuth';
+import { cn } from '@/lib/utils';
+import type { Game } from '@/types';
+```
+
+Never write `../../../` relative imports — use `@/` everywhere.
+
+---
+
+## 10. CSS Setup (Tailwind v4)
+
+### 10.1 `src/index.css`
+
+```css
+@import 'tailwindcss';
+
+@theme {
+  --color-primary: #22c55e;
+  --color-surface: #1e293b;
+  --color-background: #0f172a;
+  --color-text: #f8fafc;
+  --color-text-muted: #94a3b8;
+}
+
+html,
+body,
+#root {
+  @apply m-0 h-full w-full p-0;
+}
+
+body {
+  @apply bg-background text-text font-sans antialiased;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Minimum touch target for accessibility */
+button,
+a {
+  @apply min-h-[44px] min-w-[44px];
+}
+
+/* Safe area for notched phones */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Hide scrollbar but keep scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Remove number input spinners */
+.no-spinner {
+  -moz-appearance: textfield;
+}
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+```
+
+---
+
+## 11. Entry Point & Provider Hierarchy
+
+### 11.1 `src/main.tsx`
+
+```typescript
+import { StrictMode, Suspense } from 'react'
+import { createRoot } from 'react-dom/client'
+import { HelmetProvider } from 'react-helmet-async'
+import { ConvexAuthProvider } from '@convex-dev/auth/react'
+import { ConvexReactClient } from 'convex/react'
+import './index.css'
+import './i18n'
+import { LanguageWatcher } from '@/components/LanguageWatcher'
+import App from './App'
+
+const convex = new ConvexReactClient(import.meta.env['VITE_CONVEX_URL']!)
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <Suspense fallback={<PageSpinner />}>
+      <HelmetProvider>
+        <LanguageWatcher>
+          <ConvexAuthProvider client={convex}>
+            <App />
+          </ConvexAuthProvider>
+        </LanguageWatcher>
+      </HelmetProvider>
+    </Suspense>
+  </StrictMode>,
+)
+```
+
+Provider order (outermost → innermost):
+
+1. `StrictMode` — React dev checks
+2. `Suspense` — loading state while i18n initializes
+3. `HelmetProvider` — per-page `<title>` / meta tags
+4. `LanguageWatcher` — syncs `html[lang]` to i18n
+5. `ConvexAuthProvider` — auth context
+6. `App` — router + routes
+
+---
+
+## 12. App & Routing
+
+### 12.1 `src/App.tsx` (auth guard + lazy routes)
+
+```typescript
+import { lazy, Suspense } from 'react'
+import { HashRouter, Routes, Route } from 'react-router-dom'
+import { useConvexAuth } from 'convex/react'
+import { PageSpinner } from '@/components/PageSpinner'
+import { LoginScreen } from '@/screens/LoginScreen'
+
+// Route-level code splitting
+const HomeScreen = lazy(() => import('@/screens/HomeScreen'))
+const PrivacyScreen = lazy(() => import('@/screens/PrivacyScreen'))
+const TermsScreen = lazy(() => import('@/screens/TermsScreen'))
+// ... other routes
+
+function App() {
+  const { isLoading, isAuthenticated } = useConvexAuth()
+
+  if (isLoading) return <PageSpinner />
+  if (!isAuthenticated) return <LoginScreen />
+
+  return (
+    <HashRouter>
+      <Suspense fallback={<PageSpinner />}>
+        <Routes>
+          <Route path="/" element={<HomeScreen />} />
+          <Route path="/privacy" element={<PrivacyScreen />} />
+          <Route path="/terms" element={<TermsScreen />} />
+          {/* ... */}
+        </Routes>
+      </Suspense>
+    </HashRouter>
+  )
+}
+
+export default App
+```
+
+Key patterns:
+
+- **HashRouter** — works on Cloudflare Pages without `_redirects` SPA fallback.
+- **Auth guard at App level** — one gate, not scattered across pages.
+- **`React.lazy()` per route** — each screen is its own chunk.
+- **Shared `PageSpinner`** — one loading component, consistent everywhere.
+
+### 12.2 `PageSpinner` component
+
+```typescript
+export function PageSpinner() {
+  return (
+    <div className="flex items-center justify-center h-full">
+      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
+}
+```
+
+---
+
+## 13. Centralized Auth Hook
+
+### 13.1 `src/hooks/useAuth.ts`
+
+```typescript
+import { useConvexAuth } from 'convex/react';
+import { useAuthActions } from '@convex-dev/auth/react';
+import { useQuery } from 'convex/react';
+import { api } from '../../convex/_generated/api';
+
+export function useAuth() {
+  const { isAuthenticated, isLoading } = useConvexAuth();
+  const { signOut: convexSignOut } = useAuthActions();
+
+  const user = useQuery(api.users.currentUser);
+
+  const profile = user
+    ? {
+        id: user._id,
+        name: user.name ?? 'Anonymous',
+        avatarUrl: user.image ?? null,
+      }
+    : null;
+
+  const signOut = async () => {
+    await convexSignOut();
+  };
+
+  return {
+    user,
+    profile,
+    isLoading,
+    isAuthenticated,
+    signOut,
+  };
+}
+```
+
+This hook is the **single import** for auth state everywhere in the app.
+Individual components never call `useConvexAuth` or `useAuthActions` directly —
+they import `useAuth` from `@/hooks/useAuth`.
+
+---
+
+## 14. i18n Setup
+
+### 14.1 `src/i18n/index.ts`
+
+```typescript
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
+
+import { en } from './en';
+
+i18n
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .init({
+    resources: { en: { translation: en } },
+    lng: 'en',
+    fallbackLng: 'en',
+    load: 'languageOnly',
+    keySeparator: false,
+    interpolation: { escapeValue: false },
+  });
+
+export default i18n;
+```
+
+### 14.2 `src/i18n/en.ts`
+
+Organize translations by domain:
+
+```typescript
+export const en = {
+  'app.title': 'My App',
+  'app.tagline': 'A short description',
+
+  'actions.save': 'Save',
+  'actions.cancel': 'Cancel',
+  'actions.delete': 'Delete',
+  'actions.signOut': 'Sign out',
+  'actions.signInWithGoogle': 'Sign in with Google',
+
+  'screens.home.pageTitle': 'Home | My App',
+  'screens.home.pageDescription': 'Description for SEO',
+
+  'components.emptyState.noData': 'Nothing here yet',
+  'components.emptyState.description': 'Create your first item to get started',
+};
+```
+
+Rules:
+
+- Keys use dot notation for namespacing: `domain.component.key`.
+- Every page has `pageTitle` and `pageDescription` keys for SEO.
+- Start with English only; add other languages when needed.
+- **Never hardcode user-facing strings in JSX** — always use `t('key')`.
+
+### 14.3 `LanguageWatcher` component
+
+```typescript
+import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+
+export function LanguageWatcher({ children }: { children: React.ReactNode }) {
+  const { i18n } = useTranslation()
+
+  useEffect(() => {
+    document.documentElement.lang = i18n.language
+  }, [i18n.language])
+
+  return <>{children}</>
+}
+```
+
+---
+
+## 15. SEO — Per-Page Meta Tags
+
+Every screen sets its own `<title>` and `<meta description>` via `react-helmet-async`:
+
+```typescript
+import { Helmet } from 'react-helmet-async'
+import { useTranslation } from 'react-i18next'
+
+export function HomeScreen() {
+  const { t } = useTranslation()
+
+  return (
+    <>
+      <Helmet>
+        <title>{t('screens.home.pageTitle')}</title>
+        <meta name="description" content={t('screens.home.pageDescription')} />
+      </Helmet>
+      {/* page content */}
+    </>
+  )
+}
+```
+
+Also set global defaults in `index.html` (Open Graph, Twitter cards, structured data).
+
+---
+
+## 16. Error Handling
+
+### 16.1 Error Boundary
+
+```typescript
+import { Component, type ReactNode } from 'react'
+
+interface Props { children: ReactNode }
+interface State { error: Error | null }
+
+export class ErrorBoundary extends Component<Props, State> {
+  state: State = { error: null }
+
+  static getDerivedStateFromError(error: Error): State {
+    return { error }
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full gap-4 px-5">
+          <h2 className="text-xl font-bold">Something went wrong</h2>
+          <p className="text-sm text-text-muted text-center">
+            {this.state.error.message}
+          </p>
+          <button
+            onClick={() => {
+              this.setState({ error: null })
+              window.location.reload()
+            }}
+            className="px-6 py-3 rounded-xl bg-primary text-background font-semibold"
+          >
+            Reload
+          </button>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+```
+
+Wrap the router in `ErrorBoundary`:
+
+```typescript
+<HashRouter>
+  <ErrorBoundary>
+    <Suspense fallback={<PageSpinner />}>
+      <Routes>...</Routes>
+    </Suspense>
+  </ErrorBoundary>
+</HashRouter>
+```
+
+### 16.2 Mutation error handling
+
+Every mutation call must handle errors:
+
+```typescript
+const createItem = useMutation(api.items.create);
+
+const handleCreate = async (data: ItemData) => {
+  try {
+    await createItem(data);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Something went wrong';
+    setDialog({ title: 'Failed to create', message });
+  }
+};
+```
+
+### 16.3 `ErrorDialog` component
+
+```typescript
+interface ErrorDialogProps {
+  open: boolean
+  title: string
+  message: string
+  onClose: () => void
+}
+
+export function ErrorDialog({ open, title, message, onClose }: ErrorDialogProps) {
+  if (!open) return null
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+      <div className="bg-surface rounded-xl p-6 w-full max-w-sm flex flex-col gap-4">
+        <h3 className="text-lg font-semibold">{title}</h3>
+        <p className="text-sm text-text-muted">{message}</p>
+        <button
+          onClick={onClose}
+          className="py-3 rounded-xl bg-primary text-background font-semibold"
+        >
+          OK
+        </button>
+      </div>
+    </div>
+  )
+}
+```
+
+---
+
+## 17. Privacy & Terms Pages
+
+Every project must have these routes (required for OAuth verification, app stores, legal):
+
+- `/privacy` — Privacy Policy with sections: data we collect, how we use data, data storage, third-party services, account deletion, contact.
+- `/terms` — Terms of Service with sections: acceptance, description of service, user responsibilities, limitation of liability, changes, contact.
+
+Store the content in i18n keys, not hardcoded HTML. See Workout Mate's
+`src/i18n/index.ts` for the full structure.
+
+---
+
+## 18. Unit Tests (Vitest)
+
+### 18.1 Directory structure
+
+Two valid options — pick one and use it consistently across all projects:
+
+**Option A: Separate `tests/` directory** (Workout Mate style)
 
 ```
 tests/
-  setup.ts          ← Global setup (auto-cleanup, jest-dom matchers)
-  components/       ← Component tests mirroring src/components/
-  hooks/            ← Hook tests mirroring src/hooks/
-  utils/            ← Utility tests mirroring src/utils/
+  setup.ts
+  components/
+  hooks/
+  utils/
+  screens/
+  integration/
 ```
 
-### 7.2 Test setup file (`tests/setup.ts`)
+**Option B: Co-located tests** (Pingo style)
+
+```
+src/
+  components/
+    Button.tsx
+    Button.test.tsx
+  hooks/
+    useTimer.ts
+    useTimer.test.ts
+```
+
+Either is fine. The guide uses Option A for consistency with the scaffold.
+
+### 18.2 Test setup file (`tests/setup.ts`)
 
 ```typescript
-import '@testing-library/jest-dom/vitest'
-import { cleanup } from '@testing-library/react'
-import { afterEach } from 'vitest'
+import '@testing-library/jest-dom/vitest';
+import { cleanup } from '@testing-library/react';
+import { afterEach, vi } from 'vitest';
+
+// Mock i18n globally so tests don't need real translations
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: {
+      language: 'en',
+      changeLanguage: () => new Promise(() => {}),
+    },
+  }),
+}));
 
 afterEach(() => {
-  cleanup()
-})
+  cleanup();
+});
 ```
 
-### 7.3 Test patterns
+### 18.3 Test patterns
 
 - **Environment**: `happy-dom` (configured in `vite.config.ts`).
-- **Component tests**: Use `@testing-library/react` (`render`, `screen`, `fireEvent`).
-- **Hook tests**: Use `renderHook` from `@testing-library/react`.
-- **Timer tests**: Use `vi.useFakeTimers()` + `vi.advanceTimersByTime()`.
+- **Component tests**: `render`, `screen`, `fireEvent` from `@testing-library/react`.
+- **Hook tests**: `renderHook` from `@testing-library/react`.
+- **Timer tests**: `vi.useFakeTimers()` + `vi.advanceTimersByTime()`.
+- **Router tests**: Wrap in `MemoryRouter` with `initialEntries`.
+- **Convex tests**: Mock `useQuery` / `useMutation` at the module level.
 - **Naming**: `*.test.ts` for logic, `*.test.tsx` for components.
 
 ---
 
-## 8. E2E Tests (Playwright)
+## 19. E2E Tests (Playwright)
 
-### 8.1 Playwright config (`playwright.config.ts`)
+### 19.1 Playwright config (`playwright.config.ts`)
 
 ```typescript
-import { defineConfig, devices } from '@playwright/test'
+import { defineConfig, devices } from '@playwright/test';
+
+const isCI = !!process.env['CI'];
 
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  forbidOnly: isCI,
+  retries: isCI ? 2 : 0,
+  workers: isCI ? 1 : undefined,
   reporter: 'html',
   use: {
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-    { name: 'mobile-chrome', use: { ...devices['Pixel 5'] } },
+    // Add these as CI capacity allows:
+    // { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    // { name: 'mobile-chrome', use: { ...devices['Pixel 5'] } },
   ],
   webServer: {
     command: 'pnpm dev',
     url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: !isCI,
+    timeout: 30_000,
+    env: {
+      VITE_E2E: 'true',
+    },
   },
-})
+  testMatch: '**/*.spec.ts',
+});
 ```
 
-### 8.2 E2E test structure
+### 19.2 E2E mock infrastructure
+
+When `VITE_E2E=true`, the Vite config swaps Convex imports for local mocks.
+Create these mock files:
+
+**`e2e/mocks/convex-react.ts`** — mocks `ConvexReactClient`, `useQuery`, `useMutation`, `useConvexAuth`
+
+**`e2e/mocks/convex-auth-react.ts`** — mocks `ConvexAuthProvider`, `useAuthActions`, `signIn`
+
+This lets E2E tests run without a real Convex backend — faster, deterministic,
+and works in CI without secrets. For critical flows (auth, real-time sync),
+add a separate `e2e:integration` script that runs against the real Convex dev server.
+
+### 19.3 E2E directory structure
 
 ```
 e2e/
-  auth.spec.ts       ← Google sign-in flows
-  home.spec.ts       ← Main page interactions
-  <feature>.spec.ts  ← One file per feature area
+  mocks/
+    convex-react.ts
+    convex-auth-react.ts
+  types.ts
+  home.spec.ts
+  auth.spec.ts
+  <feature>.spec.ts
 ```
 
 ---
 
-## 9. GitHub Repository & CI
+## 20. Convex Backend Setup
 
-### 9.1 Create repo and push
+### 20.1 Create Convex project
+
+```bash
+npx convex dev --configure
+```
+
+This interactively creates a project in your Convex team and generates `.env.local`
+with the `CONVEX_DEPLOYMENT` variable.
+
+### 20.2 `convex.json`
+
+```json
+{
+  "project": "",
+  "team": ""
+}
+```
+
+### 20.3 Schema (`convex/schema.ts`)
+
+Use `camelCase` for all column names:
+
+```typescript
+import { defineSchema, defineTable } from 'convex/server';
+import { v } from 'convex/values';
+import { authTables } from '@convex-dev/auth/server';
+
+export default defineSchema({
+  ...authTables,
+
+  items: defineTable({
+    name: v.string(),
+    ownerId: v.id('users'),
+    isPublic: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index('by_owner', ['ownerId'])
+    .index('by_public', ['isPublic']),
+});
+```
+
+Rules:
+
+- Always spread `authTables` — required by `@convex-dev/auth`.
+- Use `camelCase` for column names.
+- Add indexes for every query pattern you'll use.
+- Use `v.optional()` for nullable fields (not `v.union(v.null(), ...)`).
+- Timestamps use `v.number()` (Unix ms), not `v.string()`.
+
+### 20.4 Auth (`convex/auth.ts`)
+
+```typescript
+import Google from '@auth/core/providers/google';
+import { Password } from '@convex-dev/auth/providers/Password';
+import { Anonymous } from '@convex-dev/auth/providers/Anonymous';
+import { convexAuth } from '@convex-dev/auth/server';
+
+export const { auth, signIn, signOut, store } = convexAuth({
+  providers: [Google, Password, Anonymous],
+});
+```
+
+Provide at minimum Google + Password. Anonymous is strongly recommended for
+apps that benefit from try-before-signup.
+
+### 20.5 Auth config (`convex/auth.config.ts`)
+
+```typescript
+export default {
+  providers: [
+    {
+      domain: process.env.CONVEX_SITE_URL,
+      applicationID: 'convex',
+    },
+  ],
+};
+```
+
+### 20.6 HTTP router (`convex/http.ts`)
+
+```typescript
+import { httpRouter } from 'convex/server';
+import { auth } from './auth';
+
+const http = httpRouter();
+auth.addHttpRoutes(http);
+
+export default http;
+```
+
+### 20.7 Domain-based files
+
+Separate Convex functions by domain — one file per entity:
+
+```
+convex/
+  schema.ts
+  auth.ts
+  auth.config.ts
+  http.ts
+  users.ts       ← user profile queries/mutations
+  items.ts       ← item CRUD
+  seed.ts        ← seed data
+```
+
+### 20.8 Seed pattern
+
+```typescript
+// convex/seed.ts
+import { mutation } from './_generated/server';
+
+const DEFAULTS = [
+  { name: 'Default Item 1' /* ... */ },
+  { name: 'Default Item 2' /* ... */ },
+];
+
+export const seedDefaults = mutation({
+  handler: async (ctx) => {
+    const existing = await ctx.db.query('items').first();
+    if (existing) return; // idempotent — safe to call repeatedly
+    for (const item of DEFAULTS) {
+      await ctx.db.insert('items', item);
+    }
+  },
+});
+```
+
+### 20.9 Ownership check pattern
+
+Every mutation that reads user-owned data must verify ownership:
+
+```typescript
+export const update = mutation({
+  args: { id: v.id('items'), name: v.string() },
+  handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error('Not authenticated');
+
+    const item = await ctx.db.get(args.id);
+    if (!item || item.ownerId !== userId) throw new Error('Not found');
+
+    await ctx.db.patch(args.id, { name: args.name });
+  },
+});
+```
+
+---
+
+## 21. Google OAuth Setup
+
+### 21.1 Google Cloud Console
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
+2. Create a **Web Application** OAuth 2.0 Client ID.
+3. Add authorized JavaScript origins:
+   - `http://localhost:5173` (local dev)
+   - `https://<dev-slug>.convex.site` (dev Convex)
+   - `https://<prod-slug>.convex.site` (prod Convex)
+   - `https://<your-custom-domain>` (production URL)
+4. Add authorized redirect URIs:
+   - `http://localhost:5173/api/auth/callback/google`
+   - `https://<dev-slug>.convex.site/api/auth/callback/google`
+   - `https://<prod-slug>.convex.site/api/auth/callback/google`
+   - `https://<your-custom-domain>/api/auth/callback/google`
+5. Download the credentials JSON.
+
+All environments can share one OAuth client — just add all URLs as authorized origins/redirects.
+
+### 21.2 Store secrets in Convex
+
+```bash
+# Dev
+npx convex env set AUTH_GOOGLE_ID="<client_id>" --env-file .env.local
+npx convex env set AUTH_GOOGLE_SECRET="<client_secret>" --env-file .env.local
+
+# Prod
+npx convex env set AUTH_GOOGLE_ID="<client_id>" --env-file .env.production
+npx convex env set AUTH_GOOGLE_SECRET="<client_secret>" --env-file .env.production
+```
+
+Get `client_id` and `client_secret` from the downloaded JSON file.
+
+### 21.3 Convex Auth env vars
+
+Set in **Convex** (via `npx convex env set`), not in `.env` files:
+
+| Variable             | Source                               |
+| -------------------- | ------------------------------------ |
+| `AUTH_GOOGLE_ID`     | `client_id` from downloaded JSON     |
+| `AUTH_GOOGLE_SECRET` | `client_secret` from downloaded JSON |
+
+These are per-deployment (dev and prod separately).
+
+---
+
+## 22. GitHub Repository & CI
+
+### 22.1 Create repo and push
 
 ```bash
 gh repo create <org>/<project-name> --private --source=. --remote=origin --push
 ```
 
-### 9.2 CI workflow (`.github/workflows/ci.yml`)
+### 22.2 CI workflow (`.github/workflows/ci.yml`)
 
 ```yaml
 name: CI
@@ -401,71 +1343,90 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm lint
-      - run: pnpm test -- run
+      - run: pnpm format:check
+      - run: pnpm test:coverage
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
 
   e2e:
-    runs-on: ubuntu-latest
     needs: check
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: pnpm/action-setup@v4
         with:
           version: latest
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
+
       - run: pnpm install --frozen-lockfile
-      - run: npx playwright install --with-deps chromium
-      - run: pnpm test:e2e
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install chromium --with-deps
+
+      - name: Run E2E tests
+        run: pnpm test:e2e
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
 ```
 
-Notes:
-- `check` and `e2e` run in parallel for speed; `check` includes build + lint + unit tests.
-- E2E installs Playwright browsers in CI (`--with-deps` for system deps).
-- Both branches (`main` and `staging`) trigger CI on push and PR.
+Key CI rules:
+
+- Always use `--frozen-lockfile` — CI must fail if lockfile is out of date.
+- Run `format:check` in CI to enforce Prettier.
+- Upload coverage as an artifact so it survives between jobs.
+- E2E runs after `check` passes (serial, not parallel) to avoid wasting Playwright minutes on broken builds.
 
 ---
 
-## 10. Cloudflare Pages Deployment
+## 23. Cloudflare Pages Deployment
 
-### 10.1 Initial setup
+### 23.1 Initial setup
 
 1. Create a Cloudflare Pages project connected to the GitHub repository.
 2. Configure build settings:
    - **Build command**: `pnpm build`
    - **Build output directory**: `dist`
    - **Root directory**: `/`
-3. Add a custom domain in Cloudflare Pages dashboard (e.g., `app.example.com`).
+3. Add a custom domain in Cloudflare Pages dashboard.
 
-### 10.2 Branch deployment strategy
+### 23.2 Branch deployment strategy
 
-| Git Branch | Cloudflare Environment | Convex Backend |
-|---|---|---|
-| `staging` | Preview deployment (staging URL) | Dev Convex (`dev:<slug>`) |
-| `main` | Production (custom domain) | Prod Convex (`prod:<slug>`) |
+| Git Branch | Cloudflare Environment     | Convex Backend              |
+| ---------- | -------------------------- | --------------------------- |
+| `staging`  | Preview deployment         | Dev Convex (`dev:<slug>`)   |
+| `main`     | Production (custom domain) | Prod Convex (`prod:<slug>`) |
 
-Cloudflare Pages auto-deploys on push to these branches — no manual `wrangler deploy` needed
-for routine pushes. The CLI deploy commands are available as fallbacks:
+Cloudflare Pages auto-deploys on push to these branches.
 
-```bash
-pnpm deploy:staging  # wrangler pages deploy dist --branch staging
-pnpm deploy:prod     # wrangler pages deploy dist --branch main
-```
-
-### 10.3 Environment variables in Cloudflare
+### 23.3 Environment variables in Cloudflare
 
 Set these in the Cloudflare Pages dashboard (per-environment):
 
-| Variable | Staging Value | Production Value |
-|---|---|---|
-| `VITE_CONVEX_URL` | `https://<dev-slug>.convex.cloud` | `https://<prod-slug>.convex.cloud` |
-| `VITE_CONVEX_SITE_URL` | `https://<dev-slug>.convex.site` | `https://<prod-slug>.convex.site` |
+| Variable               | Staging Value                     | Production Value                   |
+| ---------------------- | --------------------------------- | ---------------------------------- |
+| `VITE_CONVEX_URL`      | `https://<dev-slug>.convex.cloud` | `https://<prod-slug>.convex.cloud` |
+| `VITE_CONVEX_SITE_URL` | `https://<dev-slug>.convex.site`  | `https://<prod-slug>.convex.site`  |
 
-Do **not** put these in `wrangler.toml` — manage them via the Cloudflare Pages UI
-so they differ per branch/deployment.
+Do **not** put these in `wrangler.toml` — manage them via the Cloudflare Pages UI.
 
-### 10.4 `wrangler.toml`
+### 23.4 `wrangler.toml`
 
 ```toml
 [pages]
@@ -473,282 +1434,24 @@ build_dir = "dist"
 build_command = "pnpm build"
 ```
 
-### 10.5 Cloudflare Pages `_redirects` (if using SPA routing)
+### 23.5 SPA routing
 
-Create `public/_redirects`:
-
-```
-/*    /index.html   200
-```
-
-This is **not needed** if using HashRouter (like Workout Mate). If you use
-BrowserRouter with React Router, this file is required for SPA fallback.
+If using `HashRouter`: no `_redirects` file needed.
+If using `BrowserRouter`: create `public/_redirects` with `/* /index.html 200`.
 
 ---
 
-## 11. Convex Setup
+## 24. Environment Matrix
 
-### 11.1 Create Convex project
-
-```bash
-npx convex dev --configure
-```
-
-This interactively creates a project in your Convex team and generates `.env.local`
-with the `CONVEX_DEPLOYMENT` variable.
-
-### 11.2 `convex.json`
-
-```json
-{
-  "project": "",
-  "team": ""
-}
-```
-
-Leave `project` and `team` empty — they are resolved from the environment
-(`CONVEX_DEPLOYMENT` in `.env.*`).
-
-### 11.3 Environment files
-
-#### `.env.local` (local dev — loaded by default)
-
-```env
-VITE_CONVEX_URL=https://<dev-slug>.convex.cloud
-CONVEX_DEPLOYMENT=dev:<dev-slug>
-VITE_CONVEX_SITE_URL=https://<dev-slug>.convex.site
-```
-
-#### `.env.staging` (staging — same Convex dev deployment)
-
-```env
-VITE_CONVEX_URL=https://<dev-slug>.convex.cloud
-CONVEX_DEPLOYMENT=dev:<dev-slug>
-VITE_CONVEX_SITE_URL=https://<dev-slug>.convex.site
-```
-
-#### `.env.production` (production)
-
-```env
-VITE_CONVEX_URL=https://<prod-slug>.convex.cloud
-CONVEX_DEPLOYMENT=prod:<prod-slug>
-VITE_CONVEX_SITE_URL=https://<prod-slug>.convex.site
-```
-
-**Key env vars explained:**
-- `VITE_CONVEX_URL` — The Convex deployment URL (`.convex.cloud`). Used by the
-  React client.
-- `VITE_CONVEX_SITE_URL` — The Convex site URL (`.convex.site`). Used by the auth
-  config for the OAuth callback domain.
-- `CONVEX_DEPLOYMENT` — `dev:<slug>` or `prod:<slug>`. Used by the Convex CLI
-  (`npx convex dev`, `npx convex deploy`, `npx convex env set`).
-
-### 11.4 Deploy Convex
-
-```bash
-# Deploy to dev
-npx convex deploy --env-file .env.local
-
-# Deploy to prod
-npx convex deploy --env-file .env.production
-```
-
-### 11.5 Seed data (optional)
-
-The Workout Mate pattern uses a `seedDefaults` mutation that checks for existing
-data before inserting. Invoke it from the Convex dashboard or via a one-shot script:
-
-```typescript
-// In a mutation like convex/<module>.ts:seedDefaults
-export const seedDefaults = mutation({
-  handler: async (ctx) => {
-    const existing = await ctx.db.query("<table>").first()
-    if (existing) return
-    for (const record of DEFAULT_RECORDS) {
-      await ctx.db.insert("<table>", record)
-    }
-  },
-})
-```
+| Environment    | Vite `.env` file  | Convex Deployment | Cloudflare Pages       |
+| -------------- | ----------------- | ----------------- | ---------------------- |
+| **Local Dev**  | `.env.local`      | `dev:<slug>`      | `pnpm dev` (localhost) |
+| **Staging**    | `.env.staging`    | `dev:<slug>`      | Preview URL            |
+| **Production** | `.env.production` | `prod:<slug>`     | Custom domain          |
 
 ---
 
-## 12. Google OAuth Authentication
-
-### 12.1 Google Cloud Console setup
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
-2. Create a **Web Application** OAuth 2.0 Client ID.
-3. Add authorized JavaScript origins:
-   - `http://localhost:5173` (local dev)
-   - `https://<dev-slug>.convex.site` (dev Convex)
-   - `https://<prod-slug>.convex.site` (prod Convex)
-   - `https://<your-custom-domain>` (production URL)
-4. Add authorized redirect URIs:
-   - `http://localhost:5173/api/auth/callback/google`
-   - `https://<dev-slug>.convex.site/api/auth/callback/google`
-   - `https://<prod-slug>.convex.site/api/auth/callback/google`
-   - `https://<your-custom-domain>/api/auth/callback/google`
-5. Download the credentials JSON (named `client_secret_*.apps.googleusercontent.com.json`).
-
-**Important**: All environments (dev, staging, prod) can share the **same** OAuth
-client. Add all URLs as authorized origins/redirects on the single client.
-
-### 12.2 Store Google client secret in Convex
-
-```bash
-# Set in dev Convex
-npx convex env set AUTH_GOOGLE_ID="<client_id>" --env-file .env.local
-npx convex env set AUTH_GOOGLE_SECRET="<client_secret>" --env-file .env.local
-
-# Set in prod Convex
-npx convex env set AUTH_GOOGLE_ID="<client_id>" --env-file .env.production
-npx convex env set AUTH_GOOGLE_SECRET="<client_secret>" --env-file .env.production
-```
-
-Get the `client_id` and `client_secret` from the downloaded JSON file.
-
-### 12.3 Convex auth files
-
-#### `convex/auth.ts`
-
-```typescript
-import Google from "@auth/core/providers/google"
-import { convexAuth } from "@convex-dev/auth/server"
-
-export const { auth, signIn, signOut, store } = convexAuth({
-  providers: [Google],
-})
-```
-
-#### `convex/auth.config.ts`
-
-```typescript
-export default {
-  providers: [
-    {
-      domain: process.env.CONVEX_SITE_URL,
-      applicationID: "convex",
-    },
-  ],
-}
-```
-
-#### `convex/http.ts`
-
-```typescript
-import { httpRouter } from "convex/server"
-import { auth } from "./auth"
-
-const http = httpRouter()
-auth.addHttpRoutes(http)
-
-export default http
-```
-
-### 12.4 Convex schema — include auth tables
-
-In `convex/schema.ts`, spread `authTables` into your schema:
-
-```typescript
-import { defineSchema, defineTable } from "convex/server"
-import { v } from "convex/values"
-import { authTables } from "@convex-dev/auth/server"
-
-export default defineSchema({
-  ...authTables,
-
-  // Your tables go here, e.g.:
-  items: defineTable({
-    name: v.string(),
-    userId: v.id("users"),
-  }).index("by_user", ["userId"]),
-})
-```
-
-### 12.5 React auth wrapper (`src/main.tsx`)
-
-```typescript
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { ConvexAuthProvider } from '@convex-dev/auth/react'
-import { ConvexReactClient } from 'convex/react'
-import './index.css'
-import App from './App'
-
-const convex = new ConvexReactClient(import.meta.env['VITE_CONVEX_URL']!)
-
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <ConvexAuthProvider client={convex}>
-      <App />
-    </ConvexAuthProvider>
-  </StrictMode>,
-)
-```
-
-### 12.6 Auth helper — generate JWT keys (optional)
-
-If your app needs JWT signing (e.g., custom tokens), create `scripts/gen-jwt.mjs`:
-
-```javascript
-import { exportJWK, exportPKCS8, generateKeyPair } from "jose"
-
-const keys = await generateKeyPair("RS256", { extractable: true })
-const privateKey = await exportPKCS8(keys.privateKey)
-const publicKey = await exportJWK(keys.publicKey)
-const jwks = JSON.stringify({ keys: [{ use: "sig", ...publicKey }] })
-
-console.log(`JWT_PRIVATE_KEY="${privateKey.trimEnd().replace(/\n/g, " ")}"`)
-console.log(`JWKS=${jwks}`)
-```
-
-Run: `node .\scripts\gen-jwt.mjs`
-
-### 12.7 Login screen pattern
-
-```tsx
-import { useAuthActions } from "@convex-dev/auth/react"
-
-function LoginScreen() {
-  const { signIn } = useAuthActions()
-  return (
-    <button onClick={() => signIn("google")}>
-      Sign in with Google
-    </button>
-  )
-}
-```
-
-### 12.8 Convex Auth env vars summary
-
-These must be set in **Convex** (via `npx convex env set`), not in `.env` files:
-
-| Variable | Source |
-|---|---|
-| `AUTH_GOOGLE_ID` | `client_id` from the downloaded JSON |
-| `AUTH_GOOGLE_SECRET` | `client_secret` from the downloaded JSON |
-
-These are set per-deployment (dev and prod separately).
-
----
-
-## 13. Environment Matrix
-
-| Environment | Vite `.env` file | Convex Deployment | Cloudflare Pages |
-|---|---|---|---|
-| **Local Dev** | `.env.local` | `dev:<slug>` | `pnpm dev` (localhost) |
-| **Staging** | `.env.staging` | `dev:<slug>` (same as dev) | Preview URL (staging branch) |
-| **Production** | `.env.production` | `prod:<slug>` | Custom domain (main branch) |
-
----
-
-## 14. Git Branching & Environment Strategy
-
-This section explains how GitHub branches drive both Convex and Cloudflare deployments,
-and how to work within this model day to day.
-
-### 14.1 The Big Picture
+## 25. Git Branching Strategy
 
 ```
 GitHub branches         Convex deployments        Cloudflare Pages
@@ -758,182 +1461,67 @@ staging ───────────►   dev:<slug>───────�
 feature/* ─────────►   (local dev only) ─────►   (not deployed)
 ```
 
-**Key rule**: the Git branch determines EVERYTHING — which Convex backend the
-frontend talks to, and which Cloudflare environment serves the app.
+Rules:
 
-### 14.2 Branch Conventions
-
-| Branch | Purpose | Deploys to | Backend |
-|---|---|---|---|
-| `main` | Production code, always shippable | Cloudflare Pages production | Convex `prod:<slug>` |
-| `staging` | Pre-production validation | Cloudflare Pages preview | Convex `dev:<slug>` |
-| `feature/*` | Active development work | None (run `pnpm dev` locally) | Local Convex dev server |
-
-**Rules**:
 - `main` is protected — all changes arrive via PR.
-- `staging` is the integration branch. PR feature branches into `staging`,
-  verify everything works, then promote `staging` → `main` via a second PR.
-- Never push directly to `main` or `staging`. Always work on feature branches.
-- Squash-merge keeps history clean on both branches.
-
-### 14.3 How the Vite Build Picks the Right Backend
-
-During `pnpm build`, Vite reads `VITE_CONVEX_URL` from the environment. The
-build-time value is baked into the static bundle.
-
-Cloudflare Pages sets this variable per-deployment in its dashboard (§10.3).
-When a push to `staging` triggers a build, Cloudflare injects the staging
-`VITE_CONVEX_URL` (pointing at `dev:<slug>`). When a push to `main` triggers a
-build, it injects the production `VITE_CONVEX_URL` (pointing at `prod:<slug>`).
-
-This means the **same source code** produces two different builds — one talking
-to dev Convex, one talking to prod Convex — purely from the env var.
-
-### 14.4 Daily Workflow
-
-#### Starting a new feature
-
-```bash
-git checkout staging
-git pull origin staging
-git checkout -b feature/my-feature
-pnpm dev                          # uses .env.local → dev Convex
-```
-
-#### Deploying a backend change (Convex schema, functions, mutations)
-
-Convex deploys are **orthogonal to Git branches**. You deploy Convex separately
-with `npx convex deploy`:
-
-```bash
-# While on your feature branch:
-
-# Deploy backend changes to dev for testing
-npx convex deploy --env-file .env.local
-
-# Once the PR merges to staging, deploy to dev again
-# (ensures dev matches what staging expects)
-npx convex deploy --env-file .env.staging
-
-# When the PR merges to main, deploy to prod
-npx convex deploy --env-file .env.production
-```
-
-**Important**: Deploy Convex backend changes **before** (or at the same time as)
-the frontend PR that depends on them. The frontend build in Cloudflare will use
-whatever the Convex schema looks like at build time, but the runtime behavior
-depends on the currently deployed Convex code.
-
-#### Merging to staging
-
-```bash
-# 1. Push your feature branch
-git push origin feature/my-feature
-
-# 2. Create a PR from feature/my-feature → staging
-gh pr create --base staging --head feature/my-feature --title "feat: ..."
-
-# 3. After PR review and CI passes, squash-merge into staging
-# Cloudflare auto-deploys the staging preview with VITE_CONVEX_URL → dev Convex
-
-# 4. Verify everything works on the staging preview URL
-```
-
-#### Promoting staging to main
-
-```bash
-# 1. Create a PR from staging → main
-gh pr create --base main --head staging --title "Release: staging → main"
-
-# 2. Merge after CI passes
-# Cloudflare auto-deploys to production with VITE_CONVEX_URL → prod Convex
-
-# 3. Deploy Convex backend to prod if there are backend changes
-npx convex deploy --env-file .env.production
-```
-
-### 14.5 Environment Variable Management
-
-#### In Convex (backend secrets)
-
-Set per-deployment with `npx convex env set`:
-
-```bash
-# Dev
-npx convex env set AUTH_GOOGLE_ID="..." --env-file .env.local
-npx convex env set AUTH_GOOGLE_SECRET="..." --env-file .env.local
-
-# Prod
-npx convex env set AUTH_GOOGLE_ID="..." --env-file .env.production
-npx convex env set AUTH_GOOGLE_SECRET="..." --env-file .env.production
-```
-
-Convex env vars are **not** in Git — they are stored encrypted in Convex Cloud.
-
-#### In Cloudflare Pages (frontend build vars)
-
-Set via Cloudflare Pages dashboard → Settings → Environment variables.
-Configure separately for the `staging` and `main` branch deployments:
-
-- `VITE_CONVEX_URL` — different per branch
-- `VITE_CONVEX_SITE_URL` — different per branch
-
-These are build-time variables that get baked into the static bundle.
-
-#### Why staging uses dev Convex
-
-Both `staging` and local dev share the **same** Convex deployment (`dev:<slug>`).
-This is intentional:
-
-- Feature development happens against dev Convex.
-- Staging is a "dressed rehearsal" using the same dev backend — the frontend
-  is built and served by Cloudflare (matching prod infra), but the backend is
-  dev, so you can test end-to-end without risking prod data.
-- If you need a separate Convex deployment for staging, create a second Convex
-  project. In practice, dev Convex is sufficient for most teams.
-
-### 14.6 Coordinating Frontend + Backend Changes
-
-When a change touches both the frontend (React) and backend (Convex):
-
-1. **Deploy Convex to dev first.** This makes the new mutations/actions/schema
-   available so the staging frontend can use them.
-2. **Merge the frontend PR to staging.** Cloudflare builds with the staging
-   `VITE_CONVEX_URL`, which points at dev Convex (where the new backend code
-   already lives).
-3. **Verify on staging preview URL.**
-4. **Merge staging → main.**
-5. **Deploy Convex to prod.** Do this immediately after the main merge so the
-   production frontend never talks to a backend that's missing the new code.
-
-**Rollback note**: Convex keeps old function versions around briefly.
-Cloudflare Pages keeps previous deploys available for instant rollback.
-If something breaks, roll back Cloudflare Pages first (instant), then
-revert the Convex deploy if needed.
+- Feature branches merge into `staging` first; `staging` promotes to `main`.
+- Never push directly to `main` or `staging`.
+- Deploy Convex backend changes **before** the frontend PR that depends on them.
+- When merging `staging` → `main`, deploy Convex to prod immediately after.
 
 ---
 
-## 15. Quick-Start Checklist
+## 26. Quick-Start Checklist
 
-When creating a new project, follow this order:
+### A. Project Initialization
 
-1. [ ] `pnpm create vite@latest <name> --template react-ts`
-2. [ ] Install all dependencies (§1.2–1.7)
-3. [ ] Configure `tsconfig.json` / `tsconfig.app.json` / `tsconfig.node.json` (§3)
-4. [ ] Configure `vite.config.ts` with plugins + test config (§4)
-5. [ ] Configure `eslint.config.js` (§5)
-6. [ ] Create `.gitignore` (§6)
-7. [ ] Set up `tests/setup.ts` + `playwright.config.ts` (§7–8)
-8. [ ] `gh repo create` + push initial commit (§9.1)
-9. [ ] Create `.github/workflows/ci.yml` (§9.2)
-10. [ ] `npx convex dev --configure` + deploy to dev (§11.1)
-11. [ ] Create `.env.local`, `.env.staging`, `.env.production` (§11.3)
-12. [ ] Create Google OAuth client (§12.1) and download JSON
-13. [ ] Set `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET` in Convex (§12.2)
-14. [ ] Create Convex auth files (`auth.ts`, `auth.config.ts`, `http.ts`) (§12.3)
-15. [ ] Wire up `main.tsx` with `ConvexAuthProvider` (§12.5)
-16. [ ] Create Convex schema with `authTables` spread (§12.4)
-17. [ ] Create Cloudflare Pages project + connect GitHub (§10.1)
-18. [ ] Set env vars in Cloudflare Pages dashboard (§10.3)
-19. [ ] Add custom domain in Cloudflare Pages (§10.1)
-20. [ ] Push branch — verify CI passes + Cloudflare deploys
+- [ ] `pnpm create vite@latest <name> --template react-ts`
+- [ ] Install all dependencies (§1.2–1.7)
+- [ ] Install Husky + lint-staged (§1.8) — create `.husky/pre-commit` and `.husky/pre-push`
+
+### B. Tooling & Config
+
+- [ ] Configure `tsconfig.json` / `tsconfig.app.json` / `tsconfig.node.json` (§3)
+- [ ] Configure `vite.config.ts` with `@/*` alias, plugins, `strictPort`, test config (§4)
+- [ ] Configure `eslint.config.js` (§5)
+- [ ] Configure `.prettierrc` + `.prettierignore` (§6)
+- [ ] Create `.gitignore` (§7)
+- [ ] Create `.env.development.example` + `.env.production.example` (§8)
+- [ ] Create `src/index.css` with Tailwind v4 `@theme` + accessibility base styles (§10)
+
+### C. Frontend Foundation
+
+- [ ] Create `src/lib/utils.ts` with `cn()` helper (§9.1)
+- [ ] Set up `src/main.tsx` with full provider hierarchy including `ConvexAuthProvider` (§11)
+- [ ] Set up `src/App.tsx` with auth guard + lazy routes (§12)
+- [ ] Create `src/hooks/useAuth.ts` (§13)
+- [ ] Set up `src/i18n/index.ts` + `src/i18n/en.ts` (§14)
+
+### D. Shared Components & Legal
+
+- [ ] Create `PageSpinner` (§12.2), `ErrorDialog` (§16.3), and `ErrorBoundary` (§16.1)
+- [ ] Create `PrivacyScreen` + `TermsScreen` (§17)
+
+### E. Testing Infrastructure
+
+- [ ] Set up `tests/setup.ts` (§18.2)
+- [ ] Set up `playwright.config.ts` (§19.1)
+- [ ] Create `e2e/mocks/convex-react.ts` + `e2e/mocks/convex-auth-react.ts` (§19.2)
+
+### F. Backend & Authentication
+
+- [ ] `npx convex dev --configure` + deploy to dev (§20.1)
+- [ ] Create Convex schema with `authTables` spread (§20.3)
+- [ ] Create Convex auth files: `auth.ts` (multi-provider), `auth.config.ts`, `http.ts` (§20.4–20.6)
+- [ ] Create `.env.local`, `.env.staging`, `.env.production`
+- [ ] Create Google OAuth client in Google Cloud Console (§21.1) and download JSON
+- [ ] Set `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET` in Convex (§21.2)
+
+### G. CI/CD & Launch
+
+- [ ] `gh repo create` + push initial commit (§22.1)
+- [ ] Create `.github/workflows/ci.yml` (§22.2)
+- [ ] Create Cloudflare Pages project + connect GitHub repository (§23.1)
+- [ ] Set `VITE_CONVEX_URL` and `VITE_CONVEX_SITE_URL` in Cloudflare Pages dashboard (§23.3)
+- [ ] Add custom domain in Cloudflare Pages (§23.1)
+- [ ] Push branch — verify CI passes + Cloudflare Pages deploys successfully

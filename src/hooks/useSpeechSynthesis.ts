@@ -17,7 +17,8 @@ export function useSpeechSynthesis(): UseSpeechSynthesisReturn {
   const ensureVoices = useCallback(() => {
     if (!isSupported || voiceRef.current) return;
     const voices = speechSynthesis.getVoices();
-    voiceRef.current = voices.find((v) => v.lang.startsWith('en')) ?? voices[0] ?? null;
+    voiceRef.current =
+      voices.find((v) => v.lang.startsWith('en')) ?? voices[0] ?? null;
   }, [isSupported]);
 
   const speak = useCallback(
