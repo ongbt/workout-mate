@@ -27,6 +27,7 @@ patterns proven across multiple Convex + React apps.
 | `cn()` utility (clsx + tailwind-merge) | Single source of truth for conditional classes; resolves Tailwind conflicts |
 | `React.lazy()` per route | Code-splits each page; costs 3 lines per route, pays for itself after 3 routes |
 | ESLint flat config | Legacy `.eslintrc` format is deprecated; flat config is the only forward path |
+| Pre-push lint + test gate | Catches non-auto-fixable lint errors that `lint-staged` misses; blocks broken code before CI |
 | Prettier with `prettier-plugin-tailwindcss` | Consistent formatting; Tailwind class sorting prevents diff noise |
 | `html[lang]` synced to i18n | Required for accessibility and SEO |
 | `<title>` + meta description per page | Every route needs its own head tags (via `react-helmet-async`) |
@@ -146,6 +147,24 @@ pnpm add -D wrangler
 pnpm add -D husky lint-staged
 pnpm exec husky init
 ```
+
+Husky creates hook scripts in `.husky/`. Two hooks are required:
+
+**`.husky/pre-commit`** — auto-fix staged files:
+
+```
+pnpm exec lint-staged
+```
+
+**`.husky/pre-push`** — gate that runs full lint + tests before push:
+
+```
+pnpm lint && pnpm test
+```
+
+Why both: `lint-staged` only touches staged files and uses `--fix`, but
+non-auto-fixable lint errors (e.g., `react-hooks/refs`) can still slip through.
+The pre-push hook runs `eslint .` on the entire project, catching these before CI.
 
 ---
 
@@ -1438,7 +1457,7 @@ Rules:
 
 - [ ] `pnpm create vite@latest <name> --template react-ts`
 - [ ] Install all dependencies (§1.2–1.7)
-- [ ] Install Husky + lint-staged (§1.8)
+- [ ] Install Husky + lint-staged (§1.8) — create `.husky/pre-commit` and `.husky/pre-push`
 
 ### B. Tooling & Config
 
