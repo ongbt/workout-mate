@@ -5,6 +5,7 @@ const mockUseConvexAuth = vi.fn();
 
 vi.mock('convex/react', () => ({
   useConvexAuth: () => mockUseConvexAuth(),
+  useQuery: () => null,
   ConvexReactClient: vi.fn(),
 }));
 
