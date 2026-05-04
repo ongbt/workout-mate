@@ -1,11 +1,11 @@
 import { type ReactNode, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAuthActions } from '@convex-dev/auth/react';
+import { useAuth } from '../hooks/useAuth';
 import { useError } from '../context/ErrorContext';
 
 export function Layout({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
-  const { signOut } = useAuthActions();
+  const { signOut } = useAuth();
   const { showError } = useError();
 
   const handleSignOut = useCallback(async () => {

@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
-import { useConvexAuth } from 'convex/react';
+import { useAuth } from './hooks/useAuth';
 import { LoginScreen } from './screens/LoginScreen';
 import { PwaUpdatePrompt } from './components/PwaUpdatePrompt';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -26,7 +26,7 @@ const TermsScreen = lazy(() =>
 );
 
 function App() {
-  const { isLoading, isAuthenticated } = useConvexAuth();
+  const { isLoading, isAuthenticated } = useAuth();
 
   if (isLoading) {
     return (
