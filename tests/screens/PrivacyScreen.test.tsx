@@ -33,11 +33,21 @@ describe('PrivacyScreen', () => {
 
   it('renders all section headings', () => {
     renderPrivacy();
-    expect(screen.getByText('screens.privacy.dataWeCollect.heading')).toBeDefined();
-    expect(screen.getByText('screens.privacy.howWeUseData.heading')).toBeDefined();
-    expect(screen.getByText('screens.privacy.dataStorage.heading')).toBeDefined();
-    expect(screen.getByText('screens.privacy.accountDeletion.heading')).toBeDefined();
-    expect(screen.getByText('screens.privacy.thirdParty.heading')).toBeDefined();
+    expect(
+      screen.getByText('screens.privacy.dataWeCollect.heading'),
+    ).toBeDefined();
+    expect(
+      screen.getByText('screens.privacy.howWeUseData.heading'),
+    ).toBeDefined();
+    expect(
+      screen.getByText('screens.privacy.dataStorage.heading'),
+    ).toBeDefined();
+    expect(
+      screen.getByText('screens.privacy.accountDeletion.heading'),
+    ).toBeDefined();
+    expect(
+      screen.getByText('screens.privacy.thirdParty.heading'),
+    ).toBeDefined();
     expect(screen.getByText('screens.privacy.contact.heading')).toBeDefined();
   });
 

@@ -30,8 +30,8 @@ function App() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="flex h-full items-center justify-center">
+        <div className="border-primary h-8 w-8 animate-spin rounded-full border-2 border-t-transparent" />
       </div>
     );
   }
@@ -45,8 +45,8 @@ function App() {
       <PwaUpdatePrompt />
       <Suspense
         fallback={
-          <div className="flex items-center justify-center h-full">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="flex h-full items-center justify-center">
+            <div className="border-primary h-8 w-8 animate-spin rounded-full border-2 border-t-transparent" />
           </div>
         }
       >
@@ -55,7 +55,10 @@ function App() {
             <Route path="/" element={<HomeScreen />} />
             <Route path="/workout/new" element={<WorkoutEditScreen />} />
             <Route path="/workout/:workoutId" element={<WorkoutEditScreen />} />
-            <Route path="/active/:workoutId" element={<WorkoutActiveScreen />} />
+            <Route
+              path="/active/:workoutId"
+              element={<WorkoutActiveScreen />}
+            />
             <Route path="/privacy" element={<PrivacyScreen />} />
             <Route path="/terms" element={<TermsScreen />} />
           </Routes>

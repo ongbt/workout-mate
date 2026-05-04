@@ -31,10 +31,10 @@ Convex gives exactly two deployments per project: **dev** and **prod**. Staging 
 
 ### Deployments
 
-| Deployment | Slug | Used for |
-|---|---|---|
-| Dev | `resolute-wildcat-738` | Local dev + staging preview |
-| Prod | `rapid-gull-240` | Production |
+| Deployment | Slug                   | Used for                    |
+| ---------- | ---------------------- | --------------------------- |
+| Dev        | `resolute-wildcat-738` | Local dev + staging preview |
+| Prod       | `rapid-gull-240`       | Production                  |
 
 ### Commands
 
@@ -59,6 +59,7 @@ npx convex logs --prod --history 20         # View prod logs
 - `.env.production` — production (`--env-file .env.production`)
 
 All use `CONVEX_DEPLOYMENT` to select the target deployment:
+
 ```
 CONVEX_DEPLOYMENT=dev:resolute-wildcat-738   # dev/staging
 CONVEX_DEPLOYMENT=prod:rapid-gull-240        # production
@@ -68,15 +69,15 @@ CONVEX_DEPLOYMENT=prod:rapid-gull-240        # production
 
 Every env var set on dev must be duplicated on prod. Use the same values except `SITE_URL`:
 
-| Variable | Dev | Prod |
-|---|---|---|
-| `SITE_URL` | `http://localhost:5173` | Custom domain |
-| `AUTH_GOOGLE_ID` | Same | Same |
-| `AUTH_GOOGLE_SECRET` | Same | Same |
-| `AUTH_SECRET` | Same | Same |
-| `JWT_KID` | Same | Same |
-| `JWT_PRIVATE_KEY` | Same | Same |
-| `JWKS` | Same | Same |
+| Variable             | Dev                     | Prod          |
+| -------------------- | ----------------------- | ------------- |
+| `SITE_URL`           | `http://localhost:5173` | Custom domain |
+| `AUTH_GOOGLE_ID`     | Same                    | Same          |
+| `AUTH_GOOGLE_SECRET` | Same                    | Same          |
+| `AUTH_SECRET`        | Same                    | Same          |
+| `JWT_KID`            | Same                    | Same          |
+| `JWT_PRIVATE_KEY`    | Same                    | Same          |
+| `JWKS`               | Same                    | Same          |
 
 ### JWT_PRIVATE_KEY gotchas
 
@@ -85,6 +86,7 @@ The key must be RSA PKCS#8 format. Newlines in the key value get stored as space
 **Do NOT use `--from-file` with a key name argument.** The command `npx convex env set JWT_PRIVATE_KEY --from-file .env` reads the `KEY=` prefix as part of the value, producing a double-prefixed value.
 
 Correct ways:
+
 ```bash
 # File must be in .env format: KEY=VALUE
 npx convex env set --from-file .env --prod
@@ -96,6 +98,7 @@ npx convex env set JWT_PRIVATE_KEY --prod
 ### Database seeding
 
 Convex has no built-in "run on deploy" hook. Seed tables by:
+
 1. Making the seed mutation **idempotent** (check if data exists, return early)
 2. Calling it from the client on first load via `useEffect` when the query returns empty
 3. Manually after deploy: `npx convex run module:seedFunction --prod`
@@ -150,12 +153,14 @@ curl -s -X PATCH \
 `VITE_*` env vars are inlined into the JS bundle during `vite build`. Changing them requires a **new build** (push to the branch).
 
 Verify the baked URL in production:
+
 ```bash
 JS_URL=$(curl -s https://your-domain.com | grep -o '/assets/index-[^.]*\.js')
 curl -s "https://your-domain.com$JS_URL" | grep -o 'rapid-gull.*\.cloud'
 ```
 
 Trigger a rebuild with an empty commit:
+
 ```bash
 git commit --allow-empty -m "Trigger rebuild" && git push
 ```
@@ -169,6 +174,7 @@ Set in Cloudflare Dashboard > Pages > your-project > Custom domains. The domain'
 One OAuth 2.0 client supports all environments — add all URIs to a single client.
 
 **Authorized JavaScript origins**:
+
 ```
 http://localhost:5173
 https://staging.<project>.pages.dev
@@ -176,6 +182,7 @@ https://<custom-domain>.com
 ```
 
 **Authorized redirect URIs**:
+
 ```
 https://resolute-wildcat-738.convex.site/api/auth/callback/google
 https://rapid-gull-240.convex.site/api/auth/callback/google
@@ -194,15 +201,16 @@ feature → PR to staging → CI passes → merge → Cloudflare Pages auto-depl
 ```
 
 Staging shares the dev Convex deployment, so:
+
 - Changes to dev Convex affect staging immediately
 - OAuth from staging redirects to `SITE_URL` on dev (usually `localhost:5173`) — may not work unless `SITE_URL` is temporarily changed
 
 ## Git branches
 
-| Branch | Cloudflare Pages env | Convex deployment |
-|---|---|---|
-| `main` | production | `rapid-gull-240` (prod) |
-| `staging` | preview | `resolute-wildcat-738` (dev) |
+| Branch    | Cloudflare Pages env | Convex deployment            |
+| --------- | -------------------- | ---------------------------- |
+| `main`    | production           | `rapid-gull-240` (prod)      |
+| `staging` | preview              | `resolute-wildcat-738` (dev) |
 
 ## CI
 

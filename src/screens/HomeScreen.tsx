@@ -17,14 +17,14 @@ export function HomeScreen() {
         <title>{t('screens.home.pageTitle')}</title>
         <meta name="description" content={t('screens.home.pageDescription')} />
       </Helmet>
-      <header className="py-6 flex items-center justify-between">
+      <header className="flex items-center justify-between py-6">
         <h1 className="text-2xl font-bold">{t('app.title')}</h1>
       </header>
 
       {workouts.length === 0 ? (
         <EmptyState />
       ) : (
-        <ul className="flex flex-col gap-3 flex-1 overflow-y-auto scrollbar-hide pb-4">
+        <ul className="scrollbar-hide flex flex-1 flex-col gap-3 overflow-y-auto pb-4">
           {workouts.map((w) => (
             <li key={w.id}>
               <WorkoutSetCard
@@ -41,7 +41,7 @@ export function HomeScreen() {
         <button
           type="button"
           onClick={() => navigate('/workout/new')}
-          className="w-full py-4 rounded-xl bg-primary text-background font-bold text-lg"
+          className="bg-primary text-background w-full rounded-xl py-4 text-lg font-bold"
         >
           {t('screens.home.createNew')}
         </button>

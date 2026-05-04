@@ -20,19 +20,17 @@ export function Layout({ children }: { children: ReactNode }) {
   }, [signOut, showError, t]);
 
   return (
-    <div className="flex flex-col h-full max-w-lg mx-auto px-5 pb-safe">
+    <div className="pb-safe mx-auto flex h-full max-w-lg flex-col px-5">
       <div className="flex items-center justify-end py-2">
         <button
           type="button"
           onClick={handleSignOut}
-          className="text-xs text-text-muted hover:text-text px-2 py-1 rounded-lg hover:bg-surface transition-colors"
+          className="text-text-muted hover:text-text hover:bg-surface rounded-lg px-2 py-1 text-xs transition-colors"
         >
           {t('actions.signOut')}
         </button>
       </div>
-      <main className="flex flex-col flex-1">
-        {children}
-      </main>
+      <main className="flex flex-1 flex-col">{children}</main>
     </div>
   );
 }

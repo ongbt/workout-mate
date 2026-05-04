@@ -7,23 +7,39 @@ interface Props {
   totalExercises: number;
 }
 
-export function ProgressBar({ currentRound, totalRounds, currentExerciseIndex, totalExercises }: Props) {
+export function ProgressBar({
+  currentRound,
+  totalRounds,
+  currentExerciseIndex,
+  totalExercises,
+}: Props) {
   const { t } = useTranslation();
   const totalSteps = totalRounds * totalExercises;
-  const currentStep = (currentRound - 1) * totalExercises + currentExerciseIndex;
+  const currentStep =
+    (currentRound - 1) * totalExercises + currentExerciseIndex;
   const pct = totalSteps > 0 ? (currentStep / totalSteps) * 100 : 0;
 
   return (
-    <div className="flex flex-col items-center gap-1 w-full">
-      <div className="w-full h-2 bg-surface rounded-full overflow-hidden">
+    <div className="flex w-full flex-col items-center gap-1">
+      <div className="bg-surface h-2 w-full overflow-hidden rounded-full">
         <div
-          className="h-full bg-primary rounded-full transition-all duration-300"
+          className="bg-primary h-full rounded-full transition-all duration-300"
           style={{ width: `${pct}%` }}
         />
       </div>
-      <div className="flex justify-between w-full text-xs text-text-muted">
-        <span>{t('components.progressBar.round', { current: currentRound, total: totalRounds })}</span>
-        <span>{t('components.progressBar.exercise', { current: currentExerciseIndex + 1, total: totalExercises })}</span>
+      <div className="text-text-muted flex w-full justify-between text-xs">
+        <span>
+          {t('components.progressBar.round', {
+            current: currentRound,
+            total: totalRounds,
+          })}
+        </span>
+        <span>
+          {t('components.progressBar.exercise', {
+            current: currentExerciseIndex + 1,
+            total: totalExercises,
+          })}
+        </span>
       </div>
     </div>
   );

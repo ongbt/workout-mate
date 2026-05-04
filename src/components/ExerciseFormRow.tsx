@@ -20,12 +20,24 @@ const textClass = (error: boolean) =>
     error ? 'border-red-500' : 'border-text-muted/30'
   }`;
 
-const numClass = 'w-16 bg-surface border border-text-muted/30 rounded-lg px-2 py-2.5 text-center text-text focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/30';
+const numClass =
+  'w-16 bg-surface border border-text-muted/30 rounded-lg px-2 py-2.5 text-center text-text focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/30';
 
 const moveBtnClass =
   'w-8 h-8 flex items-center justify-center rounded-lg text-text-muted hover:text-text hover:bg-surface shrink-0 disabled:opacity-20 disabled:cursor-not-allowed';
 
-export function ExerciseFormRow({ exercise, error, onChange, onBlur, onDelete, canDelete, onMoveUp, onMoveDown, canMoveUp, canMoveDown }: Props) {
+export function ExerciseFormRow({
+  exercise,
+  error,
+  onChange,
+  onBlur,
+  onDelete,
+  canDelete,
+  onMoveUp,
+  onMoveDown,
+  canMoveUp,
+  canMoveDown,
+}: Props) {
   const { t } = useTranslation();
   const [durStr, setDurStr] = useState(String(exercise.durationSeconds));
 
@@ -56,8 +68,18 @@ export function ExerciseFormRow({ exercise, error, onChange, onBlur, onDelete, c
         className={moveBtnClass}
         aria-label={t('components.exerciseFormRow.moveUp')}
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+        <svg
+          className="h-4 w-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M5 15l7-7 7 7"
+          />
         </svg>
       </button>
       <button
@@ -67,8 +89,18 @@ export function ExerciseFormRow({ exercise, error, onChange, onBlur, onDelete, c
         className={moveBtnClass}
         aria-label={t('components.exerciseFormRow.moveDown')}
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        <svg
+          className="h-4 w-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </button>
       <input
@@ -91,10 +123,20 @@ export function ExerciseFormRow({ exercise, error, onChange, onBlur, onDelete, c
         type="button"
         onClick={onDelete}
         disabled={!canDelete}
-        className="w-10 h-10 flex items-center justify-center rounded-lg text-red-400 hover:bg-red-400/10 disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-red-400 hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-30"
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        <svg
+          className="h-4 w-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M6 18L18 6M6 6l12 12"
+          />
         </svg>
       </button>
     </div>

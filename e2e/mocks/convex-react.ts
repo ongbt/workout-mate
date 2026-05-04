@@ -24,9 +24,11 @@ export function useConvex() {
 export function useConvexAuth() {
   const authenticated =
     typeof window !== 'undefined' &&
-    ((window as unknown as Record<string, unknown>).__E2E_AUTH__ as
-      | { isAuthenticated: boolean }
-      | undefined)?.isAuthenticated !== false;
+    (
+      (window as unknown as Record<string, unknown>).__E2E_AUTH__ as
+        | { isAuthenticated: boolean }
+        | undefined
+    )?.isAuthenticated !== false;
   return { isLoading: false, isAuthenticated: authenticated };
 }
 

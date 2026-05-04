@@ -18,21 +18,33 @@ const mockWorkout: WorkoutConfig = {
 describe('WorkoutSetCard', () => {
   it('renders workout name', () => {
     const { getByText } = render(
-      <WorkoutSetCard workout={mockWorkout} onEdit={vi.fn()} onPlay={vi.fn()} />,
+      <WorkoutSetCard
+        workout={mockWorkout}
+        onEdit={vi.fn()}
+        onPlay={vi.fn()}
+      />,
     );
     expect(getByText('Test Workout')).toBeDefined();
   });
 
   it('shows exercise count in text', () => {
     const { container } = render(
-      <WorkoutSetCard workout={mockWorkout} onEdit={vi.fn()} onPlay={vi.fn()} />,
+      <WorkoutSetCard
+        workout={mockWorkout}
+        onEdit={vi.fn()}
+        onPlay={vi.fn()}
+      />,
     );
     expect(container.textContent).toContain('2 exercises');
   });
 
   it('shows round count in text', () => {
     const { container } = render(
-      <WorkoutSetCard workout={mockWorkout} onEdit={vi.fn()} onPlay={vi.fn()} />,
+      <WorkoutSetCard
+        workout={mockWorkout}
+        onEdit={vi.fn()}
+        onPlay={vi.fn()}
+      />,
     );
     expect(container.textContent).toContain('2 rounds');
   });

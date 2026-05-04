@@ -35,7 +35,9 @@ describe('TermsScreen', () => {
     renderTerms();
     expect(screen.getByText('screens.terms.acceptance.heading')).toBeDefined();
     expect(screen.getByText('screens.terms.description.heading')).toBeDefined();
-    expect(screen.getByText('screens.terms.responsibilities.heading')).toBeDefined();
+    expect(
+      screen.getByText('screens.terms.responsibilities.heading'),
+    ).toBeDefined();
     expect(screen.getByText('screens.terms.liability.heading')).toBeDefined();
     expect(screen.getByText('screens.terms.changes.heading')).toBeDefined();
     expect(screen.getByText('screens.terms.contact.heading')).toBeDefined();

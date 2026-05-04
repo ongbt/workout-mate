@@ -2,7 +2,10 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
 import { ControlButtons } from '../../src/components/ControlButtons';
 
-function setup(phase: 'idle' | 'exercise' | 'rest' | 'finished', isRunning = false) {
+function setup(
+  phase: 'idle' | 'exercise' | 'rest' | 'finished',
+  isRunning = false,
+) {
   const props = {
     phase,
     isRunning,

@@ -32,12 +32,17 @@ export function useWakeLock() {
 
   useEffect(() => {
     const onVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && activeRef.current && !sentinelRef.current) {
+      if (
+        document.visibilityState === 'visible' &&
+        activeRef.current &&
+        !sentinelRef.current
+      ) {
         request();
       }
     };
     document.addEventListener('visibilitychange', onVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+    return () =>
+      document.removeEventListener('visibilitychange', onVisibilityChange);
   }, [request]);
 
   useEffect(() => {

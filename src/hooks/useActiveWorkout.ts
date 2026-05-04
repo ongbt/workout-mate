@@ -22,10 +22,18 @@ export function useActiveWorkout(config: WorkoutConfig) {
   const idxRef = useRef(currentExerciseIndex);
 
   // Sync refs for use in callbacks that need latest values without re-creating
-  useEffect(() => { configRef.current = config; });
-  useEffect(() => { phaseRef.current = phase; }, [phase]);
-  useEffect(() => { roundRef.current = currentRound; }, [currentRound]);
-  useEffect(() => { idxRef.current = currentExerciseIndex; }, [currentExerciseIndex]);
+  useEffect(() => {
+    configRef.current = config;
+  });
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
+  useEffect(() => {
+    roundRef.current = currentRound;
+  }, [currentRound]);
+  useEffect(() => {
+    idxRef.current = currentExerciseIndex;
+  }, [currentExerciseIndex]);
 
   const suppressFirstReadoutRef = useRef(false);
   const startTimerRef = useRef<(ms: number) => void>(() => {});
@@ -50,7 +58,10 @@ export function useActiveWorkout(config: WorkoutConfig) {
     if (p === 'exercise') {
       const isLastExercise = idx >= cfg.exercises.length - 1;
       const isLastRound = round >= cfg.rounds;
-      const restSecs = isLastExercise && !isLastRound ? cfg.restBetweenRoundsSeconds : cfg.restSeconds;
+      const restSecs =
+        isLastExercise && !isLastRound
+          ? cfg.restBetweenRoundsSeconds
+          : cfg.restSeconds;
       setRestDurationMs(restSecs * 1000);
       setPhase('rest');
       if (isLastExercise) {
@@ -100,7 +111,14 @@ export function useActiveWorkout(config: WorkoutConfig) {
     advancePhase();
   }, [advancePhase]);
 
-  const { timeRemainingMs, isRunning, start: startTimer, pause, resume, stop: stopTimer } = useTimer(handleTimerComplete);
+  const {
+    timeRemainingMs,
+    isRunning,
+    start: startTimer,
+    pause,
+    resume,
+    stop: stopTimer,
+  } = useTimer(handleTimerComplete);
 
   useEffect(() => {
     startTimerRef.current = startTimer;

@@ -4,7 +4,9 @@ test.describe('Home screen', () => {
   test.beforeEach(async ({ page }) => {
     // Enable auth bypass to show the authenticated home screen
     await page.addInitScript(() => {
-      (window as unknown as Record<string, unknown>).__E2E_AUTH__ = { isAuthenticated: true };
+      (window as unknown as Record<string, unknown>).__E2E_AUTH__ = {
+        isAuthenticated: true,
+      };
     });
   });
 
@@ -41,7 +43,9 @@ test.describe('Home screen', () => {
 test.describe('Navigation', () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
-      (window as unknown as Record<string, unknown>).__E2E_AUTH__ = { isAuthenticated: true };
+      (window as unknown as Record<string, unknown>).__E2E_AUTH__ = {
+        isAuthenticated: true,
+      };
     });
   });
 

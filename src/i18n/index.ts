@@ -44,33 +44,40 @@ const en = {
     'workout.start': 'Start Workout',
     'workout.stop': 'Stop',
     'workout.stopConfirmTitle': 'Stop Workout?',
-    'workout.stopConfirmMessage': 'Your progress will be lost. Are you sure you want to stop?',
+    'workout.stopConfirmMessage':
+      'Your progress will be lost. Are you sure you want to stop?',
     'workout.continue': 'Continue Workout',
     'errors.unexpected': 'Something went wrong',
-    'errors.tryAgain': 'Please try again. If the problem persists, try reloading the app.',
+    'errors.tryAgain':
+      'Please try again. If the problem persists, try reloading the app.',
     'errors.mutationFailed': 'Save Failed',
     'errors.signInFailed': 'Sign In Failed',
   },
   screens: {
     'home.createNew': 'Create New Workout',
     'home.pageTitle': 'Workout Mate',
-    'home.pageDescription': 'Create and manage your workout routines with voice-guided timers',
+    'home.pageDescription':
+      'Create and manage your workout routines with voice-guided timers',
     'login.pageTitle': 'Sign In | Workout Mate',
-    'login.pageDescription': 'Sign in to Workout Mate to track your workouts with voice-guided timers',
+    'login.pageDescription':
+      'Sign in to Workout Mate to track your workouts with voice-guided timers',
     'workoutEdit.titleEdit': 'Edit Workout',
     'workoutEdit.titleNew': 'New Workout',
     'workoutEdit.pageTitleEdit': 'Edit Workout | Workout Mate',
     'workoutEdit.pageTitleNew': 'New Workout | Workout Mate',
-    'workoutEdit.pageDescription': 'Configure your workout exercises, rounds, and rest periods',
+    'workoutEdit.pageDescription':
+      'Configure your workout exercises, rounds, and rest periods',
     'workoutEdit.namePlaceholder': 'e.g. Upper Body',
     'workoutEdit.restBetweenRoundsLabel': 'Rest between rounds (sec)',
     'workoutEdit.restBetweenExercisesLabel': 'Rest between exercises (sec)',
     'workoutEdit.importTemplate': 'Import template',
     'workoutEdit.addExercise': '+ Add',
     'workoutEdit.deleteConfirmTitle': 'Delete Workout?',
-    'workoutEdit.deleteConfirmMessage': 'This will permanently delete "{{name}}". This action cannot be undone.',
+    'workoutEdit.deleteConfirmMessage':
+      'This will permanently delete "{{name}}". This action cannot be undone.',
     'workoutEdit.importModalTitle': 'Import from Template',
-    'workoutEdit.importModalDescription': 'Select a template to pre-fill the exercises, rest times, and rounds.',
+    'workoutEdit.importModalDescription':
+      'Select a template to pre-fill the exercises, rest times, and rounds.',
     'workoutActive.pageTitle': '{{name}} | Workout Mate',
     'workoutActive.pageDescription': 'Active workout session',
     'workoutActive.next': 'Next: {{name}}',
@@ -83,15 +90,20 @@ const en = {
     'privacy.title': 'Privacy Policy',
     'privacy.lastUpdated': 'Last updated: May 2026',
     'privacy.dataWeCollect.heading': 'Data We Collect',
-    'privacy.dataWeCollect.body': 'Workout Mate stores your workout configurations and preferences to provide the timer and voice guidance functionality. Authentication is handled via Google OAuth — we receive your name and email address from Google.',
+    'privacy.dataWeCollect.body':
+      'Workout Mate stores your workout configurations and preferences to provide the timer and voice guidance functionality. Authentication is handled via Google OAuth — we receive your name and email address from Google.',
     'privacy.howWeUseData.heading': 'How We Use Your Data',
-    'privacy.howWeUseData.body': 'Your data is used solely to deliver the app\'s functionality: saving and loading your workouts, and personalizing your experience. We do not sell, share, or use your data for advertising.',
+    'privacy.howWeUseData.body':
+      "Your data is used solely to deliver the app's functionality: saving and loading your workouts, and personalizing your experience. We do not sell, share, or use your data for advertising.",
     'privacy.dataStorage.heading': 'Data Storage',
-    'privacy.dataStorage.body': 'All data is stored in Convex Cloud and is encrypted in transit and at rest. Your workout data is associated with your account and is accessible only to you.',
+    'privacy.dataStorage.body':
+      'All data is stored in Convex Cloud and is encrypted in transit and at rest. Your workout data is associated with your account and is accessible only to you.',
     'privacy.accountDeletion.heading': 'Account Deletion',
-    'privacy.accountDeletion.body': 'You may delete your account at any time. This will permanently remove all your personal data and workout configurations from our systems. To request account deletion, contact us at the email address below.',
+    'privacy.accountDeletion.body':
+      'You may delete your account at any time. This will permanently remove all your personal data and workout configurations from our systems. To request account deletion, contact us at the email address below.',
     'privacy.thirdParty.heading': 'Third-Party Services',
-    'privacy.thirdParty.body': 'This app uses Google OAuth for authentication. Google\'s privacy policy governs how they handle your login credentials. We also use analytics services to understand app usage — these are subject to their respective privacy policies.',
+    'privacy.thirdParty.body':
+      "This app uses Google OAuth for authentication. Google's privacy policy governs how they handle your login credentials. We also use analytics services to understand app usage — these are subject to their respective privacy policies.",
     'privacy.contact.heading': 'Contact',
     'privacy.contact.body': 'For privacy-related inquiries, contact us at ',
     'privacy.contact.email': 'privacy@workout-mate.app',
@@ -100,15 +112,20 @@ const en = {
     'terms.title': 'Terms of Service',
     'terms.lastUpdated': 'Last updated: May 2026',
     'terms.acceptance.heading': 'Acceptance of Terms',
-    'terms.acceptance.body': 'By using Workout Mate, you agree to these terms. If you do not agree, do not use the service.',
+    'terms.acceptance.body':
+      'By using Workout Mate, you agree to these terms. If you do not agree, do not use the service.',
     'terms.description.heading': 'Description of Service',
-    'terms.description.body': 'Workout Mate is a workout timer application that provides timed exercise routines with voice guidance. The service is provided "as is" without warranties of any kind.',
+    'terms.description.body':
+      'Workout Mate is a workout timer application that provides timed exercise routines with voice guidance. The service is provided "as is" without warranties of any kind.',
     'terms.responsibilities.heading': 'User Responsibilities',
-    'terms.responsibilities.body': 'You are responsible for maintaining the confidentiality of your account credentials. You agree not to misuse the service or attempt to access it through unauthorized means.',
+    'terms.responsibilities.body':
+      'You are responsible for maintaining the confidentiality of your account credentials. You agree not to misuse the service or attempt to access it through unauthorized means.',
     'terms.liability.heading': 'Limitation of Liability',
-    'terms.liability.body': 'Workout Mate and its creators shall not be liable for any damages arising from the use or inability to use the service. This includes but is not limited to personal injury during exercise — always consult a healthcare professional before beginning any workout program.',
+    'terms.liability.body':
+      'Workout Mate and its creators shall not be liable for any damages arising from the use or inability to use the service. This includes but is not limited to personal injury during exercise — always consult a healthcare professional before beginning any workout program.',
     'terms.changes.heading': 'Changes to Terms',
-    'terms.changes.body': 'We reserve the right to update these terms at any time. Continued use of the service after changes constitutes acceptance of the new terms.',
+    'terms.changes.body':
+      'We reserve the right to update these terms at any time. Continued use of the service after changes constitutes acceptance of the new terms.',
     'terms.contact.heading': 'Contact',
     'terms.contact.body': 'For questions about these terms, contact ',
     'terms.contact.email': 'terms@workout-mate.app',
@@ -132,7 +149,9 @@ const en = {
 };
 
 const withPrefix = (prefix: string, obj: Record<string, string>) =>
-  Object.fromEntries(Object.entries(obj).map(([k, v]) => [`${prefix}.${k}`, v]));
+  Object.fromEntries(
+    Object.entries(obj).map(([k, v]) => [`${prefix}.${k}`, v]),
+  );
 
 i18n
   .use(LanguageDetector)

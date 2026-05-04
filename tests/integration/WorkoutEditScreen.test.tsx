@@ -59,7 +59,9 @@ describe('WorkoutEditScreen', () => {
   it('save button is disabled when form has errors', () => {
     const { getByText } = renderEdit();
     const saveBtn = getByText('actions.save');
-    expect((saveBtn.closest('button') as HTMLButtonElement).disabled).toBe(true);
+    expect((saveBtn.closest('button') as HTMLButtonElement).disabled).toBe(
+      true,
+    );
   });
 
   it('enables save when exercise name is filled', () => {
@@ -68,7 +70,9 @@ describe('WorkoutEditScreen', () => {
     // Fill in exercise name to clear the blank exercise validation
     const exerciseNameInput = inputs[4];
     if (exerciseNameInput) {
-      fireEvent.change(exerciseNameInput, { target: { value: 'Test Exercise' } });
+      fireEvent.change(exerciseNameInput, {
+        target: { value: 'Test Exercise' },
+      });
     }
     // Also fill in workout name
     fireEvent.change(inputs[0]!, { target: { value: 'My Workout' } });

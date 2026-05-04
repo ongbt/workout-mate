@@ -19,49 +19,49 @@ patterns proven across multiple Convex + React apps.
 
 ### 0.1 Universal rules
 
-| Rule | Why |
-|---|---|
-| `pnpm install --frozen-lockfile` in CI | Prevents silent lockfile drift between local and CI |
-| `strictPort: true` in Vite config | Prevents silent port switches that break WebSocket/OAuth redirects |
-| `@/*` path alias | Eliminates `../../../` relative import chains |
-| `cn()` utility (clsx + tailwind-merge) | Single source of truth for conditional classes; resolves Tailwind conflicts |
-| `React.lazy()` per route | Code-splits each page; costs 3 lines per route, pays for itself after 3 routes |
-| ESLint flat config | Legacy `.eslintrc` format is deprecated; flat config is the only forward path |
-| Pre-push lint + test gate | Catches non-auto-fixable lint errors that `lint-staged` misses; blocks broken code before CI |
-| Prettier with `prettier-plugin-tailwindcss` | Consistent formatting; Tailwind class sorting prevents diff noise |
-| `html[lang]` synced to i18n | Required for accessibility and SEO |
-| `<title>` + meta description per page | Every route needs its own head tags (via `react-helmet-async`) |
-| Privacy + Terms pages | Legal requirement for app stores, OAuth verification, and compliance |
-| Touch targets ≥ 44×44px | WCAG 2.1 AA minimum for mobile |
-| `aria-label` on icon-only buttons | Screen readers need labels |
+| Rule                                        | Why                                                                                          |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `pnpm install --frozen-lockfile` in CI      | Prevents silent lockfile drift between local and CI                                          |
+| `strictPort: true` in Vite config           | Prevents silent port switches that break WebSocket/OAuth redirects                           |
+| `@/*` path alias                            | Eliminates `../../../` relative import chains                                                |
+| `cn()` utility (clsx + tailwind-merge)      | Single source of truth for conditional classes; resolves Tailwind conflicts                  |
+| `React.lazy()` per route                    | Code-splits each page; costs 3 lines per route, pays for itself after 3 routes               |
+| ESLint flat config                          | Legacy `.eslintrc` format is deprecated; flat config is the only forward path                |
+| Pre-push lint + test gate                   | Catches non-auto-fixable lint errors that `lint-staged` misses; blocks broken code before CI |
+| Prettier with `prettier-plugin-tailwindcss` | Consistent formatting; Tailwind class sorting prevents diff noise                            |
+| `html[lang]` synced to i18n                 | Required for accessibility and SEO                                                           |
+| `<title>` + meta description per page       | Every route needs its own head tags (via `react-helmet-async`)                               |
+| Privacy + Terms pages                       | Legal requirement for app stores, OAuth verification, and compliance                         |
+| Touch targets ≥ 44×44px                     | WCAG 2.1 AA minimum for mobile                                                               |
+| `aria-label` on icon-only buttons           | Screen readers need labels                                                                   |
 
 ### 0.2 Convex conventions
 
-| Rule | Why |
-|---|---|
-| `camelCase` column names in schema | Matches JS/TS convention; avoids impedance mismatch with frontend types |
-| `camelCase` in frontend types | Same reason — one convention across the stack |
-| Spread `authTables` in schema | Required by `@convex-dev/auth` for user/session storage |
-| Ownership check in every mutation | Every mutation that reads user data must verify `userId` matches the authenticated user |
-| Idempotent seed mutations | Check if data exists before inserting; safe to call repeatedly |
-| Separate file per domain entity | `users.ts`, `games.ts`, `sheets.ts` — not one monolithic `mutations.ts` |
+| Rule                               | Why                                                                                     |
+| ---------------------------------- | --------------------------------------------------------------------------------------- |
+| `camelCase` column names in schema | Matches JS/TS convention; avoids impedance mismatch with frontend types                 |
+| `camelCase` in frontend types      | Same reason — one convention across the stack                                           |
+| Spread `authTables` in schema      | Required by `@convex-dev/auth` for user/session storage                                 |
+| Ownership check in every mutation  | Every mutation that reads user data must verify `userId` matches the authenticated user |
+| Idempotent seed mutations          | Check if data exists before inserting; safe to call repeatedly                          |
+| Separate file per domain entity    | `users.ts`, `games.ts`, `sheets.ts` — not one monolithic `mutations.ts`                 |
 
 ### 0.3 Auth rules
 
-| Rule | Why |
-|---|---|
-| Google OAuth + Email/Password minimum | Google-only excludes users; add password auth for reach |
-| Anonymous auth for quick onboarding | Let users try the app before committing to sign-up |
-| Centralized `useAuth()` hook | Wraps `useConvexAuth` + user profile query — one import everywhere |
-| Auth guard in `App.tsx` | Single gate that checks `isLoading` / `isAuthenticated` before rendering routes |
-| Client secret never committed | `client_secret_*.json` in `.gitignore`; keys stored in Convex env vars |
+| Rule                                  | Why                                                                             |
+| ------------------------------------- | ------------------------------------------------------------------------------- |
+| Google OAuth + Email/Password minimum | Google-only excludes users; add password auth for reach                         |
+| Anonymous auth for quick onboarding   | Let users try the app before committing to sign-up                              |
+| Centralized `useAuth()` hook          | Wraps `useConvexAuth` + user profile query — one import everywhere              |
+| Auth guard in `App.tsx`               | Single gate that checks `isLoading` / `isAuthenticated` before rendering routes |
+| Client secret never committed         | `client_secret_*.json` in `.gitignore`; keys stored in Convex env vars          |
 
 ### 0.4 Error handling rules
 
-| Rule | Why |
-|---|---|
-| Error boundary at router level | Catches render crashes; shows recovery UI instead of white screen |
-| Reusable `ErrorDialog` component | Consistent error presentation; one animation/accessibility pattern |
+| Rule                                 | Why                                                                        |
+| ------------------------------------ | -------------------------------------------------------------------------- |
+| Error boundary at router level       | Catches render crashes; shows recovery UI instead of white screen          |
+| Reusable `ErrorDialog` component     | Consistent error presentation; one animation/accessibility pattern         |
 | try/catch around every mutation call | Network failures, auth expiry, and Convex errors all surface through catch |
 
 ---
@@ -190,19 +190,20 @@ The pre-push hook runs `eslint .` on the entire project, catching these before C
     "test:e2e:ui": "playwright test --ui",
     "deploy:staging": "wrangler pages deploy dist --branch staging",
     "deploy:prod": "wrangler pages deploy dist --branch main",
-    "prepare": "husky"
+    "prepare": "husky",
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild", "workerd"]
+    "onlyBuiltDependencies": ["esbuild", "workerd"],
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": ["eslint --fix", "prettier --write"],
-    "*.{json,css,md,html}": ["prettier --write"]
-  }
+    "*.{json,css,md,html}": ["prettier --write"],
+  },
 }
 ```
 
 Key points:
+
 - `build` runs `tsc -b` **before** `vite build` for type-checking.
 - `format` / `format:check` for Prettier.
 - `prepare` runs Husky install after `pnpm install`.
@@ -260,6 +261,7 @@ Use three tsconfig files with **project references**:
 ```
 
 Key flags:
+
 - `strict: true` — non-negotiable.
 - `noUncheckedIndexedAccess` — catches undefined from index access (e.g., `arr[0]` could be undefined).
 - `noPropertyAccessFromIndexSignature` — catches typos on dynamic objects.
@@ -299,13 +301,13 @@ Key flags:
 
 ```typescript
 /// <reference types="vitest/config" />
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
-import { VitePWA } from 'vite-plugin-pwa'
-import path from 'node:path'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import { VitePWA } from 'vite-plugin-pwa';
+import path from 'node:path';
 
-const isE2E = process.env['VITE_E2E'] === 'true'
+const isE2E = process.env['VITE_E2E'] === 'true';
 
 export default defineConfig({
   resolve: {
@@ -315,7 +317,9 @@ export default defineConfig({
       ...(isE2E
         ? {
             'convex/react': path.resolve('e2e/mocks/convex-react.ts'),
-            '@convex-dev/auth/react': path.resolve('e2e/mocks/convex-auth-react.ts'),
+            '@convex-dev/auth/react': path.resolve(
+              'e2e/mocks/convex-auth-react.ts',
+            ),
           }
         : {}),
     },
@@ -336,7 +340,12 @@ export default defineConfig({
         orientation: 'portrait',
         start_url: '/',
         icons: [
-          { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
+          {
+            src: '/favicon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'any',
+          },
         ],
       },
       workbox: {
@@ -364,10 +373,11 @@ export default defineConfig({
       ],
     },
   },
-})
+});
 ```
 
 Key additions over a bare scaffold:
+
 - `@/*` path alias — use `import { Button } from '@/components/Button'` everywhere.
 - E2E mock aliases — when `VITE_E2E=true`, Convex imports are swapped for mocks
   so E2E tests run without a real backend.
@@ -382,12 +392,12 @@ Key additions over a bare scaffold:
 Use the **flat config** format (`eslint.config.js`):
 
 ```javascript
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import tseslint from 'typescript-eslint'
-import { defineConfig, globalIgnores } from 'eslint/config'
+import js from '@eslint/js';
+import globals from 'globals';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import tseslint from 'typescript-eslint';
+import { defineConfig, globalIgnores } from 'eslint/config';
 
 export default defineConfig([
   globalIgnores(['dist']),
@@ -403,7 +413,7 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
-])
+]);
 ```
 
 ---
@@ -504,11 +514,11 @@ The `.gitignore` above allows `.example` files but blocks real env files.
 ### 9.1 `src/lib/utils.ts` — `cn()` helper
 
 ```typescript
-import { clsx, type ClassValue } from 'clsx'
-import { twMerge } from 'tailwind-merge'
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 ```
 
@@ -527,10 +537,10 @@ className={cn('px-4 py-2', isActive ? 'bg-primary' : 'bg-surface')}
 With `@/*` aliases, imports look like:
 
 ```typescript
-import { Button } from '@/components/Button'
-import { useAuth } from '@/hooks/useAuth'
-import { cn } from '@/lib/utils'
-import type { Game } from '@/types'
+import { Button } from '@/components/Button';
+import { useAuth } from '@/hooks/useAuth';
+import { cn } from '@/lib/utils';
+import type { Game } from '@/types';
 ```
 
 Never write `../../../` relative imports — use `@/` everywhere.
@@ -542,7 +552,7 @@ Never write `../../../` relative imports — use `@/` everywhere.
 ### 10.1 `src/index.css`
 
 ```css
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
   --color-primary: #22c55e;
@@ -552,8 +562,10 @@ Never write `../../../` relative imports — use `@/` everywhere.
   --color-text-muted: #94a3b8;
 }
 
-html, body, #root {
-  @apply h-full w-full m-0 p-0;
+html,
+body,
+#root {
+  @apply m-0 h-full w-full p-0;
 }
 
 body {
@@ -563,7 +575,8 @@ body {
 }
 
 /* Minimum touch target for accessibility */
-button, a {
+button,
+a {
   @apply min-h-[44px] min-w-[44px];
 }
 
@@ -627,6 +640,7 @@ createRoot(document.getElementById('root')!).render(
 ```
 
 Provider order (outermost → innermost):
+
 1. `StrictMode` — React dev checks
 2. `Suspense` — loading state while i18n initializes
 3. `HelmetProvider` — per-page `<title>` / meta tags
@@ -677,6 +691,7 @@ export default App
 ```
 
 Key patterns:
+
 - **HashRouter** — works on Cloudflare Pages without `_redirects` SPA fallback.
 - **Auth guard at App level** — one gate, not scattered across pages.
 - **`React.lazy()` per route** — each screen is its own chunk.
@@ -701,16 +716,16 @@ export function PageSpinner() {
 ### 13.1 `src/hooks/useAuth.ts`
 
 ```typescript
-import { useConvexAuth } from 'convex/react'
-import { useAuthActions } from '@convex-dev/auth/react'
-import { useQuery } from 'convex/react'
-import { api } from '../../convex/_generated/api'
+import { useConvexAuth } from 'convex/react';
+import { useAuthActions } from '@convex-dev/auth/react';
+import { useQuery } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 
 export function useAuth() {
-  const { isAuthenticated, isLoading } = useConvexAuth()
-  const { signOut: convexSignOut } = useAuthActions()
+  const { isAuthenticated, isLoading } = useConvexAuth();
+  const { signOut: convexSignOut } = useAuthActions();
 
-  const user = useQuery(api.users.currentUser)
+  const user = useQuery(api.users.currentUser);
 
   const profile = user
     ? {
@@ -718,11 +733,11 @@ export function useAuth() {
         name: user.name ?? 'Anonymous',
         avatarUrl: user.image ?? null,
       }
-    : null
+    : null;
 
   const signOut = async () => {
-    await convexSignOut()
-  }
+    await convexSignOut();
+  };
 
   return {
     user,
@@ -730,7 +745,7 @@ export function useAuth() {
     isLoading,
     isAuthenticated,
     signOut,
-  }
+  };
 }
 ```
 
@@ -745,11 +760,11 @@ they import `useAuth` from `@/hooks/useAuth`.
 ### 14.1 `src/i18n/index.ts`
 
 ```typescript
-import i18n from 'i18next'
-import { initReactI18next } from 'react-i18next'
-import LanguageDetector from 'i18next-browser-languagedetector'
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
 
-import { en } from './en'
+import { en } from './en';
 
 i18n
   .use(LanguageDetector)
@@ -761,9 +776,9 @@ i18n
     load: 'languageOnly',
     keySeparator: false,
     interpolation: { escapeValue: false },
-  })
+  });
 
-export default i18n
+export default i18n;
 ```
 
 ### 14.2 `src/i18n/en.ts`
@@ -786,10 +801,11 @@ export const en = {
 
   'components.emptyState.noData': 'Nothing here yet',
   'components.emptyState.description': 'Create your first item to get started',
-}
+};
 ```
 
 Rules:
+
 - Keys use dot notation for namespacing: `domain.component.key`.
 - Every page has `pageTitle` and `pageDescription` keys for SEO.
 - Start with English only; add other languages when needed.
@@ -900,16 +916,16 @@ Wrap the router in `ErrorBoundary`:
 Every mutation call must handle errors:
 
 ```typescript
-const createItem = useMutation(api.items.create)
+const createItem = useMutation(api.items.create);
 
 const handleCreate = async (data: ItemData) => {
   try {
-    await createItem(data)
+    await createItem(data);
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Something went wrong'
-    setDialog({ title: 'Failed to create', message })
+    const message = err instanceof Error ? err.message : 'Something went wrong';
+    setDialog({ title: 'Failed to create', message });
   }
-}
+};
 ```
 
 ### 16.3 `ErrorDialog` component
@@ -991,9 +1007,9 @@ Either is fine. The guide uses Option A for consistency with the scaffold.
 ### 18.2 Test setup file (`tests/setup.ts`)
 
 ```typescript
-import '@testing-library/jest-dom/vitest'
-import { cleanup } from '@testing-library/react'
-import { afterEach, vi } from 'vitest'
+import '@testing-library/jest-dom/vitest';
+import { cleanup } from '@testing-library/react';
+import { afterEach, vi } from 'vitest';
 
 // Mock i18n globally so tests don't need real translations
 vi.mock('react-i18next', () => ({
@@ -1004,11 +1020,11 @@ vi.mock('react-i18next', () => ({
       changeLanguage: () => new Promise(() => {}),
     },
   }),
-}))
+}));
 
 afterEach(() => {
-  cleanup()
-})
+  cleanup();
+});
 ```
 
 ### 18.3 Test patterns
@@ -1028,9 +1044,9 @@ afterEach(() => {
 ### 19.1 Playwright config (`playwright.config.ts`)
 
 ```typescript
-import { defineConfig, devices } from '@playwright/test'
+import { defineConfig, devices } from '@playwright/test';
 
-const isCI = !!process.env['CI']
+const isCI = !!process.env['CI'];
 
 export default defineConfig({
   testDir: './e2e',
@@ -1061,7 +1077,7 @@ export default defineConfig({
     },
   },
   testMatch: '**/*.spec.ts',
-})
+});
 ```
 
 ### 19.2 E2E mock infrastructure
@@ -1117,9 +1133,9 @@ with the `CONVEX_DEPLOYMENT` variable.
 Use `camelCase` for all column names:
 
 ```typescript
-import { defineSchema, defineTable } from 'convex/server'
-import { v } from 'convex/values'
-import { authTables } from '@convex-dev/auth/server'
+import { defineSchema, defineTable } from 'convex/server';
+import { v } from 'convex/values';
+import { authTables } from '@convex-dev/auth/server';
 
 export default defineSchema({
   ...authTables,
@@ -1132,10 +1148,11 @@ export default defineSchema({
   })
     .index('by_owner', ['ownerId'])
     .index('by_public', ['isPublic']),
-})
+});
 ```
 
 Rules:
+
 - Always spread `authTables` — required by `@convex-dev/auth`.
 - Use `camelCase` for column names.
 - Add indexes for every query pattern you'll use.
@@ -1145,14 +1162,14 @@ Rules:
 ### 20.4 Auth (`convex/auth.ts`)
 
 ```typescript
-import Google from '@auth/core/providers/google'
-import { Password } from '@convex-dev/auth/providers/Password'
-import { Anonymous } from '@convex-dev/auth/providers/Anonymous'
-import { convexAuth } from '@convex-dev/auth/server'
+import Google from '@auth/core/providers/google';
+import { Password } from '@convex-dev/auth/providers/Password';
+import { Anonymous } from '@convex-dev/auth/providers/Anonymous';
+import { convexAuth } from '@convex-dev/auth/server';
 
 export const { auth, signIn, signOut, store } = convexAuth({
   providers: [Google, Password, Anonymous],
-})
+});
 ```
 
 Provide at minimum Google + Password. Anonymous is strongly recommended for
@@ -1168,19 +1185,19 @@ export default {
       applicationID: 'convex',
     },
   ],
-}
+};
 ```
 
 ### 20.6 HTTP router (`convex/http.ts`)
 
 ```typescript
-import { httpRouter } from 'convex/server'
-import { auth } from './auth'
+import { httpRouter } from 'convex/server';
+import { auth } from './auth';
 
-const http = httpRouter()
-auth.addHttpRoutes(http)
+const http = httpRouter();
+auth.addHttpRoutes(http);
 
-export default http
+export default http;
 ```
 
 ### 20.7 Domain-based files
@@ -1202,22 +1219,22 @@ convex/
 
 ```typescript
 // convex/seed.ts
-import { mutation } from './_generated/server'
+import { mutation } from './_generated/server';
 
 const DEFAULTS = [
-  { name: 'Default Item 1', /* ... */ },
-  { name: 'Default Item 2', /* ... */ },
-]
+  { name: 'Default Item 1' /* ... */ },
+  { name: 'Default Item 2' /* ... */ },
+];
 
 export const seedDefaults = mutation({
   handler: async (ctx) => {
-    const existing = await ctx.db.query('items').first()
-    if (existing) return  // idempotent — safe to call repeatedly
+    const existing = await ctx.db.query('items').first();
+    if (existing) return; // idempotent — safe to call repeatedly
     for (const item of DEFAULTS) {
-      await ctx.db.insert('items', item)
+      await ctx.db.insert('items', item);
     }
   },
-})
+});
 ```
 
 ### 20.9 Ownership check pattern
@@ -1228,15 +1245,15 @@ Every mutation that reads user-owned data must verify ownership:
 export const update = mutation({
   args: { id: v.id('items'), name: v.string() },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx)
-    if (!userId) throw new Error('Not authenticated')
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error('Not authenticated');
 
-    const item = await ctx.db.get(args.id)
-    if (!item || item.ownerId !== userId) throw new Error('Not found')
+    const item = await ctx.db.get(args.id);
+    if (!item || item.ownerId !== userId) throw new Error('Not found');
 
-    await ctx.db.patch(args.id, { name: args.name })
+    await ctx.db.patch(args.id, { name: args.name });
   },
-})
+});
 ```
 
 ---
@@ -1279,9 +1296,9 @@ Get `client_id` and `client_secret` from the downloaded JSON file.
 
 Set in **Convex** (via `npx convex env set`), not in `.env` files:
 
-| Variable | Source |
-|---|---|
-| `AUTH_GOOGLE_ID` | `client_id` from downloaded JSON |
+| Variable             | Source                               |
+| -------------------- | ------------------------------------ |
+| `AUTH_GOOGLE_ID`     | `client_id` from downloaded JSON     |
 | `AUTH_GOOGLE_SECRET` | `client_secret` from downloaded JSON |
 
 These are per-deployment (dev and prod separately).
@@ -1369,6 +1386,7 @@ jobs:
 ```
 
 Key CI rules:
+
 - Always use `--frozen-lockfile` — CI must fail if lockfile is out of date.
 - Run `format:check` in CI to enforce Prettier.
 - Upload coverage as an artifact so it survives between jobs.
@@ -1389,10 +1407,10 @@ Key CI rules:
 
 ### 23.2 Branch deployment strategy
 
-| Git Branch | Cloudflare Environment | Convex Backend |
-|---|---|---|
-| `staging` | Preview deployment | Dev Convex (`dev:<slug>`) |
-| `main` | Production (custom domain) | Prod Convex (`prod:<slug>`) |
+| Git Branch | Cloudflare Environment     | Convex Backend              |
+| ---------- | -------------------------- | --------------------------- |
+| `staging`  | Preview deployment         | Dev Convex (`dev:<slug>`)   |
+| `main`     | Production (custom domain) | Prod Convex (`prod:<slug>`) |
 
 Cloudflare Pages auto-deploys on push to these branches.
 
@@ -1400,10 +1418,10 @@ Cloudflare Pages auto-deploys on push to these branches.
 
 Set these in the Cloudflare Pages dashboard (per-environment):
 
-| Variable | Staging Value | Production Value |
-|---|---|---|
-| `VITE_CONVEX_URL` | `https://<dev-slug>.convex.cloud` | `https://<prod-slug>.convex.cloud` |
-| `VITE_CONVEX_SITE_URL` | `https://<dev-slug>.convex.site` | `https://<prod-slug>.convex.site` |
+| Variable               | Staging Value                     | Production Value                   |
+| ---------------------- | --------------------------------- | ---------------------------------- |
+| `VITE_CONVEX_URL`      | `https://<dev-slug>.convex.cloud` | `https://<prod-slug>.convex.cloud` |
+| `VITE_CONVEX_SITE_URL` | `https://<dev-slug>.convex.site`  | `https://<prod-slug>.convex.site`  |
 
 Do **not** put these in `wrangler.toml` — manage them via the Cloudflare Pages UI.
 
@@ -1424,11 +1442,11 @@ If using `BrowserRouter`: create `public/_redirects` with `/* /index.html 200`.
 
 ## 24. Environment Matrix
 
-| Environment | Vite `.env` file | Convex Deployment | Cloudflare Pages |
-|---|---|---|---|
-| **Local Dev** | `.env.local` | `dev:<slug>` | `pnpm dev` (localhost) |
-| **Staging** | `.env.staging` | `dev:<slug>` | Preview URL |
-| **Production** | `.env.production` | `prod:<slug>` | Custom domain |
+| Environment    | Vite `.env` file  | Convex Deployment | Cloudflare Pages       |
+| -------------- | ----------------- | ----------------- | ---------------------- |
+| **Local Dev**  | `.env.local`      | `dev:<slug>`      | `pnpm dev` (localhost) |
+| **Staging**    | `.env.staging`    | `dev:<slug>`      | Preview URL            |
+| **Production** | `.env.production` | `prod:<slug>`     | Custom domain          |
 
 ---
 
@@ -1443,6 +1461,7 @@ feature/* ─────────►   (local dev only) ─────►  
 ```
 
 Rules:
+
 - `main` is protected — all changes arrive via PR.
 - Feature branches merge into `staging` first; `staging` promotes to `main`.
 - Never push directly to `main` or `staging`.

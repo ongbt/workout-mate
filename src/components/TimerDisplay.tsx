@@ -13,9 +13,17 @@ const STROKE = 8;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 const VIEWBOX = (RADIUS + STROKE) * 2;
 
-export function TimerDisplay({ timeRemainingMs, totalDurationMs, phase }: Props) {
+export function TimerDisplay({
+  timeRemainingMs,
+  totalDurationMs,
+  phase,
+}: Props) {
   const seconds = Math.ceil(timeRemainingMs / 1000);
-  const isWarn = seconds <= COUNTDOWN_WARN_THRESHOLD && seconds > 0 && phase !== 'idle' && phase !== 'finished';
+  const isWarn =
+    seconds <= COUNTDOWN_WARN_THRESHOLD &&
+    seconds > 0 &&
+    phase !== 'idle' &&
+    phase !== 'finished';
   const fraction = totalDurationMs > 0 ? timeRemainingMs / totalDurationMs : 1;
   const offset = CIRCUMFERENCE * (1 - fraction);
 
@@ -26,8 +34,16 @@ export function TimerDisplay({ timeRemainingMs, totalDurationMs, phase }: Props)
     <motion.div
       className="relative inline-flex items-center justify-center"
       initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1, transition: { duration: 0.2, ease: 'easeOut' } }}
-      exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.15, ease: 'easeIn' } }}
+      animate={{
+        opacity: 1,
+        scale: 1,
+        transition: { duration: 0.2, ease: 'easeOut' },
+      }}
+      exit={{
+        opacity: 0,
+        scale: 0.9,
+        transition: { duration: 0.15, ease: 'easeIn' },
+      }}
     >
       <svg
         width={VIEWBOX}
@@ -55,12 +71,14 @@ export function TimerDisplay({ timeRemainingMs, totalDurationMs, phase }: Props)
           strokeLinecap="round"
           strokeDasharray={CIRCUMFERENCE}
           strokeDashoffset={offset}
-          style={{ transition: 'stroke-dashoffset 0.2s linear, stroke 0.3s ease' }}
+          style={{
+            transition: 'stroke-dashoffset 0.2s linear, stroke 0.3s ease',
+          }}
         />
       </svg>
       {/* Timer text centered in donut */}
       <span
-        className="absolute font-mono font-bold text-5xl tracking-tight tabular-nums"
+        className="absolute font-mono text-5xl font-bold tracking-tight tabular-nums"
         style={{ color: textColor }}
       >
         {formatTime(timeRemainingMs)}

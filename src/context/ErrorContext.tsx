@@ -1,5 +1,11 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  type ReactNode,
+} from 'react';
 import { ErrorDialog } from '../components/ErrorDialog';
 
 interface ErrorContextValue {
@@ -9,7 +15,9 @@ interface ErrorContextValue {
 const ErrorContext = createContext<ErrorContextValue | null>(null);
 
 export function ErrorProvider({ children }: { children: ReactNode }) {
-  const [error, setError] = useState<{ title: string; message: string } | null>(null);
+  const [error, setError] = useState<{ title: string; message: string } | null>(
+    null,
+  );
 
   const showError = useCallback((title: string, message: string) => {
     setError({ title, message });

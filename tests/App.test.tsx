@@ -48,19 +48,28 @@ async function renderApp() {
 
 describe('App', () => {
   it('shows spinner while loading', async () => {
-    mockUseConvexAuth.mockReturnValue({ isLoading: true, isAuthenticated: false });
+    mockUseConvexAuth.mockReturnValue({
+      isLoading: true,
+      isAuthenticated: false,
+    });
     const { container } = await renderApp();
     expect(container.querySelector('.animate-spin')).toBeTruthy();
   });
 
   it('shows login screen when unauthenticated', async () => {
-    mockUseConvexAuth.mockReturnValue({ isLoading: false, isAuthenticated: false });
+    mockUseConvexAuth.mockReturnValue({
+      isLoading: false,
+      isAuthenticated: false,
+    });
     await renderApp();
     expect(screen.getByText('Login Screen')).toBeDefined();
   });
 
   it('renders home screen at / when authenticated', async () => {
-    mockUseConvexAuth.mockReturnValue({ isLoading: false, isAuthenticated: true });
+    mockUseConvexAuth.mockReturnValue({
+      isLoading: false,
+      isAuthenticated: true,
+    });
     await renderApp();
     expect(await screen.findByText('Home Screen')).toBeDefined();
   });

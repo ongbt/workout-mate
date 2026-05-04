@@ -31,7 +31,9 @@ function makeMockSynth() {
     pause: vi.fn<() => void>(),
     resume: vi.fn<() => void>(),
     getVoices: vi.fn<() => SpeechSynthesisVoice[]>().mockReturnValue([]),
-    onvoiceschanged: null as unknown as ((this: SpeechSynthesis, ev: Event) => unknown) | null,
+    onvoiceschanged: null as unknown as
+      | ((this: SpeechSynthesis, ev: Event) => unknown)
+      | null,
     paused: false,
     pending: false,
     speaking: false,

@@ -30,7 +30,7 @@ vi.mock('../../src/hooks/useWorkouts', () => ({
 
 import { useWorkouts } from '../../src/hooks/useWorkouts';
 
-function renderHomeWithWorkouts(workouts: typeof workoutA[]) {
+function renderHomeWithWorkouts(workouts: (typeof workoutA)[]) {
   vi.mocked(useWorkouts).mockReturnValue({
     workouts,
     addWorkout: vi.fn(),

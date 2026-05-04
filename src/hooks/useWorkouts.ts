@@ -6,7 +6,9 @@ import type { Doc, Id } from '../../convex/_generated/dataModel';
 import { useError } from '../context/ErrorContext';
 import type { WorkoutConfig } from '../types';
 
-function toWorkoutConfig(doc: Doc<'workouts'> | Doc<'defaultWorkouts'>): WorkoutConfig {
+function toWorkoutConfig(
+  doc: Doc<'workouts'> | Doc<'defaultWorkouts'>,
+): WorkoutConfig {
   return {
     id: doc._id,
     name: doc.name,

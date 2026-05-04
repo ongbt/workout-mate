@@ -15,7 +15,8 @@ vi.mock('virtual:pwa-register/react', () => ({
 describe('PwaUpdatePrompt', () => {
   it('returns null when no refresh needed', async () => {
     mockNeedRefresh = false;
-    const { PwaUpdatePrompt } = await import('../../src/components/PwaUpdatePrompt');
+    const { PwaUpdatePrompt } =
+      await import('../../src/components/PwaUpdatePrompt');
     const { container } = render(<PwaUpdatePrompt />);
     expect(container.innerHTML).toBe('');
   });
@@ -23,7 +24,8 @@ describe('PwaUpdatePrompt', () => {
   it('renders update prompt when needRefresh is true', async () => {
     mockNeedRefresh = true;
     vi.resetModules();
-    const { PwaUpdatePrompt } = await import('../../src/components/PwaUpdatePrompt');
+    const { PwaUpdatePrompt } =
+      await import('../../src/components/PwaUpdatePrompt');
     const { getByText } = render(<PwaUpdatePrompt />);
     expect(getByText('components.pwaUpdatePrompt.newVersion')).toBeDefined();
     expect(getByText('actions.updateNow')).toBeDefined();
@@ -34,7 +36,8 @@ describe('PwaUpdatePrompt', () => {
     mockNeedRefresh = true;
     mockUpdateServiceWorker.mockClear();
     vi.resetModules();
-    const { PwaUpdatePrompt } = await import('../../src/components/PwaUpdatePrompt');
+    const { PwaUpdatePrompt } =
+      await import('../../src/components/PwaUpdatePrompt');
     const { getByText } = render(<PwaUpdatePrompt />);
     fireEvent.click(getByText('actions.updateNow'));
     expect(mockUpdateServiceWorker).toHaveBeenCalledWith(true);
@@ -44,7 +47,8 @@ describe('PwaUpdatePrompt', () => {
     mockNeedRefresh = true;
     mockSetNeedRefresh.mockClear();
     vi.resetModules();
-    const { PwaUpdatePrompt } = await import('../../src/components/PwaUpdatePrompt');
+    const { PwaUpdatePrompt } =
+      await import('../../src/components/PwaUpdatePrompt');
     const { getByText } = render(<PwaUpdatePrompt />);
     fireEvent.click(getByText('actions.dismiss'));
     expect(mockSetNeedRefresh).toHaveBeenCalledWith(false);

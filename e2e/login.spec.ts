@@ -4,7 +4,9 @@ test.describe('Login screen', () => {
   test.beforeEach(async ({ page }) => {
     // Disable auth bypass to show the login screen
     await page.addInitScript(() => {
-      (window as unknown as Record<string, unknown>).__E2E_AUTH__ = { isAuthenticated: false };
+      (window as unknown as Record<string, unknown>).__E2E_AUTH__ = {
+        isAuthenticated: false,
+      };
     });
   });
 
