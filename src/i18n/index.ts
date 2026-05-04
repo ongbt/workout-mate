@@ -104,10 +104,10 @@ const en = {
     'terms.contact.email': 'terms@workout-mate.app',
   },
   components: {
-    'phaseIndicator.ready': 'Ready',
+    'phaseIndicator.idle': 'Ready',
     'phaseIndicator.exercise': 'Exercise',
     'phaseIndicator.rest': 'Rest',
-    'phaseIndicator.done': 'Done',
+    'phaseIndicator.finished': 'Done',
     'emptyState.noWorkouts': 'No workouts yet',
     'emptyState.createFirst': 'Create your first workout set to get started',
     'finishedView.workoutComplete': 'Workout Complete!',
