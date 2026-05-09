@@ -1,28 +1,28 @@
 import { lazy, Suspense } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
-import { useAuth } from './hooks/useAuth';
-import { LoginScreen } from './screens/LoginScreen';
-import { PwaUpdatePrompt } from './components/PwaUpdatePrompt';
-import { ErrorBoundary } from './components/ErrorBoundary';
+import { useAuth } from '@/hooks/useAuth';
+import { LoginScreen } from '@/screens/LoginScreen';
+import { PwaUpdatePrompt } from '@/components/PwaUpdatePrompt';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const HomeScreen = lazy(() =>
-  import('./screens/HomeScreen').then((m) => ({ default: m.HomeScreen })),
+  import('@/screens/HomeScreen').then((m) => ({ default: m.HomeScreen })),
 );
 const WorkoutEditScreen = lazy(() =>
-  import('./screens/WorkoutEditScreen').then((m) => ({
+  import('@/screens/WorkoutEditScreen').then((m) => ({
     default: m.WorkoutEditScreen,
   })),
 );
 const WorkoutActiveScreen = lazy(() =>
-  import('./screens/WorkoutActiveScreen').then((m) => ({
+  import('@/screens/WorkoutActiveScreen').then((m) => ({
     default: m.WorkoutActiveScreen,
   })),
 );
 const PrivacyScreen = lazy(() =>
-  import('./screens/PrivacyScreen').then((m) => ({ default: m.PrivacyScreen })),
+  import('@/screens/PrivacyScreen').then((m) => ({ default: m.PrivacyScreen })),
 );
 const TermsScreen = lazy(() =>
-  import('./screens/TermsScreen').then((m) => ({ default: m.TermsScreen })),
+  import('@/screens/TermsScreen').then((m) => ({ default: m.TermsScreen })),
 );
 
 function App() {
