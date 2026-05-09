@@ -1,11 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Layout } from '../../src/components/Layout';
-
-const mockSignOut = vi.fn();
+import { mockSignOut } from '../setup';
 
 vi.mock('@convex-dev/auth/react', () => ({
-  useAuthActions: () => ({ signOut: mockSignOut }),
+  useAuthActions: () => ({ signOut: vi.fn() }),
 }));
 
 function renderLayout() {

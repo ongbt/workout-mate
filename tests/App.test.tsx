@@ -1,76 +1,48 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { ErrorProvider } from '../src/context/ErrorContext';
+import { authState } from './setup';
 
-const mockUseConvexAuth = vi.fn();
-
-vi.mock('convex/react', () => ({
-  useConvexAuth: () => mockUseConvexAuth(),
-  useQuery: () => null,
-  ConvexReactClient: vi.fn(),
-}));
-
-vi.mock('@convex-dev/auth/react', () => ({
-  useAuthActions: () => ({ signOut: vi.fn(), signIn: vi.fn() }),
-}));
-
-vi.mock('../src/screens/HomeScreen', () => ({
-  HomeScreen: () => <div>Home Screen</div>,
-}));
-
-vi.mock('../src/screens/WorkoutEditScreen', () => ({
-  WorkoutEditScreen: () => <div>Workout Edit</div>,
-}));
-
-vi.mock('../src/screens/WorkoutActiveScreen', () => ({
-  WorkoutActiveScreen: () => <div>Workout Active</div>,
-}));
-
-vi.mock('../src/screens/LoginScreen', () => ({
+vi.mock('@/screens/LoginScreen', () => ({
   LoginScreen: () => <div>Login Screen</div>,
 }));
 
-vi.mock('../src/screens/PrivacyScreen', () => ({
-  PrivacyScreen: () => <div>Privacy</div>,
-}));
-
-vi.mock('../src/screens/TermsScreen', () => ({
-  TermsScreen: () => <div>Terms</div>,
-}));
-
-vi.mock('../src/components/PwaUpdatePrompt', () => ({
+vi.mock('@/components/PwaUpdatePrompt', () => ({
   PwaUpdatePrompt: () => null,
+}));
+
+vi.mock('@/components/ErrorDialog', () => ({
+  ErrorDialog: () => null,
 }));
 
 async function renderApp() {
   const App = (await import('../src/App')).default;
-  return render(<App />);
+  return render(
+    <ErrorProvider>
+      <App />
+    </ErrorProvider>,
+  );
 }
 
 describe('App', () => {
   it('shows spinner while loading', async () => {
-    mockUseConvexAuth.mockReturnValue({
-      isLoading: true,
-      isAuthenticated: false,
-    });
+    authState.isLoading = true;
+    authState.isAuthenticated = false;
     const { container } = await renderApp();
     expect(container.querySelector('.animate-spin')).toBeTruthy();
   });
 
   it('shows login screen when unauthenticated', async () => {
-    mockUseConvexAuth.mockReturnValue({
-      isLoading: false,
-      isAuthenticated: false,
-    });
+    authState.isLoading = false;
+    authState.isAuthenticated = false;
     await renderApp();
     expect(screen.getByText('Login Screen')).toBeDefined();
   });
 
   it('renders home screen at / when authenticated', async () => {
-    mockUseConvexAuth.mockReturnValue({
-      isLoading: false,
-      isAuthenticated: true,
-    });
+    authState.isLoading = false;
+    authState.isAuthenticated = true;
     await renderApp();
-    expect(await screen.findByText('Home Screen')).toBeDefined();
+    expect(await screen.findByText('app.title')).toBeDefined();
   });
 });

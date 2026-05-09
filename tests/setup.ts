@@ -32,11 +32,42 @@ vi.mock('convex/react', () => ({
   ConvexReactClient: vi.fn(),
 }));
 
+vi.mock('virtual:pwa-register/react', () => ({
+  useRegisterSW: () => ({
+    needRefresh: [false, vi.fn()],
+    updateServiceWorker: vi.fn(),
+  }),
+}));
+
+vi.mock('@convex-dev/auth/react', () => ({
+  useAuthActions: () => ({ signOut: vi.fn(), signIn: vi.fn() }),
+}));
+
 vi.mock('../src/context/ErrorContext', () => ({
   ErrorProvider: ({ children }: { children: React.ReactNode }) => children,
   useError: () => ({ showError: vi.fn() }),
 }));
 
+export const mockSignOut = vi.fn();
+export const mockSignIn = vi.fn();
+
+export const authState = {
+  isLoading: false,
+  isAuthenticated: false,
+  user: null as unknown,
+  signOut: mockSignOut,
+  signIn: mockSignIn,
+};
+
+vi.mock('../src/hooks/useAuth', () => ({
+  useAuth: () => ({ ...authState }),
+}));
+
 afterEach(() => {
   cleanup();
+  authState.isLoading = false;
+  authState.isAuthenticated = false;
+  authState.user = null;
+  mockSignOut.mockClear();
+  mockSignIn.mockClear();
 });

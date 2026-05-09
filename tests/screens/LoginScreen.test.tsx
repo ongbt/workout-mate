@@ -2,11 +2,10 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { HelmetProvider } from 'react-helmet-async';
 import { LoginScreen } from '../../src/screens/LoginScreen';
-
-const mockSignIn = vi.fn();
+import { mockSignIn } from '../setup';
 
 vi.mock('@convex-dev/auth/react', () => ({
-  useAuthActions: () => ({ signIn: mockSignIn }),
+  useAuthActions: () => ({ signIn: vi.fn() }),
 }));
 
 function renderLogin() {
