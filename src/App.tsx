@@ -3,6 +3,7 @@ import { HashRouter, Routes, Route } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginScreen } from '@/screens/LoginScreen';
 import { PwaUpdatePrompt } from '@/components/PwaUpdatePrompt';
+import { AnalyticsTracker } from '@/components/AnalyticsTracker';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const HomeScreen = lazy(() =>
@@ -43,6 +44,7 @@ function App() {
   return (
     <HashRouter>
       <PwaUpdatePrompt />
+      <AnalyticsTracker />
       <Suspense
         fallback={
           <div className="flex h-full items-center justify-center">

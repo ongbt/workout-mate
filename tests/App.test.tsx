@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { HelmetProvider } from 'react-helmet-async';
 import { ErrorProvider } from '../src/context/ErrorContext';
+import { ConsentProvider } from '../src/context/ConsentContext';
 import App from '../src/App';
 import { authState } from './setup';
 
@@ -24,9 +25,11 @@ vi.mock('../src/components/ErrorDialog', () => ({
 function renderApp() {
   return render(
     <HelmetProvider>
-      <ErrorProvider>
-        <App />
-      </ErrorProvider>
+      <ConsentProvider>
+        <ErrorProvider>
+          <App />
+        </ErrorProvider>
+      </ConsentProvider>
     </HelmetProvider>,
   );
 }
