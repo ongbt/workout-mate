@@ -228,7 +228,9 @@ export function WorkoutEditScreen() {
       if (existing) {
         await updateWorkout(config);
       } else {
-        await addWorkout(config);
+        const { id, ...workout } = config;
+        void id;
+        await addWorkout(workout);
       }
       navigate('/');
     } catch (e) {

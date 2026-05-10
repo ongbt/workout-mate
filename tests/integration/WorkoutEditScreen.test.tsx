@@ -80,4 +80,34 @@ describe('WorkoutEditScreen', () => {
     const saveButton = container.querySelector('button[class*="bg-primary"]');
     expect(saveButton).toBeTruthy();
   });
+
+  it('should not pass id field to addWorkout when creating', () => {
+    const { container, getByText } = renderEdit();
+    const inputs = container.querySelectorAll('input');
+
+    // Fill workout name
+    fireEvent.change(inputs[0]!, { target: { value: 'My Workout' } });
+    // Fill first exercise name (inputs: name, rounds, restRound, restEx, exName, exDur, ...)
+    const exerciseNameInput = inputs[4];
+    if (exerciseNameInput) {
+      fireEvent.change(exerciseNameInput, {
+        target: { value: 'Test Exercise' },
+      });
+    }
+
+    const saveLabel = getByText('actions.save');
+    const saveButton = saveLabel.closest('button') as HTMLButtonElement;
+    expect(saveButton.disabled).toBe(false);
+    fireEvent.click(saveButton);
+
+    expect(mockAddWorkout).toHaveBeenCalledTimes(1);
+    const passedWorkout = mockAddWorkout.mock.calls[0]![0];
+    expect(passedWorkout).not.toHaveProperty('id');
+    expect(passedWorkout).toMatchObject({
+      name: 'My Workout',
+      exercises: expect.arrayContaining([
+        expect.objectContaining({ name: 'Test Exercise' }),
+      ]),
+    });
+  });
 });
