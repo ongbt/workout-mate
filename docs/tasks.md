@@ -1,49 +1,59 @@
 # Tasks
 
-## High — Missing infrastructure
+## High — Missing infrastructure (from global rules)
 
-- [x] **README.md** — How to run + project overview (required by global rules)
-- [x] **LICENSE** — Add license file at project root
-- [x] **Husky + lint-staged** — Pre-commit hook for linting on staged files
-- [x] **E2E tests** — Add `playwright.config.ts`, `e2e/` directory, auth + home specs
-- [x] **E2E in CI** — Add `e2e` job to `.github/workflows/ci.yml` (needs `check` job)
+- [ ] **Sentry** — Error tracking (`@sentry/react`). Init in `main.tsx` with DSN from env var. Add error boundary integration.
+- [ ] **GA4** — Acquisition analytics with consent gating. Add consent banner (opt-in, not implied) before any GA script loads. Follow GDPR minimum.
+- [ ] **PostHog** — Product analytics (feature flags, session recordings). Integrate alongside GA4 with same consent gate.
 
-## Medium — Missing services
+## High — Missing routes & data handling
 
-- [ ] **Sentry** — Error tracking (`@sentry/react`)
-- [ ] **GA4** — Acquisition analytics with consent gating
-- [ ] **PostHog** — Product analytics
-- [x] **i18next** — Internationalization (mandatory per global rules)
-- [x] **CSP** — `public/_headers` with strict Content Security Policy
+- [ ] **"Delete Account"** — Mutation that removes all user PII (profile, workouts, auth record) and propagates deletion to Sentry, GA4, PostHog. Add UI in account/settings screen.
 
-## Medium — Missing routes
+## Medium — Security
 
-- [x] **`/privacy` route** — Privacy policy page
-- [x] **`/terms` route** — Terms of service page
-- [ ] **"Delete Account"** — Remove PII, propagate to analytics
+- [ ] **Rate limiting** — Add rate limiting on public Convex write endpoints. Use Convex's built-in rate limiting or a custom middleware pattern.
+- [ ] **Helmet CSP** — Set CSP via `react-helmet-async` on every route as defense-in-depth (already have `public/_headers` for Cloudflare).
 
-## Low — Testing & SEO
+## Medium — UX
 
-- [x] **Test coverage** — Expand from 4 test files toward 80-90% unit / 60-80% integration
-- [x] **SEO** — Add `<meta name="description">` to `index.html`, per-page title management
-- [ ] **Dark/Light theme** — Add `dark:` Tailwind classes and theme toggle
+- [ ] **Dark/Light theme** — Add `dark:` Tailwind classes. Theme toggle in Layout header. Persist preference (localStorage + system default via `prefers-color-scheme`).
+- [ ] **Accessibility audit** — Run automated WCAG 2.1 AA check (axe-core or Lighthouse CI). Fix issues found. Add a11y check to CI.
 
-## Medium — Architecture & UX (from Pingo reconciliation)
+## Medium — Architecture
 
-- [x] **`cn()` utility** — Add `clsx` + `tailwind-merge`, create `src/lib/utils.ts` with `cn()` helper. Replace all template-literal class merging across components.
-- [x] **`@/*` path alias** — Add to `tsconfig.app.json` (`paths`) and `vite.config.ts` (`resolve.alias`). Replace deep relative imports (`../../components/Layout`) with `@/components/Layout`.
-- [x] **`strictPort: true`** — Add `server.port: 5173` + `server.strictPort: true` to `vite.config.ts` so dev fails fast instead of silently picking another port.
-- [x] **Prettier** — Add `prettier` + `prettier-plugin-tailwindcss` as devDeps. Create `.prettierrc` and `.prettierignore`. Add `format`/`format:check` scripts to `package.json`. Add `format:check` to CI workflow. Update `lint-staged` to run Prettier on staged files.
-- [x] **Framer Motion** — Add `framer-motion` dependency. Animate phase transitions in `WorkoutActiveScreen` (idle → exercise → rest → finished) using `AnimatePresence` + `motion.div`. Animate timer display, phase indicator, and finished screen.
-- [x] **Centralized auth hook** — Create `src/hooks/useAuth.ts` that wraps `useConvexAuth` + user profile query. Components should import `useAuth` instead of calling `useConvexAuth`/`useAuthActions` directly.
-- [x] **Error handling UI** — Create reusable `ErrorDialog` component (animated modal with title, message, close). Create `ErrorBoundary` class component and wrap the router. Wrap all mutation calls in try/catch with error dialog state.
-- [x] **Lazy-loaded routes** — Wrap each screen import in `React.lazy()` in `App.tsx`. Wrap `Routes` in a second `Suspense` with `PageSpinner` fallback. Extract `PageSpinner` into a shared component.
-- [x] **Multi-provider auth** — Add `Password` and `Anonymous` providers to `convex/auth.ts` (alongside existing Google). Add `signIn('password', {...})` and `signIn('anonymous')` flows to `LoginScreen`.
-- [x] **Multi-browser E2E** — Add Firefox project to `playwright.config.ts`. Optionally add `mobile-chrome` (Pixel 5) for mobile-specific testing.
-- [x] **Convex `users.ts` module** — Add `currentUser` query in `convex/users.ts` (for the centralized `useAuth` hook). Add `updateProfile` mutation.
-- [x] **Convex naming audit** — Ensure all Convex column names use `camelCase` consistently across schema and frontend types.
+- [ ] **ADR directory** — Create `docs/adr/` with a README explaining when to use ADRs. File one ADR for the existing architecture decisions (HashRouter, Convex auth providers, PWA strategy).
 
-## Low — Misc
+## Low — CI & DX
 
-- [x] **`public/robots.txt`** — Add robots.txt
-- [ ] **Rate limiting** — Add rate limiting on public Convex write endpoints
+- [ ] **Lighthouse CI** — Add Lighthouse CI check to GitHub Actions (performance + a11y + SEO). Don't gate on non-deterministic scores; use it as an informational check.
+- [ ] **Bundle size guard** — Add bundle size check to CI (e.g., `@actions/create-check` with a budget threshold) to catch regressions early.
+
+## Completed
+
+- [x] README.md — How to run + project overview
+- [x] Husky + lint-staged — Pre-commit hook for linting/formatting on staged files
+- [x] Pre-push hook — `pnpm lint && pnpm format:check && pnpm test`
+- [x] E2E tests — playwright.config.ts, e2e/ directory, auth + home specs, multi-browser (Chromium + Firefox)
+- [x] E2E in CI — e2e job in .github/workflows/ci.yml
+- [x] i18next — Internationalization with language detection
+- [x] CSP — public/\_headers with strict Content Security Policy
+- [x] /privacy route
+- [x] /terms route
+- [x] Test suite — 23 test files across unit, integration, and E2E
+- [x] SEO — `<meta name="description">` in index.html, per-page title management via react-helmet-async
+- [x] public/robots.txt
+- [x] cn() utility — clsx + tailwind-merge in src/lib/utils.ts
+- [x] @/\* path alias — tsconfig paths + vite resolve.alias
+- [x] strictPort: true — vite.config.ts with port 5173
+- [x] Prettier — .prettierrc, .prettierignore, format/format:check scripts, CI integration
+- [x] Framer Motion — Phase transition animations in WorkoutActiveScreen
+- [x] Centralized auth hook — src/hooks/useAuth.ts wrapping useConvexAuth
+- [x] Error handling UI — ErrorBoundary + ErrorDialog with animations
+- [x] Lazy-loaded routes — React.lazy() + Suspense in App.tsx
+- [x] Multi-provider auth — Google, Password, Anonymous in convex/auth.ts
+- [x] Convex users.ts — currentUser query + updateProfile mutation
+- [x] Convex camelCase audit — All column names consistent
+- [x] PWA — vite-plugin-pwa with autoUpdate, manifest, workbox
+- [x] CI — GitHub Actions: build, lint, format:check, test, e2e with Playwright report upload
+- [x] LICENSE — MIT license at project root

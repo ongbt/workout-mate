@@ -30,3 +30,6 @@ test-results/
 # Claude local settings
 .claude/settings.local.json
 client_secret_*.json
+.env.production
+.env.staging
+.env.local

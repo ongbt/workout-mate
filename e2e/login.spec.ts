@@ -7,13 +7,16 @@ test.describe('Login screen', () => {
       (window as unknown as Record<string, unknown>).__E2E_AUTH__ = {
         isAuthenticated: false,
       };
+      localStorage.setItem('ga_consent', 'granted');
     });
   });
 
   test('renders app title', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page.locator('h1')).toContainText('Workout Mate');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      'Workout Mate',
+    );
   });
 
   test('renders tagline', async ({ page }) => {

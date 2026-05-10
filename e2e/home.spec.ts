@@ -7,15 +7,20 @@ test.describe('Home screen', () => {
       (window as unknown as Record<string, unknown>).__E2E_AUTH__ = {
         isAuthenticated: true,
       };
+      localStorage.setItem('ga_consent', 'granted');
     });
   });
 
   test('renders the app title', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page.locator('h1')).toContainText('Workout Mate');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      'Workout Mate',
+    );
   });
 
+  // Note: this test depends on the dev Convex deployment having no workouts.
+  // If the dev database has been modified, this assertion may fail falsely.
   test('displays empty state when no workouts exist', async ({ page }) => {
     await page.goto('/');
 
@@ -46,18 +51,23 @@ test.describe('Navigation', () => {
       (window as unknown as Record<string, unknown>).__E2E_AUTH__ = {
         isAuthenticated: true,
       };
+      localStorage.setItem('ga_consent', 'granted');
     });
   });
 
   test('privacy route renders', async ({ page }) => {
     await page.goto('/#/privacy');
 
-    await expect(page.locator('h1')).toContainText(/privacy/i);
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      /privacy/i,
+    );
   });
 
   test('terms route renders', async ({ page }) => {
     await page.goto('/#/terms');
 
-    await expect(page.locator('h1')).toContainText(/terms/i);
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      /terms/i,
+    );
   });
 });

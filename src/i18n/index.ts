@@ -145,6 +145,11 @@ const en = {
     'exerciseFormRow.placeholder': 'Exercise name',
     'exerciseFormRow.moveUp': 'Move up',
     'exerciseFormRow.moveDown': 'Move down',
+    'consent.message':
+      'This app uses analytics to understand usage and improve the experience. No personal data is collected.',
+    'consent.accept': 'Accept',
+    'consent.decline': 'Decline',
+    'consent.privacyLink': 'Privacy Policy',
   },
 };
 

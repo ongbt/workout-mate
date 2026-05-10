@@ -6,7 +6,10 @@ import { ConvexReactClient } from 'convex/react';
 import './index.css';
 import './i18n';
 import { LanguageWatcher } from './components/LanguageWatcher';
+import { ConsentBanner } from './components/ConsentBanner';
+import { GA4Loader } from './components/GA4Loader';
 import { ErrorProvider } from './context/ErrorContext';
+import { ConsentProvider } from './context/ConsentContext';
 import App from './App.tsx';
 
 const convex = new ConvexReactClient(import.meta.env['VITE_CONVEX_URL']!);
@@ -22,11 +25,15 @@ createRoot(document.getElementById('root')!).render(
     >
       <HelmetProvider>
         <LanguageWatcher>
-          <ConvexAuthProvider client={convex}>
-            <ErrorProvider>
-              <App />
-            </ErrorProvider>
-          </ConvexAuthProvider>
+          <ConsentProvider>
+            <ConvexAuthProvider client={convex}>
+              <ErrorProvider>
+                <App />
+                <ConsentBanner />
+                <GA4Loader />
+              </ErrorProvider>
+            </ConvexAuthProvider>
+          </ConsentProvider>
         </LanguageWatcher>
       </HelmetProvider>
     </Suspense>
