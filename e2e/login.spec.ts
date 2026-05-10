@@ -13,7 +13,9 @@ test.describe('Login screen', () => {
   test('renders app title', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page.locator('h1')).toContainText('Workout Mate');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      'Workout Mate',
+    );
   });
 
   test('renders tagline', async ({ page }) => {
