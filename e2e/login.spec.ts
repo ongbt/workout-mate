@@ -7,6 +7,7 @@ test.describe('Login screen', () => {
       (window as unknown as Record<string, unknown>).__E2E_AUTH__ = {
         isAuthenticated: false,
       };
+      localStorage.setItem('ga_consent', 'granted');
     });
   });
 

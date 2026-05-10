@@ -7,6 +7,7 @@ test.describe('Home screen', () => {
       (window as unknown as Record<string, unknown>).__E2E_AUTH__ = {
         isAuthenticated: true,
       };
+      localStorage.setItem('ga_consent', 'granted');
     });
   });
 
@@ -50,6 +51,7 @@ test.describe('Navigation', () => {
       (window as unknown as Record<string, unknown>).__E2E_AUTH__ = {
         isAuthenticated: true,
       };
+      localStorage.setItem('ga_consent', 'granted');
     });
   });
 
