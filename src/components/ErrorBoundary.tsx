@@ -1,4 +1,5 @@
 import { Component, type ReactNode } from 'react';
+import * as Sentry from '@sentry/react';
 import i18n from '../i18n';
 import { ErrorDialog } from './ErrorDialog';
 
@@ -18,6 +19,12 @@ export class ErrorBoundary extends Component<
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { error };
+  }
+
+  componentDidCatch(error: Error, info: { componentStack?: string }) {
+    Sentry.captureException(error, {
+      contexts: { react: info },
+    });
   }
 
   handleClose = () => {
