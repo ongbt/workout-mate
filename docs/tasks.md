@@ -2,9 +2,9 @@
 
 ## High — Missing infrastructure (from global rules)
 
-- [ ] **Sentry** — Error tracking (`@sentry/react`). Init in `main.tsx` with DSN from env var. Add error boundary integration.
-- [ ] **GA4** — Acquisition analytics with consent gating. Add consent banner (opt-in, not implied) before any GA script loads. Follow GDPR minimum.
-- [ ] **PostHog** — Product analytics (feature flags, session recordings). Integrate alongside GA4 with same consent gate.
+- [x] **Sentry** — Error tracking (`@sentry/react`). Init in `main.tsx` with DSN from env var. Add error boundary integration.
+- [x] **GA4** — Acquisition analytics with consent gating. Add consent banner (opt-in, not implied) before any GA script loads. Follow GDPR minimum.
+- [x] **PostHog** — Product analytics (feature flags, session recordings). Integrate alongside GA4 with same consent gate.
 
 ## High — Missing routes & data handling
 
@@ -57,3 +57,6 @@
 - [x] PWA — vite-plugin-pwa with autoUpdate, manifest, workbox
 - [x] CI — GitHub Actions: build, lint, format:check, test, e2e with Playwright report upload
 - [x] LICENSE — MIT license at project root
+- [x] GA4 — Consent-gated analytics with GDPR-compliant opt-in banner, CSP updates, and env-configured measurement IDs
+- [x] Sentry — Error tracking with @sentry/react, init in main.tsx, error boundary + ErrorContext integration, CSP updates
+- [x] PostHog — Product analytics with feature flags and session recordings, consent-gated alongside GA4, CSP updates

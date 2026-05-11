@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useConsent } from '@/context/ConsentContext';
 import { initGA4 } from '@/lib/analytics';
+import { initPostHog } from '@/lib/posthog';
 
 export function ConsentBanner() {
   const { t } = useTranslation();
@@ -11,6 +12,7 @@ export function ConsentBanner() {
   const handleAccept = useCallback(() => {
     grant();
     initGA4();
+    initPostHog();
   }, [grant]);
 
   return (
