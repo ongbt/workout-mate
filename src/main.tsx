@@ -9,6 +9,7 @@ import './i18n';
 import { LanguageWatcher } from './components/LanguageWatcher';
 import { ConsentBanner } from './components/ConsentBanner';
 import { GA4Loader } from './components/GA4Loader';
+import { PostHogLoader } from './components/PostHogLoader';
 import { ErrorProvider } from './context/ErrorContext';
 import { ConsentProvider } from './context/ConsentContext';
 import App from './App.tsx';
@@ -34,6 +35,7 @@ createRoot(document.getElementById('root')!).render(
                 <App />
                 <ConsentBanner />
                 <GA4Loader />
+                <PostHogLoader />
               </ErrorProvider>
             </ConvexAuthProvider>
           </ConsentProvider>

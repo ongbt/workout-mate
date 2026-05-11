@@ -11,6 +11,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { ProgressBar } from '../components/ProgressBar';
 import { ControlButtons } from '../components/ControlButtons';
 import { FinishedView } from '../components/FinishedView';
+import { useFeatureFlag } from '../hooks/useFeatureFlag';
 import type { WorkoutConfig } from '../types';
 
 const activeExit = {
@@ -81,6 +82,7 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
 
   const [showStopConfirm, setShowStopConfirm] = useState(false);
   const isActive = phase !== 'idle' && phase !== 'finished';
+  const controlsAbove = useFeatureFlag('workout-controls-above-exercises');
 
   const requestStop = () => setShowStopConfirm(true);
 
@@ -262,81 +264,96 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
             </AnimatePresence>
 
             {phase !== 'idle' && (
-              <motion.div
-                className="w-full space-y-4"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1, transition: { duration: 0.2 } }}
-              >
-                <ProgressBar
-                  currentRound={currentRound}
-                  totalRounds={totalRounds}
-                  currentExerciseIndex={currentExerciseIndex}
-                  totalExercises={totalExercises}
-                />
+              <>
+                {controlsAbove && (
+                  <div className="w-full pt-2">
+                    <ControlButtons
+                      phase={phase}
+                      isRunning={isRunning}
+                      onStart={handleStart}
+                      onPause={handlePause}
+                      onResume={handleResume}
+                      onSkip={handleSkip}
+                      onStop={requestStop}
+                    />
+                  </div>
+                )}
+                <motion.div
+                  className="w-full space-y-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1, transition: { duration: 0.2 } }}
+                >
+                  <ProgressBar
+                    currentRound={currentRound}
+                    totalRounds={totalRounds}
+                    currentExerciseIndex={currentExerciseIndex}
+                    totalExercises={totalExercises}
+                  />
 
-                <div className="bg-surface space-y-1 rounded-xl p-3">
-                  {config.exercises.map((ex, idx) => {
-                    const status = getExerciseStatus(currentRound, idx);
-                    return (
-                      <div
-                        key={ex.id}
-                        className={`flex items-center gap-3 rounded-lg px-2 py-2 transition-colors ${
-                          status === 'current'
-                            ? 'bg-background ring-primary/30 ring-1'
-                            : ''
-                        }`}
-                      >
-                        <span
-                          className={`h-2.5 w-2.5 shrink-0 rounded-full ${
-                            status === 'done'
-                              ? 'bg-primary'
-                              : status === 'current'
-                                ? phase === 'exercise'
-                                  ? 'bg-primary animate-pulse'
-                                  : 'bg-rest animate-pulse'
-                                : 'bg-text-muted/30'
-                          }`}
-                        />
-                        <span
-                          className={`flex-1 truncate text-sm ${
+                  <div className="bg-surface space-y-1 rounded-xl p-3">
+                    {config.exercises.map((ex, idx) => {
+                      const status = getExerciseStatus(currentRound, idx);
+                      return (
+                        <div
+                          key={ex.id}
+                          className={`flex items-center gap-3 rounded-lg px-2 py-2 transition-colors ${
                             status === 'current'
-                              ? 'font-semibold'
-                              : status === 'done'
-                                ? 'text-text'
-                                : 'text-text-muted'
+                              ? 'bg-background ring-primary/30 ring-1'
+                              : ''
                           }`}
                         >
-                          {ex.name}
-                        </span>
-                        <span className="text-text-muted shrink-0 text-xs">
-                          {ex.durationSeconds}s
-                        </span>
-                        {totalRounds > 1 && (
-                          <div className="flex shrink-0 gap-1">
-                            {Array.from({ length: totalRounds }, (_, r) => {
-                              const rs = getExerciseStatus(r + 1, idx);
-                              return (
-                                <span
-                                  key={r}
-                                  className={`h-1.5 w-1.5 rounded-full ${
-                                    rs === 'done'
-                                      ? 'bg-primary'
-                                      : rs === 'current'
-                                        ? phase === 'exercise'
-                                          ? 'bg-primary'
-                                          : 'bg-rest'
-                                        : 'bg-text-muted/20'
-                                  }`}
-                                />
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </motion.div>
+                          <span
+                            className={`h-2.5 w-2.5 shrink-0 rounded-full ${
+                              status === 'done'
+                                ? 'bg-primary'
+                                : status === 'current'
+                                  ? phase === 'exercise'
+                                    ? 'bg-primary animate-pulse'
+                                    : 'bg-rest animate-pulse'
+                                  : 'bg-text-muted/30'
+                            }`}
+                          />
+                          <span
+                            className={`flex-1 truncate text-sm ${
+                              status === 'current'
+                                ? 'font-semibold'
+                                : status === 'done'
+                                  ? 'text-text'
+                                  : 'text-text-muted'
+                            }`}
+                          >
+                            {ex.name}
+                          </span>
+                          <span className="text-text-muted shrink-0 text-xs">
+                            {ex.durationSeconds}s
+                          </span>
+                          {totalRounds > 1 && (
+                            <div className="flex shrink-0 gap-1">
+                              {Array.from({ length: totalRounds }, (_, r) => {
+                                const rs = getExerciseStatus(r + 1, idx);
+                                return (
+                                  <span
+                                    key={r}
+                                    className={`h-1.5 w-1.5 rounded-full ${
+                                      rs === 'done'
+                                        ? 'bg-primary'
+                                        : rs === 'current'
+                                          ? phase === 'exercise'
+                                            ? 'bg-primary'
+                                            : 'bg-rest'
+                                          : 'bg-text-muted/20'
+                                    }`}
+                                  />
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              </>
             )}
           </motion.div>
         ) : (
@@ -353,17 +370,19 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
         )}
       </AnimatePresence>
 
-      <div className="py-4">
-        <ControlButtons
-          phase={phase}
-          isRunning={isRunning}
-          onStart={handleStart}
-          onPause={handlePause}
-          onResume={handleResume}
-          onSkip={handleSkip}
-          onStop={requestStop}
-        />
-      </div>
+      {(!controlsAbove || phase === 'idle') && phase !== 'finished' && (
+        <div className="py-4">
+          <ControlButtons
+            phase={phase}
+            isRunning={isRunning}
+            onStart={handleStart}
+            onPause={handlePause}
+            onResume={handleResume}
+            onSkip={handleSkip}
+            onStop={requestStop}
+          />
+        </div>
+      )}
 
       <AnimatePresence>
         {showStopConfirm && (
