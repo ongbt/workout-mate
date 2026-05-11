@@ -4,9 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 import { useError } from '../context/ErrorContext';
 
-const CSP_POLICY =
+export const CSP_POLICY =
   "default-src 'self'; " +
-  "script-src 'self' https://www.googletagmanager.com; " +
+  "script-src 'self' https://www.googletagmanager.com https://eu-assets.i.posthog.com; " +
   "style-src 'self' 'unsafe-inline'; " +
   "connect-src 'self' wss://*.convex.cloud https://*.convex.cloud https://accounts.google.com " +
   'https://*.google-analytics.com https://*.analytics.google.com https://*.ingest.sentry.io ' +
