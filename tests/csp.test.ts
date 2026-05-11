@@ -6,7 +6,7 @@ function parseCSP(policy: string): Map<string, Set<string>> {
   for (const part of policy.split(';')) {
     const trimmed = part.trim();
     if (!trimmed) continue;
-    const [name, ...values] = trimmed.split(/\s+/);
+    const [name, ...values] = trimmed.split(/\s+/) as [string, ...string[]];
     directives.set(name, new Set(values));
   }
   return directives;
