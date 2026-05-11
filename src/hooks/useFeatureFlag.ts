@@ -8,11 +8,7 @@ export function useFeatureFlag(flagKey: string, defaultValue = false): boolean {
       onStoreChange();
       return () => {};
     }
-    ph.onFeatureFlags(onStoreChange);
-    return () => {
-      // PostHog SDK does not expose a direct unsubscribe for onFeatureFlags,
-      // but re-subscribing on each render is harmless since callbacks are deduplicated.
-    };
+    return ph.onFeatureFlags(onStoreChange);
   }, []);
 
   const getSnapshot = useCallback(() => {
