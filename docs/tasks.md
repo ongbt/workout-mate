@@ -13,7 +13,7 @@
 ## Medium — Security
 
 - [ ] **Rate limiting** — Add rate limiting on public Convex write endpoints. Use Convex's built-in rate limiting or a custom middleware pattern.
-- [ ] **Helmet CSP** — Set CSP via `react-helmet-async` on every route as defense-in-depth (already have `public/_headers` for Cloudflare).
+- [x] **Helmet CSP** — Set CSP via `react-helmet-async` on every route as defense-in-depth (already have `public/_headers` for Cloudflare).
 
 ## Medium — UX
 
@@ -60,3 +60,4 @@
 - [x] GA4 — Consent-gated analytics with GDPR-compliant opt-in banner, CSP updates, and env-configured measurement IDs
 - [x] Sentry — Error tracking with @sentry/react, init in main.tsx, error boundary + ErrorContext integration, CSP updates
 - [x] PostHog — Product analytics with feature flags and session recordings, consent-gated alongside GA4, CSP updates
+- [x] Helmet CSP — CSP meta tag via react-helmet-async in Layout.tsx as defense-in-depth
