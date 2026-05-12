@@ -24,7 +24,7 @@ export function ConsentBanner() {
           animate={{ y: 0 }}
           exit={{ y: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="bg-background fixed inset-x-0 bottom-0 z-50 border-t border-slate-700 px-4 py-4 shadow-lg"
+          className="bg-background/80 fixed inset-x-0 bottom-0 z-50 border-t border-white/10 px-4 py-4 backdrop-blur-xl"
         >
           <p className="text-text-muted mb-3 text-sm">
             {t('components.consent.message')}{' '}

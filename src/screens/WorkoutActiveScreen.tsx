@@ -236,7 +236,7 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
                     {config.name}
                   </h3>
 
-                  <div className="bg-surface space-y-3 rounded-xl p-4">
+                  <div className="bg-surface/80 space-y-3 rounded-2xl p-4 backdrop-blur-xl">
                     <p className="text-text-muted text-sm font-semibold tracking-wider uppercase">
                       {t('screens.workoutActive.exercisesLabel')} —{' '}
                       {t('labels.rounds', { count: config.rounds })}
@@ -254,7 +254,7 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
                         </li>
                       ))}
                     </ul>
-                    <hr className="border-text-muted/20" />
+                    <hr className="border-white/10" />
                     <div className="flex justify-between text-sm">
                       <span className="text-text-muted">
                         {t('screens.workoutActive.restBetweenExercises')}
@@ -299,7 +299,7 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
                     totalExercises={totalExercises}
                   />
 
-                  <div className="bg-surface space-y-1 rounded-xl p-3">
+                  <div className="bg-surface/80 space-y-1 rounded-2xl p-3 backdrop-blur-xl">
                     {config.exercises.map((ex, idx) => {
                       const status = getExerciseStatus(currentRound, idx);
                       return (
@@ -307,7 +307,7 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
                           key={ex.id}
                           className={`flex items-center gap-3 rounded-lg px-2 py-2 transition-colors ${
                             status === 'current'
-                              ? 'bg-background ring-primary/30 ring-1'
+                              ? 'ring-primary/30 bg-white/[0.04] ring-1'
                               : ''
                           }`}
                         >

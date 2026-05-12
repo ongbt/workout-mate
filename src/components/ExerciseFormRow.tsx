@@ -93,7 +93,7 @@ export function ExerciseFormRow({
         size="icon-xs"
         onClick={onDelete}
         disabled={!canDelete}
-        className="text-destructive hover:bg-destructive/10"
+        className="text-destructive hover:bg-destructive/20"
       >
         <X className="h-4 w-4" />
       </Button>

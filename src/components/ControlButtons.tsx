@@ -64,7 +64,7 @@ export function ControlButtons({
         <motion.button
           type="button"
           onClick={onPause}
-          className="bg-rest text-background flex-1 rounded-lg py-4 font-bold"
+          className="bg-rest flex-1 rounded-lg py-4 font-bold text-white backdrop-blur-xl"
           whileTap={{ scale: 0.97 }}
           transition={tapTransition}
         >

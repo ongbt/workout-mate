@@ -35,7 +35,7 @@ export function FinishedView() {
       animate="visible"
     >
       <motion.div
-        className="bg-primary/20 flex h-20 w-20 items-center justify-center rounded-full"
+        className="bg-primary/20 flex h-20 w-20 items-center justify-center rounded-full backdrop-blur-xl"
         variants={itemVariants}
       >
         <CheckCircle className="text-primary h-10 w-10" />

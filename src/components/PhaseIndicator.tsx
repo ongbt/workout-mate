@@ -6,7 +6,7 @@ const COLORS: Record<WorkoutPhase, string> = {
   idle: 'bg-text-muted',
   exercise: 'bg-primary',
   rest: 'bg-rest',
-  finished: 'bg-blue-400',
+  finished: 'bg-primary',
 };
 
 interface Props {

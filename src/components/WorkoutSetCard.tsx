@@ -17,7 +17,7 @@ export function WorkoutSetCard({ workout, onEdit, onPlay }: Props) {
   return (
     <Card
       onClick={onPlay}
-      className="hover:bg-muted/50 cursor-pointer transition-colors"
+      className="cursor-pointer transition-colors hover:bg-white/[0.12]"
     >
       <CardContent className="flex items-center gap-3">
         <span className="bg-primary text-primary-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-full">

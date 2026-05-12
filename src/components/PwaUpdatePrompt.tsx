@@ -24,7 +24,7 @@ export function PwaUpdatePrompt() {
   if (!needRefresh) return null;
 
   return (
-    <div className="bg-surface border-primary/30 fixed right-4 bottom-4 left-4 z-50 mx-auto max-w-lg rounded-xl border p-4 shadow-lg">
+    <div className="bg-surface fixed right-4 bottom-4 left-4 z-50 mx-auto max-w-lg rounded-2xl border border-white/15 p-4 backdrop-blur-xl">
       <p className="mb-3 text-sm">
         {t('components.pwaUpdatePrompt.newVersion')}
       </p>

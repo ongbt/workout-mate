@@ -42,7 +42,7 @@ export function HomeScreen() {
               {sessions.map((s) => (
                 <li
                   key={s._id}
-                  className="bg-surface flex items-center gap-3 rounded-lg px-3 py-2"
+                  className="flex items-center gap-3 rounded-xl bg-white/[0.06] px-3 py-2 backdrop-blur-sm"
                 >
                   <span className="text-text-muted shrink-0 text-xs">
                     {formatDate(s.completedAt)}

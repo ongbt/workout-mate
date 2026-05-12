@@ -72,8 +72,8 @@ export function LoginScreen() {
       </Helmet>
 
       <div className="flex flex-col items-center gap-3">
-        <div className="bg-primary flex h-16 w-16 items-center justify-center rounded-2xl">
-          <Zap className="text-background h-8 w-8" fill="currentColor" />
+        <div className="bg-primary/80 flex h-16 w-16 items-center justify-center rounded-2xl backdrop-blur-xl">
+          <Zap className="h-8 w-8 text-white" fill="currentColor" />
         </div>
         <h1 className="text-2xl font-bold">{t('app.title')}</h1>
         <p className="text-text-muted text-center text-sm">
@@ -119,11 +119,11 @@ export function LoginScreen() {
       </form>
 
       <div className="flex w-full max-w-xs items-center gap-3">
-        <div className="bg-text-muted/20 h-px flex-1" />
+        <div className="h-px flex-1 bg-white/10" />
         <span className="text-text-muted text-xs">
           {t('common.orContinueWith')}
         </span>
-        <div className="bg-text-muted/20 h-px flex-1" />
+        <div className="h-px flex-1 bg-white/10" />
       </div>
 
       <div className="flex w-full max-w-xs flex-col gap-3">
