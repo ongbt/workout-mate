@@ -58,6 +58,8 @@ const en = {
     'home.pageTitle': 'Workout Mate',
     'home.pageDescription':
       'Create and manage your workout routines with voice-guided timers',
+    'home.historyTitle': 'Recent Sessions',
+    'home.noHistory': 'Complete a workout to see it here',
     'login.pageTitle': 'Sign In | Workout Mate',
     'login.pageDescription':
       'Sign in to Workout Mate to track your workouts with voice-guided timers',

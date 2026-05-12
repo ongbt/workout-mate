@@ -4,10 +4,13 @@ import { useSpeechSynthesis } from './useSpeechSynthesis';
 import { useBeep } from './useBeep';
 import { useWakeLock } from './useWakeLock';
 import { COUNTDOWN_WARN_THRESHOLD, TEN_SECOND_INTERVAL } from '../constants';
-import type { WorkoutConfig, Exercise } from '../types';
+import type { WorkoutConfig, Exercise, WorkoutCompletion } from '../types';
 import type { WorkoutPhase, WorkoutSessionState } from '../types';
 
-export function useActiveWorkout(config: WorkoutConfig) {
+export function useActiveWorkout(
+  config: WorkoutConfig,
+  onComplete?: (completion: WorkoutCompletion) => void,
+) {
   const [phase, setPhase] = useState<WorkoutPhase>('idle');
   const [currentRound, setCurrentRound] = useState(1);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
@@ -37,6 +40,12 @@ export function useActiveWorkout(config: WorkoutConfig) {
 
   const suppressFirstReadoutRef = useRef(false);
   const startTimerRef = useRef<(ms: number) => void>(() => {});
+  const onCompleteRef = useRef(onComplete);
+  const sessionStartRef = useRef(0);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  });
 
   const startTimerAfterSpeech = useCallback(
     (text: string, durationMs: number, afterText?: string) => {
@@ -88,6 +97,12 @@ export function useActiveWorkout(config: WorkoutConfig) {
         setPhase('finished');
         speak('Workout complete! Great job!');
         wakeLock.release();
+        onCompleteRef.current?.({
+          completedAt: Date.now(),
+          totalDurationMs: Date.now() - sessionStartRef.current,
+          exerciseCount: cfg.exercises.length,
+          roundsCompleted: cfg.rounds,
+        });
         return;
       }
       setCurrentRound((r) => r + 1);
@@ -152,6 +167,7 @@ export function useActiveWorkout(config: WorkoutConfig) {
 
   const handleStart = useCallback(() => {
     wakeLock.request();
+    sessionStartRef.current = Date.now();
     const firstExercise = config.exercises[0]!;
     setPhase('exercise');
     setCurrentRound(1);

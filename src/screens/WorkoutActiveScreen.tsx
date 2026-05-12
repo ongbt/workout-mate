@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useWorkouts } from '../hooks/useWorkouts';
+import { useSessions } from '../hooks/useSessions';
 import { useActiveWorkout } from '../hooks/useActiveWorkout';
 import { Layout } from '../components/Layout';
 import { TimerDisplay } from '../components/TimerDisplay';
@@ -12,7 +13,7 @@ import { ProgressBar } from '../components/ProgressBar';
 import { ControlButtons } from '../components/ControlButtons';
 import { FinishedView } from '../components/FinishedView';
 import { useFeatureFlag } from '../hooks/useFeatureFlag';
-import type { WorkoutConfig } from '../types';
+import type { WorkoutConfig, WorkoutCompletion } from '../types';
 
 const activeExit = {
   opacity: 0,
@@ -57,6 +58,14 @@ const finishedVariants = {
 function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { recordSession } = useSessions();
+
+  const onComplete = useCallback(
+    (completion: WorkoutCompletion) => {
+      recordSession(config.id, config.name, completion);
+    },
+    [config.id, config.name, recordSession],
+  );
 
   const {
     sessionState,
@@ -69,7 +78,7 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
     handleResume,
     handleStop,
     handleSkip,
-  } = useActiveWorkout(config);
+  } = useActiveWorkout(config, onComplete);
 
   const {
     phase,

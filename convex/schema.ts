@@ -20,6 +20,16 @@ export default defineSchema({
     userId: v.id('users'),
   }).index('by_user', ['userId']),
 
+  sessions: defineTable({
+    workoutId: v.string(),
+    workoutName: v.string(),
+    completedAt: v.number(),
+    totalDurationMs: v.number(),
+    exerciseCount: v.number(),
+    roundsCompleted: v.number(),
+    userId: v.id('users'),
+  }).index('by_user', ['userId']),
+
   defaultWorkouts: defineTable({
     name: v.string(),
     exercises: v.array(
