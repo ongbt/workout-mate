@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { AnimatePresence, motion } from 'framer-motion';
+import { ChevronLeft } from 'lucide-react';
 import { useWorkouts } from '../hooks/useWorkouts';
+import { useSessions } from '../hooks/useSessions';
 import { useActiveWorkout } from '../hooks/useActiveWorkout';
 import { Layout } from '../components/Layout';
 import { TimerDisplay } from '../components/TimerDisplay';
@@ -12,7 +14,18 @@ import { ProgressBar } from '../components/ProgressBar';
 import { ControlButtons } from '../components/ControlButtons';
 import { FinishedView } from '../components/FinishedView';
 import { useFeatureFlag } from '../hooks/useFeatureFlag';
-import type { WorkoutConfig } from '../types';
+import { Button } from '../components/ui/button';
+import { buttonVariants } from '../components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../components/ui/dialog';
+import { cn } from '../lib/utils';
+import type { WorkoutConfig, WorkoutCompletion } from '../types';
 
 const activeExit = {
   opacity: 0,
@@ -57,6 +70,14 @@ const finishedVariants = {
 function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { recordSession } = useSessions();
+
+  const onComplete = useCallback(
+    (completion: WorkoutCompletion) => {
+      recordSession(config.id, config.name, completion);
+    },
+    [config.id, config.name, recordSession],
+  );
 
   const {
     sessionState,
@@ -69,7 +90,7 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
     handleResume,
     handleStop,
     handleSkip,
-  } = useActiveWorkout(config);
+  } = useActiveWorkout(config, onComplete);
 
   const {
     phase,
@@ -125,26 +146,14 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
         />
       </Helmet>
       <header className="flex items-center gap-3 py-4">
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={handleBack}
-          className="text-text-muted hover:bg-surface flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
           aria-label={t('navigation.goBack')}
         >
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-        </button>
+          <ChevronLeft className="h-5 w-5" />
+        </Button>
         <h2 className="truncate text-lg font-semibold">{config.name}</h2>
       </header>
 
@@ -227,7 +236,7 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
                     {config.name}
                   </h3>
 
-                  <div className="bg-surface space-y-3 rounded-xl p-4">
+                  <div className="bg-surface/80 space-y-3 rounded-2xl p-4 backdrop-blur-xl">
                     <p className="text-text-muted text-sm font-semibold tracking-wider uppercase">
                       {t('screens.workoutActive.exercisesLabel')} —{' '}
                       {t('labels.rounds', { count: config.rounds })}
@@ -245,7 +254,7 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
                         </li>
                       ))}
                     </ul>
-                    <hr className="border-text-muted/20" />
+                    <hr className="border-white/10" />
                     <div className="flex justify-between text-sm">
                       <span className="text-text-muted">
                         {t('screens.workoutActive.restBetweenExercises')}
@@ -290,7 +299,7 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
                     totalExercises={totalExercises}
                   />
 
-                  <div className="bg-surface space-y-1 rounded-xl p-3">
+                  <div className="bg-surface/80 space-y-1 rounded-2xl p-3 backdrop-blur-xl">
                     {config.exercises.map((ex, idx) => {
                       const status = getExerciseStatus(currentRound, idx);
                       return (
@@ -298,7 +307,7 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
                           key={ex.id}
                           className={`flex items-center gap-3 rounded-lg px-2 py-2 transition-colors ${
                             status === 'current'
-                              ? 'bg-background ring-primary/30 ring-1'
+                              ? 'ring-primary/30 bg-white/[0.04] ring-1'
                               : ''
                           }`}
                         >
@@ -384,62 +393,40 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
         </div>
       )}
 
-      <AnimatePresence>
-        {showStopConfirm && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowStopConfirm(false)}
-          >
-            <motion.div
-              className="bg-surface flex w-full max-w-sm flex-col gap-4 rounded-xl p-6"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{
-                opacity: 1,
-                scale: 1,
-                transition: {
-                  type: 'spring' as const,
-                  damping: 25,
-                  stiffness: 300,
-                },
-              }}
-              exit={{
-                opacity: 0,
-                scale: 0.95,
-                transition: { duration: 0.15 },
-              }}
-              onClick={(e) => e.stopPropagation()}
+      <Dialog open={showStopConfirm} onOpenChange={setShowStopConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('workout.stopConfirmTitle')}</DialogTitle>
+            <DialogDescription>
+              {t('workout.stopConfirmMessage')}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <motion.button
+              type="button"
+              onClick={() => setShowStopConfirm(false)}
+              className={cn(
+                buttonVariants({ variant: 'default' }),
+                'flex-1 font-semibold',
+              )}
+              whileTap={{ scale: 0.97 }}
             >
-              <h3 className="text-lg font-semibold">
-                {t('workout.stopConfirmTitle')}
-              </h3>
-              <p className="text-text-muted text-sm">
-                {t('workout.stopConfirmMessage')}
-              </p>
-              <div className="flex gap-3">
-                <motion.button
-                  type="button"
-                  onClick={() => setShowStopConfirm(false)}
-                  className="bg-primary text-background flex-1 rounded-xl py-3 font-semibold"
-                  whileTap={{ scale: 0.97 }}
-                >
-                  {t('workout.continue')}
-                </motion.button>
-                <motion.button
-                  type="button"
-                  onClick={confirmStop}
-                  className="flex-1 rounded-xl border border-red-500/30 bg-red-500/20 py-3 font-semibold text-red-400"
-                  whileTap={{ scale: 0.97 }}
-                >
-                  {t('actions.stop')}
-                </motion.button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              {t('workout.continue')}
+            </motion.button>
+            <motion.button
+              type="button"
+              onClick={confirmStop}
+              className={cn(
+                buttonVariants({ variant: 'destructive' }),
+                'flex-1 font-semibold',
+              )}
+              whileTap={{ scale: 0.97 }}
+            >
+              {t('actions.stop')}
+            </motion.button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }
@@ -457,13 +444,9 @@ export function WorkoutActiveScreen() {
       <Layout>
         <div className="flex flex-1 flex-col items-center justify-center gap-4">
           <p className="text-text-muted">{t('workout.notFound')}</p>
-          <button
-            type="button"
-            onClick={() => navigate('/')}
-            className="bg-surface text-text rounded-xl px-6 py-3 font-semibold"
-          >
+          <Button variant="secondary" onClick={() => navigate('/')}>
             {t('actions.backToHome')}
-          </button>
+          </Button>
         </div>
       </Layout>
     );

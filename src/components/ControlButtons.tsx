@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import type { WorkoutPhase } from '../types';
+import { buttonVariants } from './ui/button';
+import { cn } from '../lib/utils';
 
 interface Props {
   phase: WorkoutPhase;
@@ -32,7 +34,10 @@ export function ControlButtons({
       <motion.button
         type="button"
         onClick={onStart}
-        className="bg-primary text-background w-full rounded-xl py-4 text-lg font-bold"
+        className={cn(
+          buttonVariants({ variant: 'default' }),
+          'w-full py-4 text-lg font-bold',
+        )}
         whileTap={{ scale: 0.97 }}
         transition={tapTransition}
       >
@@ -46,7 +51,10 @@ export function ControlButtons({
       <motion.button
         type="button"
         onClick={onStop}
-        className="flex-1 rounded-xl border border-red-500/30 bg-red-500/20 py-4 font-semibold text-red-400"
+        className={cn(
+          buttonVariants({ variant: 'destructive' }),
+          'flex-1 py-4 font-semibold',
+        )}
         whileTap={{ scale: 0.97 }}
         transition={tapTransition}
       >
@@ -56,7 +64,7 @@ export function ControlButtons({
         <motion.button
           type="button"
           onClick={onPause}
-          className="bg-rest text-background flex-1 rounded-xl py-4 font-bold"
+          className="bg-rest flex-1 rounded-full py-4 text-sm font-bold text-white backdrop-blur-xl"
           whileTap={{ scale: 0.97 }}
           transition={tapTransition}
         >
@@ -66,7 +74,10 @@ export function ControlButtons({
         <motion.button
           type="button"
           onClick={onResume}
-          className="bg-primary text-background flex-1 rounded-xl py-4 font-bold"
+          className={cn(
+            buttonVariants({ variant: 'default' }),
+            'flex-1 py-4 font-bold',
+          )}
           whileTap={{ scale: 0.97 }}
           transition={tapTransition}
         >
@@ -76,7 +87,10 @@ export function ControlButtons({
       <motion.button
         type="button"
         onClick={onSkip}
-        className="bg-surface text-text flex-1 rounded-xl py-4 font-semibold"
+        className={cn(
+          buttonVariants({ variant: 'secondary' }),
+          'flex-1 py-4 font-semibold',
+        )}
         whileTap={{ scale: 0.97 }}
         transition={tapTransition}
       >

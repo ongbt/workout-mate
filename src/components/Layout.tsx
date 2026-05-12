@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../hooks/useAuth';
 import { useError } from '../context/ErrorContext';
+import { Button } from './ui/button';
 
 export const CSP_POLICY =
   "default-src 'self'; " +
@@ -39,13 +40,9 @@ export function Layout({ children }: { children: ReactNode }) {
       </Helmet>
       <div className="pb-safe mx-auto flex h-full max-w-lg flex-col px-5">
         <div className="flex items-center justify-end py-2">
-          <button
-            type="button"
-            onClick={handleSignOut}
-            className="text-text-muted hover:text-text hover:bg-surface rounded-lg px-2 py-1 text-xs transition-colors"
-          >
+          <Button variant="ghost" size="xs" onClick={handleSignOut}>
             {t('actions.signOut')}
-          </button>
+          </Button>
         </div>
         <main className="flex flex-1 flex-col">{children}</main>
       </div>

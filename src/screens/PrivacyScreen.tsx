@@ -1,7 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
+import { ChevronLeft } from 'lucide-react';
 import { Layout } from '../components/Layout';
+import { Button } from '../components/ui/button';
 
 export function PrivacyScreen() {
   const { t } = useTranslation();
@@ -17,26 +19,14 @@ export function PrivacyScreen() {
         />
       </Helmet>
       <header className="flex items-center gap-3 py-6">
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => navigate(-1)}
-          className="text-text-muted hover:text-text"
           aria-label={t('navigation.goBack')}
         >
-          <svg
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-        </button>
+          <ChevronLeft className="h-6 w-6" />
+        </Button>
         <h1 className="text-2xl font-bold">{t('screens.privacy.title')}</h1>
       </header>
 

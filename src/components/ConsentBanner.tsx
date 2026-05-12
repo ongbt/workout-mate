@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useConsent } from '@/context/ConsentContext';
 import { initGA4 } from '@/lib/analytics';
 import { initPostHog } from '@/lib/posthog';
+import { Button } from '@/components/ui/button';
 
 export function ConsentBanner() {
   const { t } = useTranslation();
@@ -23,7 +24,7 @@ export function ConsentBanner() {
           animate={{ y: 0 }}
           exit={{ y: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="bg-background fixed inset-x-0 bottom-0 z-50 border-t border-slate-700 px-4 py-4 shadow-lg"
+          className="bg-background/80 fixed inset-x-0 bottom-0 z-50 border-t border-white/10 px-4 py-4 backdrop-blur-xl"
         >
           <p className="text-text-muted mb-3 text-sm">
             {t('components.consent.message')}{' '}
@@ -32,18 +33,17 @@ export function ConsentBanner() {
             </a>
           </p>
           <div className="flex gap-3">
-            <button
-              onClick={handleAccept}
-              className="bg-primary text-background flex-1 rounded-md px-4 py-2 text-sm font-medium"
-            >
+            <Button onClick={handleAccept} className="flex-1" size="sm">
               {t('components.consent.accept')}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
               onClick={deny}
-              className="text-text-muted flex-1 rounded-md border border-slate-600 px-4 py-2 text-sm font-medium"
+              className="flex-1"
+              size="sm"
             >
               {t('components.consent.decline')}
-            </button>
+            </Button>
           </div>
         </motion.div>
       )}

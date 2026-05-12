@@ -1,6 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
+import { CheckCircle } from 'lucide-react';
+import { buttonVariants } from './ui/button';
+import { cn } from '../lib/utils';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -32,22 +35,10 @@ export function FinishedView() {
       animate="visible"
     >
       <motion.div
-        className="bg-primary/20 flex h-20 w-20 items-center justify-center rounded-full"
+        className="bg-primary/20 flex h-20 w-20 items-center justify-center rounded-full backdrop-blur-xl"
         variants={itemVariants}
       >
-        <svg
-          className="text-primary h-10 w-10"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M5 13l4 4L19 7"
-          />
-        </svg>
+        <CheckCircle className="text-primary h-10 w-10" />
       </motion.div>
       <motion.h2 className="text-3xl font-bold" variants={itemVariants}>
         {t('components.finishedView.workoutComplete')}
@@ -58,7 +49,10 @@ export function FinishedView() {
       <motion.button
         type="button"
         onClick={() => navigate('/')}
-        className="bg-primary text-background mt-4 rounded-xl px-8 py-4 text-lg font-bold"
+        className={cn(
+          buttonVariants({ variant: 'default' }),
+          'mt-4 px-8 py-4 text-lg font-bold',
+        )}
         variants={itemVariants}
         whileTap={{ scale: 0.97 }}
       >

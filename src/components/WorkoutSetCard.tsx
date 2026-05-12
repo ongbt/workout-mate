@@ -1,5 +1,8 @@
 import { useTranslation } from 'react-i18next';
+import { Play, Pencil } from 'lucide-react';
 import type { WorkoutConfig } from '../types';
+import { Card, CardContent } from './ui/card';
+import { Button } from './ui/button';
 
 interface Props {
   workout: WorkoutConfig;
@@ -12,52 +15,33 @@ export function WorkoutSetCard({ workout, onEdit, onPlay }: Props) {
   const totalExercises = workout.exercises.length;
 
   return (
-    <div className="bg-surface flex items-center gap-3 rounded-xl p-4">
-      <button
-        type="button"
-        onClick={onPlay}
-        className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left"
-      >
-        <span className="bg-primary text-background flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
-          <svg
-            className="ml-0.5 h-5 w-5"
-            fill="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path d="M8 5v14l11-7z" />
-          </svg>
+    <Card
+      onClick={onPlay}
+      className="cursor-pointer transition-colors hover:bg-white/[0.12]"
+    >
+      <CardContent className="flex items-center gap-3">
+        <span className="bg-primary text-primary-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
+          <Play className="ml-0.5 h-5 w-5" fill="currentColor" />
         </span>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h3 className="truncate text-lg font-semibold">{workout.name}</h3>
-          <p className="text-text-muted text-sm">
+          <p className="text-muted-foreground text-sm">
             {t('labels.exercises', { count: totalExercises })}
             {' · '}
             {t('labels.rounds', { count: workout.rounds })}
           </p>
         </div>
-      </button>
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onEdit();
-        }}
-        className="text-text-muted hover:bg-background flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-      >
-        <svg
-          className="h-5 w-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit();
+          }}
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-          />
-        </svg>
-      </button>
-    </div>
+          <Pencil className="h-5 w-5" />
+        </Button>
+      </CardContent>
+    </Card>
   );
 }

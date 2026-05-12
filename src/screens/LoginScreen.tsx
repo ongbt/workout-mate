@@ -1,8 +1,11 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
+import { Zap } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useError } from '../context/ErrorContext';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
 
 export function LoginScreen() {
   const { t } = useTranslation();
@@ -69,20 +72,8 @@ export function LoginScreen() {
       </Helmet>
 
       <div className="flex flex-col items-center gap-3">
-        <div className="bg-primary flex h-16 w-16 items-center justify-center rounded-2xl">
-          <svg
-            className="text-background h-8 w-8"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M13 10V3L4 14h7v7l9-11h-7z"
-            />
-          </svg>
+        <div className="bg-primary/80 flex h-16 w-16 items-center justify-center rounded-2xl backdrop-blur-xl">
+          <Zap className="h-8 w-8 text-white" fill="currentColor" />
         </div>
         <h1 className="text-2xl font-bold">{t('app.title')}</h1>
         <p className="text-text-muted text-center text-sm">
@@ -97,55 +88,51 @@ export function LoginScreen() {
           handlePasswordAuth();
         }}
       >
-        <input
+        <Input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder={t('labels.email')}
           autoComplete="email"
-          className="bg-surface border-text-muted/20 text-text placeholder:text-text-muted focus:border-primary rounded-xl border px-4 py-3 text-sm transition-colors outline-none"
         />
-        <input
+        <Input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder={t('labels.password')}
           autoComplete={isSignUp ? 'new-password' : 'current-password'}
-          className="bg-surface border-text-muted/20 text-text placeholder:text-text-muted focus:border-primary rounded-xl border px-4 py-3 text-sm transition-colors outline-none"
         />
-        <button
-          type="submit"
-          disabled={submitting}
-          className="bg-primary text-background cursor-pointer rounded-xl px-6 py-3 font-medium transition-opacity hover:opacity-90 disabled:opacity-50"
-        >
+        <Button type="submit" disabled={submitting}>
           {submitting
             ? '...'
             : isSignUp
               ? t('actions.signUpWithEmail')
               : t('actions.signInWithEmail')}
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="link"
           type="button"
           onClick={() => setIsSignUp((v) => !v)}
-          className="text-text-muted hover:text-text cursor-pointer border-none bg-transparent text-xs transition-colors"
         >
           {isSignUp ? t('actions.switchToSignIn') : t('actions.switchToSignUp')}
-        </button>
+        </Button>
       </form>
 
       <div className="flex w-full max-w-xs items-center gap-3">
-        <div className="bg-text-muted/20 h-px flex-1" />
+        <div className="h-px flex-1 bg-white/10" />
         <span className="text-text-muted text-xs">
           {t('common.orContinueWith')}
         </span>
-        <div className="bg-text-muted/20 h-px flex-1" />
+        <div className="h-px flex-1 bg-white/10" />
       </div>
 
       <div className="flex w-full max-w-xs flex-col gap-3">
-        <button
+        <Button
+          variant="outline"
           type="button"
           onClick={handleGoogleSignIn}
-          className="bg-surface border-text-muted/20 text-text hover:bg-text-muted/10 flex cursor-pointer items-center justify-center gap-3 rounded-xl border px-6 py-3.5 font-medium transition-colors"
+          className="gap-3"
+          size="lg"
         >
           <svg className="h-5 w-5" viewBox="0 0 24 24">
             <path
@@ -166,15 +153,11 @@ export function LoginScreen() {
             />
           </svg>
           {t('actions.signInWithGoogle')}
-        </button>
+        </Button>
 
-        <button
-          type="button"
-          onClick={handleAnonymousSignIn}
-          className="text-text-muted hover:text-text cursor-pointer border-none bg-transparent py-2 text-sm transition-colors"
-        >
+        <Button variant="ghost" type="button" onClick={handleAnonymousSignIn}>
           {t('actions.signInAnonymously')}
-        </button>
+        </Button>
       </div>
     </div>
   );

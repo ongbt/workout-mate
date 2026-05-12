@@ -1,8 +1,8 @@
 import posthog from 'posthog-js';
 
-const POSTHOG_KEY: string | undefined = import.meta.env['VITE_POSTHOG_KEY'];
+const POSTHOG_KEY: string | undefined = import.meta.env.VITE_POSTHOG_KEY;
 const POSTHOG_HOST: string =
-  import.meta.env['VITE_POSTHOG_HOST'] || 'https://eu.i.posthog.com';
+  import.meta.env.VITE_POSTHOG_HOST || 'https://eu.i.posthog.com';
 
 let initialized = false;
 
@@ -14,7 +14,7 @@ export function initPostHog(): void {
     api_host: POSTHOG_HOST,
     persistence: 'localStorage',
     autocapture: false,
-    disable_session_recording: false,
+    disable_session_recording: true,
     loaded: (ph) => {
       ph.register({ environment: import.meta.env['MODE'] ?? 'development' });
       console.log('[PostHog] initialized');

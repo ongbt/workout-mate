@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { Progress, ProgressTrack, ProgressIndicator } from './ui/progress';
 
 interface Props {
   currentRound: number;
@@ -21,13 +22,12 @@ export function ProgressBar({
 
   return (
     <div className="flex w-full flex-col items-center gap-1">
-      <div className="bg-surface h-2 w-full overflow-hidden rounded-full">
-        <div
-          className="bg-primary h-full rounded-full transition-all duration-300"
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-      <div className="text-text-muted flex w-full justify-between text-xs">
+      <Progress value={pct} className="w-full">
+        <ProgressTrack>
+          <ProgressIndicator />
+        </ProgressTrack>
+      </Progress>
+      <div className="text-muted-foreground flex w-full justify-between text-xs">
         <span>
           {t('components.progressBar.round', {
             current: currentRound,

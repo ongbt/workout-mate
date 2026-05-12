@@ -3,10 +3,21 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { v4 as uuid } from 'uuid';
+import { ChevronLeft } from 'lucide-react';
 import { useWorkouts, useDefaultWorkouts } from '../hooks/useWorkouts';
 import { useError } from '../context/ErrorContext';
 import { Layout } from '../components/Layout';
 import { ExerciseFormRow } from '../components/ExerciseFormRow';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../components/ui/dialog';
 import {
   DEFAULT_EXERCISE_DURATION,
   DEFAULT_REST_DURATION,
@@ -126,13 +137,6 @@ function initForm(workout?: WorkoutConfig): FormState {
     rounds: String(DEFAULT_ROUNDS),
   };
 }
-
-const baseInput =
-  'bg-surface border rounded-lg px-3 py-2.5 text-text placeholder:text-text-muted/50 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/30';
-const textClass = (error: boolean) =>
-  `${baseInput} ${error ? 'border-red-500' : 'border-text-muted/30'}`;
-const numClass = (error: boolean) =>
-  `${baseInput} text-center ${error ? 'border-red-500' : 'border-text-muted/30'}`;
 
 function parsePositiveInt(s: string): number | null {
   const n = parseInt(s, 10);
@@ -286,26 +290,14 @@ export function WorkoutEditScreen() {
         />
       </Helmet>
       <header className="flex items-center gap-3 py-4">
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => navigate('/')}
-          className="text-text-muted hover:bg-surface flex h-10 w-10 items-center justify-center rounded-lg"
           aria-label={t('navigation.goBack')}
         >
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-        </button>
+          <ChevronLeft className="h-5 w-5" />
+        </Button>
         <h2 className="truncate text-xl font-bold">
           {existing
             ? t('screens.workoutEdit.titleEdit')
@@ -316,7 +308,7 @@ export function WorkoutEditScreen() {
       <div className="scrollbar-hide flex flex-1 flex-col gap-5 overflow-y-auto pb-4">
         <label className="flex flex-col gap-1">
           <span className="text-text-muted text-sm">{t('labels.name')}</span>
-          <input
+          <Input
             type="text"
             value={form.name}
             onChange={(e) => {
@@ -325,7 +317,7 @@ export function WorkoutEditScreen() {
             }}
             onBlur={(e) => checkBlank('name', e.target.value)}
             placeholder={t('screens.workoutEdit.namePlaceholder')}
-            className={textClass(nameError)}
+            aria-invalid={nameError || undefined}
           />
           {nameError && (
             <span className="text-xs text-red-400">
@@ -336,7 +328,7 @@ export function WorkoutEditScreen() {
 
         <label className="flex flex-col gap-1">
           <span className="text-text-muted text-sm">{t('labels.rounds')}</span>
-          <input
+          <Input
             type="text"
             inputMode="numeric"
             value={form.rounds}
@@ -345,7 +337,8 @@ export function WorkoutEditScreen() {
               checkBlank('rounds', e.target.value);
             }}
             onBlur={(e) => checkBlank('rounds', e.target.value)}
-            className={numClass(roundsError)}
+            className="text-center"
+            aria-invalid={roundsError || undefined}
           />
           {roundsError && (
             <span className="text-xs text-red-400">
@@ -357,7 +350,7 @@ export function WorkoutEditScreen() {
           <span className="text-text-muted text-sm">
             {t('screens.workoutEdit.restBetweenRoundsLabel')}
           </span>
-          <input
+          <Input
             type="text"
             inputMode="numeric"
             value={form.restBetweenRoundsSeconds}
@@ -369,7 +362,8 @@ export function WorkoutEditScreen() {
               checkBlank('restBetweenRounds', e.target.value);
             }}
             onBlur={(e) => checkBlank('restBetweenRounds', e.target.value)}
-            className={numClass(restRoundError)}
+            className="text-center"
+            aria-invalid={restRoundError || undefined}
           />
           {restRoundError && (
             <span className="text-xs text-red-400">
@@ -382,7 +376,7 @@ export function WorkoutEditScreen() {
           <span className="text-text-muted text-sm">
             {t('screens.workoutEdit.restBetweenExercisesLabel')}
           </span>
-          <input
+          <Input
             type="text"
             inputMode="numeric"
             value={form.restSeconds}
@@ -391,7 +385,8 @@ export function WorkoutEditScreen() {
               checkBlank('restSeconds', e.target.value);
             }}
             onBlur={(e) => checkBlank('restSeconds', e.target.value)}
-            className={numClass(restExError)}
+            className="text-center"
+            aria-invalid={restExError || undefined}
           />
           {restExError && (
             <span className="text-xs text-red-400">
@@ -407,21 +402,21 @@ export function WorkoutEditScreen() {
             </span>
             <div className="flex items-center gap-2">
               {!existing && defaultWorkouts.length > 0 && (
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
+                  size="xs"
                   onClick={() => setShowImportModal(true)}
-                  className="text-text-muted hover:text-text hover:bg-surface rounded-lg px-2 py-1 text-sm transition-colors"
                 >
                   {t('screens.workoutEdit.importTemplate')}
-                </button>
+                </Button>
               )}
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="xs"
                 onClick={() => dispatch({ type: 'ADD_EXERCISE' })}
-                className="text-primary hover:bg-primary/10 rounded-lg px-3 py-1 text-sm font-medium"
               >
                 {t('screens.workoutEdit.addExercise')}
-              </button>
+              </Button>
             </div>
           </div>
           <div className="flex items-center gap-1 px-0.5">
@@ -459,109 +454,95 @@ export function WorkoutEditScreen() {
 
       <div className="flex gap-3 py-4">
         {existing && (
-          <button
-            type="button"
+          <Button
+            variant="destructive"
             onClick={handleDelete}
-            className="rounded-xl border border-red-500/30 bg-red-500/20 px-4 py-4 font-semibold text-red-400"
+            className="px-4 py-4 font-semibold"
           >
             {t('actions.delete')}
-          </button>
+          </Button>
         )}
-        <button
-          type="button"
+        <Button
           onClick={handleSave}
           disabled={hasAnyError}
-          className={`flex-1 rounded-xl py-4 text-lg font-bold ${
-            hasAnyError
-              ? 'bg-text-muted/30 text-text-muted cursor-not-allowed'
-              : 'bg-primary text-background'
-          }`}
+          className="flex-1 py-4 text-lg font-bold"
         >
           {t('actions.save')}
-        </button>
+        </Button>
       </div>
 
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-          <div className="bg-surface flex w-full max-w-sm flex-col gap-4 rounded-xl p-6">
-            <h3 className="text-lg font-semibold">
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
               {t('screens.workoutEdit.deleteConfirmTitle')}
-            </h3>
-            <p className="text-text-muted text-sm">
+            </DialogTitle>
+            <DialogDescription>
               {t('screens.workoutEdit.deleteConfirmMessage', {
                 name: form.name || 'this workout',
               })}
-            </p>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setShowDeleteConfirm(false)}
-                className="bg-text-muted/20 text-text flex-1 rounded-xl py-3 font-semibold"
-              >
-                {t('actions.cancel')}
-              </button>
-              <button
-                type="button"
-                onClick={confirmDelete}
-                className="flex-1 rounded-xl bg-red-500 py-3 font-semibold text-white"
-              >
-                {t('actions.delete')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showImportModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-          <div className="bg-surface flex max-h-[70vh] w-full max-w-sm flex-col gap-4 rounded-xl p-6">
-            <h3 className="text-lg font-semibold">
-              {t('screens.workoutEdit.importModalTitle')}
-            </h3>
-            <p className="text-text-muted text-sm">
-              {t('screens.workoutEdit.importModalDescription')}
-            </p>
-            <div className="flex flex-col gap-2 overflow-y-auto">
-              {defaultWorkouts.map((dw) => (
-                <button
-                  key={dw.id}
-                  type="button"
-                  onClick={() => {
-                    dispatch({
-                      type: 'IMPORT_TEMPLATE',
-                      name: dw.name,
-                      exercises: dw.exercises,
-                      restSeconds: dw.restSeconds,
-                      restBetweenRoundsSeconds: dw.restBetweenRoundsSeconds,
-                      rounds: dw.rounds,
-                    });
-                    setShowImportModal(false);
-                  }}
-                  className="hover:bg-background flex items-center justify-between rounded-lg p-3 text-left transition-colors"
-                >
-                  <div>
-                    <p className="text-sm font-medium">{dw.name}</p>
-                    <p className="text-text-muted text-xs">
-                      {t('labels.exercises', { count: dw.exercises.length })}{' '}
-                      &middot; {t('labels.rounds', { count: dw.rounds })}
-                    </p>
-                  </div>
-                  <span className="text-primary text-xs font-medium">
-                    {t('actions.import')}
-                  </span>
-                </button>
-              ))}
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowImportModal(false)}
-              className="bg-text-muted/20 text-text rounded-xl py-3 font-semibold"
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteConfirm(false)}
             >
               {t('actions.cancel')}
-            </button>
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete}>
+              {t('actions.delete')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showImportModal} onOpenChange={setShowImportModal}>
+        <DialogContent className="max-h-[70vh]">
+          <DialogHeader>
+            <DialogTitle>
+              {t('screens.workoutEdit.importModalTitle')}
+            </DialogTitle>
+            <DialogDescription>
+              {t('screens.workoutEdit.importModalDescription')}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2 overflow-y-auto">
+            {defaultWorkouts.map((dw) => (
+              <Button
+                key={dw.id}
+                variant="ghost"
+                onClick={() => {
+                  dispatch({
+                    type: 'IMPORT_TEMPLATE',
+                    name: dw.name,
+                    exercises: dw.exercises,
+                    restSeconds: dw.restSeconds,
+                    restBetweenRoundsSeconds: dw.restBetweenRoundsSeconds,
+                    rounds: dw.rounds,
+                  });
+                  setShowImportModal(false);
+                }}
+                className="flex h-auto items-center justify-between p-3 text-left"
+              >
+                <div>
+                  <p className="text-sm font-medium">{dw.name}</p>
+                  <p className="text-muted-foreground text-xs">
+                    {t('labels.exercises', { count: dw.exercises.length })}{' '}
+                    &middot; {t('labels.rounds', { count: dw.rounds })}
+                  </p>
+                </div>
+                <span className="text-primary text-xs font-medium">
+                  {t('actions.import')}
+                </span>
+              </Button>
+            ))}
           </div>
-        </div>
-      )}
+          <Button variant="outline" onClick={() => setShowImportModal(false)}>
+            {t('actions.cancel')}
+          </Button>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }

@@ -212,6 +212,182 @@ Edge cases handled:
 | Timer tick interval         | 100ms      |
 | Countdown warning threshold | 5 seconds  |
 
+## Planned Features
+
+### 4. Workout Session History & Logging
+
+When a user completes a workout session (reaches the `finished` phase without stopping early), a session record is persisted to Convex. The home screen gains a "History" section or tab showing past sessions in reverse chronological order.
+
+**Session record schema:**
+
+```typescript
+interface WorkoutSession {
+  _id: Id<'sessions'>;
+  userId: Id<'users'>;
+  workoutId: string;
+  workoutName: string;
+  completedAt: number; // Date.now()
+  totalDurationMs: number; // actual wall-clock time from start to finish
+  exerciseCount: number;
+  roundsCompleted: number;
+  _creationTime: number;
+}
+```
+
+**Behavior:**
+
+- Sessions are created only on natural completion (not on Stop/Skip-to-end).
+- Each session is immutable — no edit or delete needed for MVP.
+- The home screen shows the 10 most recent sessions as a compact list (date, workout name, duration).
+- A "View All" option navigates to a full history view with basic filtering (by workout name).
+
+**Convex additions:**
+
+- `sessions` table with `by_user` index on `userId`
+- `create` mutation (called from client on workout completion)
+- `list` query (paginated, ordered by `completedAt desc`)
+- `count` query (total sessions for stats)
+
+### 5. Streaks & Simple Stats
+
+A stats summary displayed on the home screen above the workout list, driven by session data.
+
+**Metrics displayed:**
+
+| Metric         | Definition                                                                    |
+| -------------- | ----------------------------------------------------------------------------- |
+| Current streak | Consecutive days with at least 1 completed session, ending today or yesterday |
+| Longest streak | Best-ever consecutive-day run                                                 |
+| Total workouts | Lifetime count of completed sessions                                          |
+| Total minutes  | Sum of `totalDurationMs` across all sessions, displayed in hours/minutes      |
+
+**Behavior:**
+
+- A "day" is defined in the user's local timezone (midnight to midnight).
+- Streak breaks if no session was completed on a given day — it does not need to be the same workout.
+- If the user has no sessions yet, the stats section shows placeholder values ("--") with a motivational prompt.
+- Stats update optimistically after session completion.
+
+**Convex additions:**
+
+- `getStats` query aggregating from `sessions` table
+
+### 6. Exercise Library
+
+A built-in library of bodyweight exercises that users can browse and insert into their workout sets, reducing manual typing.
+
+**Library data model:**
+
+```typescript
+interface LibraryExercise {
+  _id: Id<'exerciseLibrary'>;
+  name: string;
+  category: 'strength' | 'cardio' | 'core' | 'flexibility' | 'full-body';
+  defaultDurationSeconds: number; // suggested duration
+}
+```
+
+**Initial library (~40 exercises):**
+
+| Category    | Examples                                                                               |
+| ----------- | -------------------------------------------------------------------------------------- |
+| Strength    | Push-ups, Squats, Lunges, Dips, Glute Bridges, Calf Raises, Wall Sit                   |
+| Cardio      | High Knees, Jumping Jacks, Burpees, Mountain Climbers, Butt Kicks, Skaters             |
+| Core        | Plank, Crunches, Bicycle Crunches, Leg Raises, Russian Twists, Dead Bug, Flutter Kicks |
+| Flexibility | Downward Dog, Child's Pose, Cat-Cow, Standing Forward Fold, Spinal Twist               |
+| Full-Body   | Burpees, Bear Crawls, Inchworms, Star Jumps, Tuck Jumps                                |
+
+**Behavior:**
+
+- In the Workout Edit screen, an "Add from Library" button opens a searchable modal.
+- Exercises can be filtered by category.
+- Selecting an exercise inserts it into the current workout's exercise list with its suggested duration.
+- The library is seeded via a Convex mutation (`seedExerciseLibrary`), similar to `seedDefaults`.
+- Users cannot add custom exercises to the library (it's a static reference set).
+
+**Convex additions:**
+
+- `exerciseLibrary` table
+- `list` query (with optional category filter)
+- `seedExerciseLibrary` mutation
+
+### 7. Warm-up & Cool-down Phases
+
+Optional configurable periods before the first exercise and after the last exercise of every workout session.
+
+**Schema additions to `WorkoutConfig`:**
+
+```typescript
+interface WorkoutConfig {
+  // ... existing fields
+  warmupSeconds: number; // default 0 (disabled), minimum 0
+  cooldownSeconds: number; // default 0 (disabled), minimum 0
+}
+```
+
+**Phase sequence with warm-up/cooldown:**
+
+```
+idle → warmup → exercise → rest → ... → exercise → rest → cooldown → finished
+```
+
+**Behavior:**
+
+- Warm-up and cool-down are each treated as a distinct phase with their own visual color:
+  - Warm-up: **blue** (`bg-blue-500`)
+  - Cool-down: **purple** (`bg-purple-500`)
+- Voice announcements:
+  - Warm-up start: `"Warm up for {N} seconds"`
+  - Cool-down start: `"Cool down for {N} seconds"`
+  - Completion transitions use standard blocking announcements.
+- If `warmupSeconds` is 0, the phase is skipped entirely (no warm-up shown). Same for `cooldownSeconds`.
+- The Workout Edit screen includes optional fields for warm-up and cool-down durations (collapsed by default, expanding when the user clicks "Add warm-up" / "Add cool-down").
+- Warm-up and cool-down durations are persisted as part of the workout config.
+
+**Engine changes (`useActiveWorkout.ts`):**
+
+- `WorkoutPhase` type gains `'warmup'` and `'cooldown'`.
+- Phase transition logic accounts for warm-up as the first phase and cool-down as the last.
+- Skip from warm-up jumps to the first exercise; skip from the last rest jumps to cool-down (if enabled) or to finished.
+
+### 8. Duplicate Workout
+
+A convenience action that clones an existing workout so users can create variants without rebuilding from scratch.
+
+**Behavior:**
+
+- Each workout card on the home screen gains a "Duplicate" action (via a context menu or long-press).
+- Tapping "Duplicate" calls a Convex mutation that creates a new workout with:
+  - `name`: `"{original name} (Copy)"`
+  - All other fields (exercises, durations, rest periods, rounds) identical to the original.
+- The new workout is owned by the current user.
+- After duplication, navigate to the edit screen for the new workout so the user can rename or adjust it.
+- Duplication does not copy session history.
+
+**Convex additions:**
+
+- `duplicate` mutation (or reuses `create` with data from an existing workout)
+
+### 9. Workout Scheduling & Reminders
+
+Users can set a preferred daily workout time and receive a browser notification reminding them to work out.
+
+**Behavior:**
+
+- A settings/account screen (new) includes a "Workout Reminder" section.
+- User selects:
+  - **Enabled** toggle (default: off)
+  - **Time** — a time picker (e.g., "07:00")
+  - **Days** — which days of the week (default: all)
+- At the scheduled time, if the app is installed as a PWA and notifications are granted, a push notification fires: `"Time to work out! {workout name} is waiting."`
+- If the browser doesn't support Notification API or permission is denied, the toggle shows a muted state with a note.
+- Scheduling uses a `setInterval` poll (checking every 60s whether the current time matches the user's schedule). No server-side scheduling needed for MVP.
+
+**Prerequisites:**
+
+- Settings/Account screen must be created first (this is also needed for Delete Account).
+- Notification permission must be requested and granted.
+
 ## Auth Setup Guide (Convex + Google OAuth)
 
 ### Prerequisites

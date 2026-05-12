@@ -17,17 +17,24 @@
 
 ## Medium — UX
 
-- [ ] **Dark/Light theme** — Add `dark:` Tailwind classes. Theme toggle in Layout header. Persist preference (localStorage + system default via `prefers-color-scheme`).
+- [ ] **Dark/Light theme** — Add `dark:` Tailwind classes. Theme toggle in Layout header. Persist preference (localStorage + system default via `prefers-color-scheme`). Add `<meta name="color-scheme">` to `index.html`.
 - [ ] **Accessibility audit** — Run automated WCAG 2.1 AA check (axe-core or Lighthouse CI). Fix issues found. Add a11y check to CI.
+- [ ] **PageSpinner** — Reusable full-page spinner component (§13.2). Replace inline spinner in `main.tsx` Suspense fallback.
+- [ ] **ErrorState** — Reusable error state component with message + retry button (§36.4). Separate from `ErrorBoundary`/`ErrorDialog`.
+- [ ] **Reduced motion** — Add `prefers-reduced-motion` media query to `src/index.css` (§37.5).
 
 ## Medium — Architecture
 
 - [ ] **ADR directory** — Create `docs/adr/` with a README explaining when to use ADRs. File one ADR for the existing architecture decisions (HashRouter, Convex auth providers, PWA strategy).
+- [x] **shadcn/ui init** — Run `npx shadcn@latest init` to create `components.json`. Enables adding shadcn/ui components via CLI (§11.1).
 
 ## Low — CI & DX
 
 - [ ] **Lighthouse CI** — Add Lighthouse CI check to GitHub Actions (performance + a11y + SEO). Don't gate on non-deterministic scores; use it as an informational check.
 - [ ] **Bundle size guard** — Add bundle size check to CI (e.g., `@actions/create-check` with a budget threshold) to catch regressions early.
+- [ ] **CSS polish** — Add `scroll-behavior: smooth`, `::selection` with brand color, themed scrollbar, and body `transition` for theme changes to `src/index.css` (§41.3).
+- [ ] **LoadingSkeleton** — Reusable skeleton component matching content shapes (§36.2).
+- [ ] **.env.example files** — Create `.env.development.example` and `.env.production.example` with placeholder values (§8).
 
 ## Completed
 

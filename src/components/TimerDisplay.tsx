@@ -57,7 +57,7 @@ export function TimerDisplay({
           cy={VIEWBOX / 2}
           r={RADIUS}
           fill="none"
-          stroke="#1e293b"
+          stroke="rgba(255, 255, 255, 0.08)"
           strokeWidth={STROKE}
         />
         {/* Progress arc */}
