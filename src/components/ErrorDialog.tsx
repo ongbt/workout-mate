@@ -1,5 +1,12 @@
 import { useTranslation } from 'react-i18next';
-import { cn } from '../lib/utils';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog';
 
 interface ErrorDialogProps {
   open: boolean;
@@ -16,30 +23,15 @@ export function ErrorDialog({
 }: ErrorDialogProps) {
   const { t } = useTranslation();
 
-  if (!open) return null;
-
   return (
-    <div
-      className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
-      onClick={onClose}
-    >
-      <div
-        className={cn(
-          'bg-surface flex w-full max-w-sm flex-col gap-4 rounded-xl p-6',
-          'animate-scale-in',
-        )}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className="text-lg font-semibold">{title}</h3>
-        <p className="text-text-muted text-sm">{message}</p>
-        <button
-          type="button"
-          onClick={onClose}
-          className="bg-primary text-background rounded-xl py-3 font-semibold"
-        >
-          {t('actions.dismiss')}
-        </button>
-      </div>
-    </div>
+    <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{message}</DialogDescription>
+        </DialogHeader>
+        <DialogFooter showCloseButton>{t('actions.dismiss')}</DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

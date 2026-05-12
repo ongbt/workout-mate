@@ -7,6 +7,7 @@ import { Layout } from '../components/Layout';
 import { WorkoutSetCard } from '../components/WorkoutSetCard';
 import { EmptyState } from '../components/EmptyState';
 import { formatTime } from '../utils/formatTime';
+import { Button } from '../components/ui/button';
 
 function formatDate(ts: number): string {
   return new Date(ts).toLocaleDateString(undefined, {
@@ -82,13 +83,12 @@ export function HomeScreen() {
       </div>
 
       <div className="py-4">
-        <button
-          type="button"
+        <Button
           onClick={() => navigate('/workout/new')}
-          className="bg-primary text-background w-full rounded-xl py-4 text-lg font-bold"
+          className="w-full py-4 text-lg font-bold"
         >
           {t('screens.home.createNew')}
-        </button>
+        </Button>
       </div>
     </Layout>
   );

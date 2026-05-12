@@ -49,7 +49,7 @@ describe('WorkoutSetCard', () => {
     expect(container.textContent).toContain('2 rounds');
   });
 
-  it('calls onPlay when play area clicked', () => {
+  it('calls onPlay when card is clicked', () => {
     const onPlay = vi.fn();
     const { getByText } = render(
       <WorkoutSetCard workout={mockWorkout} onEdit={vi.fn()} onPlay={onPlay} />,
@@ -63,8 +63,20 @@ describe('WorkoutSetCard', () => {
     const { container } = render(
       <WorkoutSetCard workout={mockWorkout} onEdit={onEdit} onPlay={vi.fn()} />,
     );
-    const editButton = container.querySelectorAll('button')[1]!;
-    fireEvent.click(editButton);
+    const buttons = container.querySelectorAll('button');
+    expect(buttons.length).toBeGreaterThanOrEqual(1);
+    fireEvent.click(buttons[buttons.length - 1]!);
     expect(onEdit).toHaveBeenCalledOnce();
+  });
+
+  it('does not call onPlay when edit button is clicked', () => {
+    const onPlay = vi.fn();
+    const onEdit = vi.fn();
+    const { container } = render(
+      <WorkoutSetCard workout={mockWorkout} onEdit={onEdit} onPlay={onPlay} />,
+    );
+    const buttons = container.querySelectorAll('button');
+    fireEvent.click(buttons[buttons.length - 1]!);
+    expect(onPlay).not.toHaveBeenCalled();
   });
 });

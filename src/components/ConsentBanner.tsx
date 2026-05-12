@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useConsent } from '@/context/ConsentContext';
 import { initGA4 } from '@/lib/analytics';
 import { initPostHog } from '@/lib/posthog';
+import { Button } from '@/components/ui/button';
 
 export function ConsentBanner() {
   const { t } = useTranslation();
@@ -32,18 +33,17 @@ export function ConsentBanner() {
             </a>
           </p>
           <div className="flex gap-3">
-            <button
-              onClick={handleAccept}
-              className="bg-primary text-background flex-1 rounded-md px-4 py-2 text-sm font-medium"
-            >
+            <Button onClick={handleAccept} className="flex-1" size="sm">
               {t('components.consent.accept')}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
               onClick={deny}
-              className="text-text-muted flex-1 rounded-md border border-slate-600 px-4 py-2 text-sm font-medium"
+              className="flex-1"
+              size="sm"
             >
               {t('components.consent.decline')}
-            </button>
+            </Button>
           </div>
         </motion.div>
       )}

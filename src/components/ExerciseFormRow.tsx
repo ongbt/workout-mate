@@ -1,6 +1,9 @@
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ChevronUp, ChevronDown, X } from 'lucide-react';
 import type { Exercise } from '../types';
+import { Input } from './ui/input';
+import { Button } from './ui/button';
 
 interface Props {
   exercise: Exercise;
@@ -14,17 +17,6 @@ interface Props {
   canMoveUp: boolean;
   canMoveDown: boolean;
 }
-
-const textClass = (error: boolean) =>
-  `flex-1 bg-surface border rounded-lg px-3 py-2.5 text-text placeholder:text-text-muted/50 min-w-0 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/30 ${
-    error ? 'border-red-500' : 'border-text-muted/30'
-  }`;
-
-const numClass =
-  'w-16 bg-surface border border-text-muted/30 rounded-lg px-2 py-2.5 text-center text-text focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/30';
-
-const moveBtnClass =
-  'w-8 h-8 flex items-center justify-center rounded-lg text-text-muted hover:text-text hover:bg-surface shrink-0 disabled:opacity-20 disabled:cursor-not-allowed';
 
 export function ExerciseFormRow({
   exercise,
@@ -61,84 +53,50 @@ export function ExerciseFormRow({
 
   return (
     <div className="flex items-center gap-1">
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="icon-xs"
         onClick={onMoveUp}
         disabled={!canMoveUp}
-        className={moveBtnClass}
         aria-label={t('components.exerciseFormRow.moveUp')}
       >
-        <svg
-          className="h-4 w-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M5 15l7-7 7 7"
-          />
-        </svg>
-      </button>
-      <button
-        type="button"
+        <ChevronUp className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-xs"
         onClick={onMoveDown}
         disabled={!canMoveDown}
-        className={moveBtnClass}
         aria-label={t('components.exerciseFormRow.moveDown')}
       >
-        <svg
-          className="h-4 w-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </button>
-      <input
+        <ChevronDown className="h-4 w-4" />
+      </Button>
+      <Input
         type="text"
         value={exercise.name}
         onChange={(e) => onChange({ ...exercise, name: e.target.value })}
         onBlur={onBlur}
         placeholder={t('components.exerciseFormRow.placeholder')}
-        className={textClass(error)}
+        className="flex-1"
+        aria-invalid={error || undefined}
       />
-      <input
+      <Input
         type="text"
         inputMode="numeric"
         value={durStr}
         onChange={(e) => handleDurChange(e.target.value)}
         onBlur={handleDurBlur}
-        className={numClass}
+        className="w-16 text-center"
       />
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="icon-xs"
         onClick={onDelete}
         disabled={!canDelete}
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-red-400 hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-30"
+        className="text-destructive hover:bg-destructive/10"
       >
-        <svg
-          className="h-4 w-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </svg>
-      </button>
+        <X className="h-4 w-4" />
+      </Button>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useRegisterSW } from 'virtual:pwa-register/react';
+import { Button } from './ui/button';
 
 export function PwaUpdatePrompt() {
   const { t } = useTranslation();
@@ -27,20 +28,21 @@ export function PwaUpdatePrompt() {
       <p className="mb-3 text-sm">
         {t('components.pwaUpdatePrompt.newVersion')}
       </p>
-      <button
-        type="button"
+      <Button
         onClick={() => updateServiceWorker(true)}
-        className="bg-primary text-background w-full rounded-lg py-3 text-sm font-bold"
+        className="w-full"
+        size="sm"
       >
         {t('actions.updateNow')}
-      </button>
-      <button
-        type="button"
+      </Button>
+      <Button
+        variant="ghost"
         onClick={() => setNeedRefresh(false)}
-        className="text-text-muted mt-1 w-full rounded-lg py-2 text-xs"
+        className="mt-1 w-full"
+        size="xs"
       >
         {t('actions.dismiss')}
-      </button>
+      </Button>
     </div>
   );
 }

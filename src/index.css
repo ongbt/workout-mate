@@ -1,12 +1,39 @@
 @import 'tailwindcss';
 
 @theme {
+  /* Project brand tokens */
   --color-primary: #22c55e;
+  --color-primary-foreground: #ffffff;
   --color-rest: #f59e0b;
   --color-surface: #1e293b;
   --color-background: #0f172a;
+  --color-foreground: #f8fafc;
   --color-text: #f8fafc;
   --color-text-muted: #94a3b8;
+
+  /* shadcn/ui semantics */
+  --color-card: #1e293b;
+  --color-card-foreground: #f8fafc;
+  --color-popover: #1e293b;
+  --color-popover-foreground: #f8fafc;
+  --color-secondary: #1e293b;
+  --color-secondary-foreground: #f8fafc;
+  --color-muted: #334155;
+  --color-muted-foreground: #94a3b8;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #ffffff;
+  --color-accent: #1e293b;
+  --color-accent-foreground: #f8fafc;
+  --color-border: #334155;
+  --color-ring: #22c55e;
+  --color-input: #334155;
+
+  /* Border radius */
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+
+  /* Animations */
   --animate-fade-in: fade-in 200ms ease-out;
   --animate-scale-in: scale-in 200ms ease-out;
 }
