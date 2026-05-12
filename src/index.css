@@ -10,30 +10,30 @@
 
   /* Glass surfaces — translucent white over gradient */
   --color-background: transparent;
-  --color-surface: rgba(255, 255, 255, 0.08);
-  --color-card: rgba(255, 255, 255, 0.1);
-  --color-secondary: rgba(255, 255, 255, 0.06);
-  --color-muted: rgba(255, 255, 255, 0.1);
-  --color-accent: rgba(255, 255, 255, 0.1);
-  --color-popover: rgba(23, 23, 30, 0.9);
-  --color-border: rgba(255, 255, 255, 0.12);
-  --color-input: rgba(255, 255, 255, 0.12);
-  --color-ring: rgba(255, 255, 255, 0.5);
+  --color-surface: rgba(255, 255, 255, 0.06);
+  --color-card: rgba(255, 255, 255, 0.06);
+  --color-secondary: rgba(255, 255, 255, 0.04);
+  --color-muted: rgba(255, 255, 255, 0.06);
+  --color-accent: rgba(255, 255, 255, 0.06);
+  --color-popover: rgba(23, 23, 35, 0.9);
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-input: rgba(255, 255, 255, 0.08);
+  --color-ring: rgba(255, 255, 255, 0.4);
 
   /* White opacity text hierarchy */
-  --color-foreground: rgba(255, 255, 255, 0.95);
-  --color-text: rgba(255, 255, 255, 0.9);
-  --color-text-muted: rgba(255, 255, 255, 0.55);
-  --color-card-foreground: rgba(255, 255, 255, 0.9);
-  --color-popover-foreground: rgba(255, 255, 255, 0.9);
-  --color-secondary-foreground: rgba(255, 255, 255, 0.9);
-  --color-muted-foreground: rgba(255, 255, 255, 0.55);
-  --color-accent-foreground: rgba(255, 255, 255, 0.9);
+  --color-foreground: rgba(255, 255, 255, 0.92);
+  --color-text: rgba(255, 255, 255, 0.92);
+  --color-text-muted: rgba(255, 255, 255, 0.45);
+  --color-card-foreground: rgba(255, 255, 255, 0.92);
+  --color-popover-foreground: rgba(255, 255, 255, 0.92);
+  --color-secondary-foreground: rgba(255, 255, 255, 0.7);
+  --color-muted-foreground: rgba(255, 255, 255, 0.45);
+  --color-accent-foreground: rgba(255, 255, 255, 0.92);
 
-  /* Border radius — slightly larger */
+  /* Border radius */
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
+  --radius-xl: 1.5rem;
 
   /* Animations */
   --animate-fade-in: fade-in 200ms ease-out;
@@ -70,16 +70,16 @@ body {
   @apply text-text font-sans antialiased;
   background:
     radial-gradient(
-      120% 80% at 70% 0%,
-      rgba(255, 255, 255, 0.14) 0%,
-      transparent 55%
+      110% 70% at 65% 0%,
+      rgba(255, 255, 255, 0.16) 0%,
+      transparent 50%
     ),
     radial-gradient(
-      90% 70% at 15% 100%,
-      rgba(34, 197, 94, 0.1) 0%,
-      transparent 60%
+      80% 60% at 20% 100%,
+      rgba(126, 150, 177, 0.25) 0%,
+      transparent 55%
     ),
-    linear-gradient(170deg, #445a6e 0%, #2e4055 30%, #1a2938 60%, #0f1720 100%);
+    linear-gradient(170deg, #526a86 0%, #4a5f78 30%, #3d5168 55%, #34475b 100%);
   background-attachment: fixed;
   background-repeat: no-repeat;
   -webkit-tap-highlight-color: transparent;
