@@ -3,20 +3,18 @@ import { createRoot } from 'react-dom/client';
 import { HelmetProvider } from 'react-helmet-async';
 import { ConvexAuthProvider } from '@convex-dev/auth/react';
 import { ConvexReactClient } from 'convex/react';
-import { initSentry } from './lib/sentry';
 import './index.css';
 import './i18n';
 import { LanguageWatcher } from './components/LanguageWatcher';
 import { ConsentBanner } from './components/ConsentBanner';
 import { GA4Loader } from './components/GA4Loader';
 import { PostHogLoader } from './components/PostHogLoader';
+import { SentryLoader } from './components/SentryLoader';
 import { ErrorProvider } from './context/ErrorContext';
 import { ConsentProvider } from './context/ConsentContext';
 import App from './App.tsx';
 
 const convex = new ConvexReactClient(import.meta.env['VITE_CONVEX_URL']!);
-
-initSentry();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -36,6 +34,7 @@ createRoot(document.getElementById('root')!).render(
                 <ConsentBanner />
                 <GA4Loader />
                 <PostHogLoader />
+                <SentryLoader />
               </ErrorProvider>
             </ConvexAuthProvider>
           </ConsentProvider>

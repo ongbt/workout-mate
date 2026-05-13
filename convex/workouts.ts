@@ -74,6 +74,8 @@ export const getDefaults = query({
 
 export const seedDefaults = mutation({
   handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error('Not authenticated');
     const existing = await ctx.db.query('defaultWorkouts').collect();
     if (existing.length > 0) return;
 

@@ -6,12 +6,13 @@ let initialized = false;
 
 export function initSentry(): void {
   if (initialized) return;
-  initialized = true;
 
   if (!SENTRY_DSN) {
     console.log('[Sentry] DSN not configured, skipping initialization');
     return;
   }
+
+  initialized = true;
 
   Sentry.init({
     dsn: SENTRY_DSN,
@@ -19,4 +20,8 @@ export function initSentry(): void {
   });
 
   console.log('[Sentry] Initialized');
+}
+
+export function isSentryEnabled(): boolean {
+  return initialized;
 }

@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from 'react';
 import * as Sentry from '@sentry/react';
+import { isSentryEnabled } from '../lib/sentry';
 import { ErrorDialog } from '../components/ErrorDialog';
 
 interface ErrorContextValue {
@@ -21,7 +22,9 @@ export function ErrorProvider({ children }: { children: ReactNode }) {
   );
 
   const showError = useCallback((title: string, message: string) => {
-    Sentry.captureMessage(message, { level: 'error', extra: { title } });
+    if (isSentryEnabled()) {
+      Sentry.captureMessage(message, { level: 'error', extra: { title } });
+    }
     setError({ title, message });
   }, []);
 
