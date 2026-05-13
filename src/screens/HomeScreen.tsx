@@ -33,6 +33,22 @@ export function HomeScreen() {
       </header>
 
       <div className="scrollbar-hide flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-4">
+        {workouts.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <ul className="flex flex-col gap-3">
+            {workouts.map((w) => (
+              <li key={w.id}>
+                <WorkoutSetCard
+                  workout={w}
+                  onEdit={() => navigate(`/workout/${w.id}`)}
+                  onPlay={() => navigate(`/active/${w.id}`)}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+
         {sessions.length > 0 && (
           <section>
             <h2 className="text-text-muted mb-2 text-xs font-semibold tracking-wider uppercase">
@@ -63,22 +79,6 @@ export function HomeScreen() {
           <p className="text-text-muted py-2 text-center text-sm">
             {t('screens.home.noHistory')}
           </p>
-        )}
-
-        {workouts.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <ul className="flex flex-col gap-3">
-            {workouts.map((w) => (
-              <li key={w.id}>
-                <WorkoutSetCard
-                  workout={w}
-                  onEdit={() => navigate(`/workout/${w.id}`)}
-                  onPlay={() => navigate(`/active/${w.id}`)}
-                />
-              </li>
-            ))}
-          </ul>
         )}
       </div>
 
