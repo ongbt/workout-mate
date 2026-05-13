@@ -1,6 +1,7 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { getAuthUserId } from '@convex-dev/auth/server';
+import { checkNameLength } from './validators';
 
 const exerciseValidator = v.object({
   id: v.string(),
@@ -32,6 +33,8 @@ export const create = mutation({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error('Not authenticated');
+    checkNameLength(args.name, 'Workout name');
+    args.exercises.forEach((ex) => checkNameLength(ex.name, 'Exercise name'));
     return ctx.db.insert('workouts', { ...args, userId });
   },
 });
@@ -50,6 +53,8 @@ export const update = mutation({
     if (!userId) throw new Error('Not authenticated');
     const workout = await ctx.db.get(args.id);
     if (!workout || workout.userId !== userId) throw new Error('Not found');
+    checkNameLength(args.name, 'Workout name');
+    args.exercises.forEach((ex) => checkNameLength(ex.name, 'Exercise name'));
     const { id, ...fields } = args;
     return ctx.db.replace(id, { ...fields, userId });
   },

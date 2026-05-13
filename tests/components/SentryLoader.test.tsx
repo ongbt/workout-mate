@@ -7,7 +7,7 @@ const { mockInitSentry } = vi.hoisted(() => ({
   mockInitSentry: vi.fn(),
 }));
 
-vi.mock('../../src/lib/sentry', () => ({
+vi.mock('@/lib/sentry', () => ({
   initSentry: mockInitSentry,
   isSentryEnabled: () => true,
 }));

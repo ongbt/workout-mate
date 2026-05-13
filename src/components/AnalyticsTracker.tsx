@@ -9,7 +9,7 @@ export function AnalyticsTracker() {
 
   useEffect(() => {
     if (consent === 'granted') {
-      trackPageView(location.pathname + location.hash, document.title);
+      trackPageView(location.pathname + location.hash);
     }
   }, [location, consent]);
 
