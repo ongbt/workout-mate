@@ -28,13 +28,12 @@ export function initGA4(): void {
   document.head.appendChild(script);
 }
 
-export function trackPageView(path: string, title: string): void {
+export function trackPageView(path: string): void {
   if (!GA_MEASUREMENT_ID) return;
   // Pushes to dataLayer regardless of whether the remote script has loaded
   // yet — gtag.js replays queued events when it arrives.
   window.gtag?.('event', 'page_view', {
     page_path: path,
-    page_title: title,
   });
 }
 

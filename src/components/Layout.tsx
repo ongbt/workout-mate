@@ -10,11 +10,14 @@ export const CSP_POLICY =
   "script-src 'self' https://www.googletagmanager.com https://eu-assets.i.posthog.com; " +
   "style-src 'self' 'unsafe-inline'; " +
   "connect-src 'self' wss://*.convex.cloud https://*.convex.cloud https://accounts.google.com " +
-  'https://*.google-analytics.com https://*.analytics.google.com https://*.ingest.sentry.io ' +
+  'https://www.google-analytics.com https://analytics.google.com https://*.ingest.sentry.io ' +
   'https://*.i.posthog.com; ' +
   'frame-src https://accounts.google.com; ' +
   "img-src 'self' data:; " +
   "worker-src 'self'; " +
+  "font-src 'self'; " +
+  "object-src 'none'; " +
+  "form-action 'self'; " +
   "base-uri 'self'";
 
 export function Layout({ children }: { children: ReactNode }) {
