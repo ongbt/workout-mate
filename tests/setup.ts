@@ -28,7 +28,8 @@ vi.mock('react-i18next', () => ({
 vi.mock('convex/react', () => ({
   useConvexAuth: () => ({ isLoading: false, isAuthenticated: true }),
   useQuery: () => null,
-  useMutation: () => vi.fn(),
+  useMutation: () => vi.fn().mockResolvedValue(undefined),
+  useAction: () => vi.fn().mockResolvedValue([]),
   ConvexReactClient: vi.fn(),
 }));
 

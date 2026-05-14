@@ -8,6 +8,7 @@ import { useWorkouts, useDefaultWorkouts } from '../hooks/useWorkouts';
 import { useError } from '../context/ErrorContext';
 import { Layout } from '../components/Layout';
 import { ExerciseFormRow } from '../components/ExerciseFormRow';
+import { ExerciseSearchModal } from '../components/ExerciseSearchModal';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import {
@@ -25,7 +26,11 @@ import {
   DEFAULT_REST_BETWEEN_ROUNDS,
   MIN_EXERCISES,
 } from '../constants';
-import type { WorkoutConfig, Exercise } from '../types';
+import type {
+  WorkoutConfig,
+  Exercise,
+  ExerciseSearchSelection,
+} from '../types';
 
 interface FormState {
   name: string;
@@ -52,6 +57,10 @@ type FormAction =
       restSeconds: number;
       restBetweenRoundsSeconds: number;
       rounds: number;
+    }
+  | {
+      type: 'ADD_EXERCISE_FROM_LIBRARY';
+      exercise: Exercise;
     };
 
 function formReducer(state: FormState, action: FormAction): FormState {
@@ -114,6 +123,11 @@ function formReducer(state: FormState, action: FormAction): FormState {
         restBetweenRoundsSeconds: String(action.restBetweenRoundsSeconds),
         rounds: String(action.rounds),
       };
+    case 'ADD_EXERCISE_FROM_LIBRARY':
+      return {
+        ...state,
+        exercises: [...state.exercises, action.exercise],
+      };
   }
 }
 
@@ -163,6 +177,8 @@ export function WorkoutEditScreen() {
   const [form, dispatch] = useReducer(formReducer, existing, initForm);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showExerciseModal, setShowExerciseModal] = useState(false);
+  const [modalKey, setModalKey] = useState(0);
   const [blanks, setBlanks] = useState<Set<string>>(new Set());
   const defaultWorkouts = useDefaultWorkouts();
 
@@ -244,6 +260,25 @@ export function WorkoutEditScreen() {
       );
     }
   };
+
+  const handleExerciseSelect = useCallback(
+    (selection: ExerciseSearchSelection) => {
+      dispatch({
+        type: 'ADD_EXERCISE_FROM_LIBRARY',
+        exercise: {
+          id: uuid(),
+          exerciseId: selection.exerciseId,
+          name: selection.name,
+          durationSeconds: DEFAULT_EXERCISE_DURATION,
+          bodyParts: selection.bodyParts,
+          targetMuscles: selection.targetMuscles,
+          equipments: selection.equipments,
+          imageUrl: selection.imageUrl,
+        },
+      });
+    },
+    [],
+  );
 
   const handleDelete = () => setShowDeleteConfirm(true);
 
@@ -413,6 +448,16 @@ export function WorkoutEditScreen() {
               <Button
                 variant="ghost"
                 size="xs"
+                onClick={() => {
+                  setModalKey((k) => k + 1);
+                  setShowExerciseModal(true);
+                }}
+              >
+                {t('screens.workoutEdit.browseLibrary')}
+              </Button>
+              <Button
+                variant="ghost"
+                size="xs"
                 onClick={() => dispatch({ type: 'ADD_EXERCISE' })}
               >
                 {t('screens.workoutEdit.addExercise')}
@@ -543,6 +588,13 @@ export function WorkoutEditScreen() {
           </Button>
         </DialogContent>
       </Dialog>
+
+      <ExerciseSearchModal
+        key={modalKey}
+        open={showExerciseModal}
+        onOpenChange={setShowExerciseModal}
+        onSelect={handleExerciseSelect}
+      />
     </Layout>
   );
 }

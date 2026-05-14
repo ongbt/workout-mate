@@ -1,7 +1,12 @@
 export interface Exercise {
   id: string;
+  exerciseId?: string;
   name: string;
   durationSeconds: number;
+  bodyParts?: string[];
+  targetMuscles?: string[];
+  equipments?: string[];
+  imageUrl?: string;
 }
 
 export interface WorkoutConfig {

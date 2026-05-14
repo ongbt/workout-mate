@@ -35,20 +35,18 @@ export class ErrorBoundary extends Component<
   };
 
   render() {
-    if (this.state.error) {
-      return (
-        <>
-          {this.props.children}
+    return (
+      <>
+        {this.props.children}
+        {this.state.error && (
           <ErrorDialog
             open
             title={i18n.t('errors.unexpected')}
             message={i18n.t('errors.tryAgain')}
             onClose={this.handleClose}
           />
-        </>
-      );
-    }
-
-    return this.props.children;
+        )}
+      </>
+    );
   }
 }

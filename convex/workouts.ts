@@ -1,13 +1,7 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { getAuthUserId } from '@convex-dev/auth/server';
-import { checkNameLength } from './validators';
-
-const exerciseValidator = v.object({
-  id: v.string(),
-  name: v.string(),
-  durationSeconds: v.number(),
-});
+import { checkNameLength, exerciseValidator } from './validators';
 
 const workoutFields = {
   name: v.string(),
