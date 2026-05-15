@@ -72,7 +72,10 @@ export function ExerciseSearchModal({ open, onOpenChange, onSelect }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] sm:max-w-lg" showCloseButton>
+      <DialogContent
+        className="flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden sm:max-w-lg"
+        showCloseButton
+      >
         <DialogHeader>
           <DialogTitle>{t('components.exerciseSearch.title')}</DialogTitle>
           <DialogDescription>
@@ -87,7 +90,7 @@ export function ExerciseSearchModal({ open, onOpenChange, onSelect }: Props) {
         )}
 
         {displayBodyParts.length > 0 && (
-          <div className="scrollbar-hide flex min-w-0 gap-1.5 overflow-x-auto pb-1">
+          <div className="flex shrink-0 gap-1.5 overflow-x-auto pb-1">
             <button
               type="button"
               onClick={() => setSelectedBodyPart(null)}
@@ -119,7 +122,7 @@ export function ExerciseSearchModal({ open, onOpenChange, onSelect }: Props) {
         )}
 
         {hasRapidApiKey && (
-          <div className="relative">
+          <div className="relative shrink-0">
             <Search className="text-text-muted absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
             <Input
               type="text"
@@ -132,7 +135,7 @@ export function ExerciseSearchModal({ open, onOpenChange, onSelect }: Props) {
           </div>
         )}
 
-        <div className="scrollbar-hide -mx-1 flex-1 space-y-1 overflow-y-auto px-1">
+        <div className="scrollbar-hide -mx-1 min-h-0 flex-1 space-y-1 overflow-y-auto px-1 pb-2">
           {isLoading && (
             <div className="space-y-1">
               {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
