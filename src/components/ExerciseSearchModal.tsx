@@ -200,10 +200,7 @@ export function ExerciseSearchModal({ open, onOpenChange, onSelect }: Props) {
                       {isAdded ? (
                         <Check className="h-3.5 w-3.5" />
                       ) : hasRapidApiKey ? (
-                        <>
-                          <Plus className="mr-1 h-3.5 w-3.5" />
-                          {t('components.exerciseSearch.add')}
-                        </>
+                        <Plus className="h-3.5 w-3.5" />
                       ) : (
                         <Lock className="h-3.5 w-3.5" />
                       )}

@@ -49,8 +49,8 @@ describe('ExerciseFormRow', () => {
   it('calls onDelete when delete button clicked', () => {
     const { onDelete } = setup();
     const buttons = document.querySelectorAll('button');
-    // Last button is delete (X button)
-    const deleteBtn = buttons[buttons.length - 1]!;
+    // Delete button (X) is now the first button
+    const deleteBtn = buttons[0]!;
     fireEvent.click(deleteBtn);
     expect(onDelete).toHaveBeenCalledOnce();
   });
@@ -58,21 +58,24 @@ describe('ExerciseFormRow', () => {
   it('disables move up when canMoveUp is false', () => {
     setup({ canMoveUp: false, canMoveDown: true });
     const buttons = document.querySelectorAll('button');
-    const moveUpBtn = buttons[0]!;
+    // Move up is the second button (index 1)
+    const moveUpBtn = buttons[1]!;
     expect(moveUpBtn.disabled).toBe(true);
   });
 
   it('disables move down when canMoveDown is false', () => {
     setup({ canMoveUp: true, canMoveDown: false });
     const buttons = document.querySelectorAll('button');
-    const moveDownBtn = buttons[1]!;
+    // Move down is the third button (index 2)
+    const moveDownBtn = buttons[2]!;
     expect(moveDownBtn.disabled).toBe(true);
   });
 
   it('disables delete when canDelete is false', () => {
     setup({ canDelete: false });
     const buttons = document.querySelectorAll('button');
-    const deleteBtn = buttons[buttons.length - 1]!;
+    // Delete button (X) is the first button
+    const deleteBtn = buttons[0]!;
     expect(deleteBtn.disabled).toBe(true);
   });
 });

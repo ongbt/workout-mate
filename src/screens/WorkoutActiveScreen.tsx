@@ -16,6 +16,7 @@ import { FinishedView } from '../components/FinishedView';
 import { useFeatureFlag } from '../hooks/useFeatureFlag';
 import { Button } from '../components/ui/button';
 import { buttonVariants } from '../components/ui/button';
+import { ExerciseDetailDialog } from '../components/ExerciseDetailDialog';
 import {
   Dialog,
   DialogContent,
@@ -25,7 +26,7 @@ import {
   DialogTitle,
 } from '../components/ui/dialog';
 import { cn } from '../lib/utils';
-import type { WorkoutConfig, WorkoutCompletion } from '../types';
+import type { WorkoutConfig, WorkoutCompletion, Exercise } from '../types';
 
 const activeExit = {
   opacity: 0,
@@ -102,6 +103,7 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
   } = sessionState;
 
   const [showStopConfirm, setShowStopConfirm] = useState(false);
+  const [detailExercise, setDetailExercise] = useState<Exercise | null>(null);
   const isActive = phase !== 'idle' && phase !== 'finished';
   const controlsAbove = useFeatureFlag('workout-controls-above-exercises');
 
@@ -161,7 +163,7 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
         {phase !== 'finished' ? (
           <motion.div
             key="active-workout"
-            className="scrollbar-hide flex min-h-0 flex-1 flex-col items-center gap-5 overflow-y-auto pb-4"
+            className="scrollbar-hide flex min-h-0 flex-1 flex-col items-center gap-4 overflow-y-auto pb-4"
             exit={activeExit}
             animate={activeEnter}
             initial={activeExit}
@@ -249,11 +251,11 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
                       {t('screens.workoutActive.exercisesLabel')} —{' '}
                       {t('labels.rounds', { count: config.rounds })}
                     </p>
-                    <ul className="space-y-2">
+                    <ul className="space-y-1">
                       {config.exercises.map((ex) => (
                         <li
                           key={ex.id}
-                          className="flex items-center justify-between gap-2"
+                          className="flex items-center justify-between gap-2 py-0.5"
                         >
                           {ex.imageUrl && (
                             <img
@@ -263,9 +265,19 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
                               loading="lazy"
                             />
                           )}
-                          <span className="flex-1 truncate text-sm">
-                            {ex.name}
-                          </span>
+                          {ex.exerciseId ? (
+                            <button
+                              type="button"
+                              onClick={() => setDetailExercise(ex)}
+                              className="flex-1 truncate text-left text-sm"
+                            >
+                              {ex.name}
+                            </button>
+                          ) : (
+                            <span className="flex-1 truncate text-sm">
+                              {ex.name}
+                            </span>
+                          )}
                           <span className="text-text-muted text-xs">
                             {ex.durationSeconds}s
                           </span>
@@ -306,7 +318,7 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
                   </div>
                 )}
                 <motion.div
-                  className="w-full space-y-4"
+                  className="w-full space-y-3"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1, transition: { duration: 0.2 } }}
                 >
@@ -317,13 +329,13 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
                     totalExercises={totalExercises}
                   />
 
-                  <div className="bg-surface/80 space-y-1 rounded-2xl p-3 backdrop-blur-xl">
+                  <div className="bg-surface/80 space-y-0.5 rounded-2xl p-2 backdrop-blur-xl">
                     {config.exercises.map((ex, idx) => {
                       const status = getExerciseStatus(currentRound, idx);
                       return (
                         <div
                           key={ex.id}
-                          className={`flex items-center gap-3 rounded-lg px-2 py-2 transition-colors ${
+                          className={`flex items-center gap-3 rounded-lg px-2 py-1 transition-colors ${
                             status === 'current'
                               ? 'ring-primary/30 bg-white/[0.04] ring-1'
                               : ''
@@ -340,17 +352,33 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
                                   : 'bg-text-muted/30'
                             }`}
                           />
-                          <span
-                            className={`flex-1 truncate text-sm ${
-                              status === 'current'
-                                ? 'font-semibold'
-                                : status === 'done'
-                                  ? 'text-text'
-                                  : 'text-text-muted'
-                            }`}
-                          >
-                            {ex.name}
-                          </span>
+                          {ex.exerciseId ? (
+                            <button
+                              type="button"
+                              onClick={() => setDetailExercise(ex)}
+                              className={`flex-1 truncate text-left text-sm ${
+                                status === 'current'
+                                  ? 'font-semibold'
+                                  : status === 'done'
+                                    ? 'text-text'
+                                    : 'text-text-muted'
+                              }`}
+                            >
+                              {ex.name}
+                            </button>
+                          ) : (
+                            <span
+                              className={`flex-1 truncate text-sm ${
+                                status === 'current'
+                                  ? 'font-semibold'
+                                  : status === 'done'
+                                    ? 'text-text'
+                                    : 'text-text-muted'
+                              }`}
+                            >
+                              {ex.name}
+                            </span>
+                          )}
                           <span className="text-text-muted shrink-0 text-xs">
                             {ex.durationSeconds}s
                           </span>
@@ -410,6 +438,14 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
           />
         </div>
       )}
+
+      <ExerciseDetailDialog
+        exercise={detailExercise}
+        open={detailExercise !== null}
+        onOpenChange={(open) => {
+          if (!open) setDetailExercise(null);
+        }}
+      />
 
       <Dialog open={showStopConfirm} onOpenChange={setShowStopConfirm}>
         <DialogContent>
