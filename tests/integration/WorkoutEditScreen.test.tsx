@@ -110,4 +110,24 @@ describe('WorkoutEditScreen', () => {
       ]),
     });
   });
+
+  describe('exercise library integration', () => {
+    it('renders "Browse Library" button for new workouts', () => {
+      const { getByText } = renderEdit();
+      expect(getByText('screens.workoutEdit.browseLibrary')).toBeDefined();
+    });
+
+    it('renders "+ Add" button for custom exercises', () => {
+      const { getByText } = renderEdit();
+      expect(getByText('screens.workoutEdit.addExercise')).toBeDefined();
+    });
+
+    it('opens exercise search modal when Browse Library is clicked', () => {
+      const { getByText } = renderEdit();
+      const browseBtn = getByText('screens.workoutEdit.browseLibrary');
+      fireEvent.click(browseBtn);
+      // Modal should now be open — check for the key prompt since no API key is set
+      expect(getByText('components.exerciseSearch.keyPrompt')).toBeDefined();
+    });
+  });
 });

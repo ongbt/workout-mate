@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../convex/_generated/api';
@@ -57,9 +57,11 @@ export function useDefaultWorkouts(): WorkoutConfig[] {
   const seed = useMutation(api.workouts.seedDefaults);
   const { showError } = useError();
   const { t } = useTranslation();
+  const seedAttempted = useRef(false);
 
   useEffect(() => {
-    if (data !== undefined && data.length === 0) {
+    if (data !== undefined && data.length === 0 && !seedAttempted.current) {
+      seedAttempted.current = true;
       seed().catch((e: unknown) => {
         showError(
           t('errors.unexpected'),

@@ -74,6 +74,7 @@ const en = {
     'workoutEdit.restBetweenExercisesLabel': 'Rest between exercises (sec)',
     'workoutEdit.importTemplate': 'Import template',
     'workoutEdit.addExercise': '+ Add',
+    'workoutEdit.browseLibrary': 'Browse Library',
     'workoutEdit.deleteConfirmTitle': 'Delete Workout?',
     'workoutEdit.deleteConfirmMessage':
       'This will permanently delete "{{name}}". This action cannot be undone.',
@@ -152,6 +153,22 @@ const en = {
     'consent.accept': 'Accept',
     'consent.decline': 'Decline',
     'consent.privacyLink': 'Privacy Policy',
+    'exerciseSearch.title': 'Add Exercise',
+    'exerciseSearch.description':
+      'Search from the ExerciseDB library to add exercises with images',
+    'exerciseSearch.searchPlaceholder': 'Search exercises...',
+    'exerciseSearch.noResults': 'No exercises found',
+    'exerciseSearch.selectBodyPart':
+      'Select a body part or search to find exercises',
+    'exerciseSearch.needsKey': 'Enter your RapidAPI key to browse exercises',
+    'exerciseSearch.retry': 'Try Again',
+    'exerciseSearch.add': 'Add',
+    'exerciseSearch.done': 'Done',
+    'exerciseSearch.saved': 'Saved',
+    'exerciseSearch.keyPrompt':
+      'Enter your RapidAPI key from rapidapi.com to browse exercises with images',
+    'exerciseSearch.keyPlaceholder': 'Paste your RapidAPI key',
+    'exerciseSearch.removeKey': 'Remove key',
   },
 };
 

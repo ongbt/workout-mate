@@ -71,15 +71,32 @@ export function ExerciseFormRow({
       >
         <ChevronDown className="h-4 w-4" />
       </Button>
-      <Input
-        type="text"
-        value={exercise.name}
-        onChange={(e) => onChange({ ...exercise, name: e.target.value })}
-        onBlur={onBlur}
-        placeholder={t('components.exerciseFormRow.placeholder')}
-        className="flex-1"
-        aria-invalid={error || undefined}
-      />
+      {exercise.imageUrl && (
+        <img
+          src={exercise.imageUrl}
+          alt={exercise.name}
+          className="h-7 w-7 shrink-0 rounded-lg object-cover"
+          loading="lazy"
+        />
+      )}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <Input
+          type="text"
+          value={exercise.name}
+          onChange={(e) => onChange({ ...exercise, name: e.target.value })}
+          onBlur={onBlur}
+          placeholder={t('components.exerciseFormRow.placeholder')}
+          className="flex-1"
+          aria-invalid={error || undefined}
+        />
+        {(exercise.bodyParts?.length || exercise.targetMuscles?.length) && (
+          <span className="text-text-muted mt-0.5 truncate pl-1 text-xs capitalize">
+            {[exercise.bodyParts?.[0], exercise.targetMuscles?.[0]]
+              .filter(Boolean)
+              .join(' · ')}
+          </span>
+        )}
+      </div>
       <Input
         type="text"
         inputMode="numeric"

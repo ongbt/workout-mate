@@ -186,6 +186,14 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
                   <h3 className="text-center text-xl font-bold">
                     {currentExercise.name}
                   </h3>
+                  {currentExercise.imageUrl && (
+                    <img
+                      src={currentExercise.imageUrl}
+                      alt={currentExercise.name}
+                      className="h-48 w-48 rounded-2xl object-cover"
+                      loading="lazy"
+                    />
+                  )}
                   {nextExercise && (
                     <p className="text-text-muted -mt-2 text-sm">
                       {t('screens.workoutActive.next', {
@@ -245,9 +253,19 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
                       {config.exercises.map((ex) => (
                         <li
                           key={ex.id}
-                          className="flex items-center justify-between"
+                          className="flex items-center justify-between gap-2"
                         >
-                          <span className="text-sm">{ex.name}</span>
+                          {ex.imageUrl && (
+                            <img
+                              src={ex.imageUrl}
+                              alt={ex.name}
+                              className="h-6 w-6 shrink-0 rounded-md object-cover"
+                              loading="lazy"
+                            />
+                          )}
+                          <span className="flex-1 truncate text-sm">
+                            {ex.name}
+                          </span>
                           <span className="text-text-muted text-xs">
                             {ex.durationSeconds}s
                           </span>

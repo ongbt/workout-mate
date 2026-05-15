@@ -10,10 +10,10 @@ export const CSP_POLICY =
   "script-src 'self' https://www.googletagmanager.com https://eu-assets.i.posthog.com; " +
   "style-src 'self' 'unsafe-inline'; " +
   "connect-src 'self' wss://*.convex.cloud https://*.convex.cloud https://accounts.google.com " +
-  'https://www.google-analytics.com https://analytics.google.com https://*.ingest.sentry.io ' +
+  'https://www.google-analytics.com https://analytics.google.com https://*.ingest.sentry.io https://*.ingest.us.sentry.io ' +
   'https://*.i.posthog.com; ' +
   'frame-src https://accounts.google.com; ' +
-  "img-src 'self' data:; " +
+  "img-src 'self' data: https://*.cloudfront.net https://cdn.exercisedb.dev; " +
   "worker-src 'self'; " +
   "font-src 'self'; " +
   "object-src 'none'; " +

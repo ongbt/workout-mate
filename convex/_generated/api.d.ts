@@ -9,8 +9,10 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as exerciseDb from "../exerciseDb.js";
 import type * as http from "../http.js";
 import type * as sessions from "../sessions.js";
+import type * as userSettings from "../userSettings.js";
 import type * as users from "../users.js";
 import type * as validators from "../validators.js";
 import type * as workouts from "../workouts.js";
@@ -23,8 +25,10 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  exerciseDb: typeof exerciseDb;
   http: typeof http;
   sessions: typeof sessions;
+  userSettings: typeof userSettings;
   users: typeof users;
   validators: typeof validators;
   workouts: typeof workouts;
