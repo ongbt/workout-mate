@@ -67,7 +67,9 @@
       "Bash(Select-String 'convex|dev|deploy')",
       "Bash(findstr /C:\"defaultWorkouts\")",
       "Bash(dir convex\\\\migrate.ts)",
-      "Bash(dir convex\\\\workouts.ts)"
+      "Bash(dir convex\\\\workouts.ts)",
+      "Bash(Select-String -Pattern \"job|step|fail|pass|error\" -Context 0,1)",
+      "WebFetch(domain:v2.exercisedb.dev)"
     ],
     "additionalDirectories": [
       "c:\\Users\\bengt\\Projects\\workout-mate\\docs",

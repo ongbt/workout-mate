@@ -254,7 +254,7 @@ export const listByBodyPart = action({
       throw new Error('No RapidAPI key configured');
     }
 
-    const url = `${EXERCISEDB_BASE}/exercises?${new URLSearchParams({ bodyPart: trimmed, limit: '50' }).toString()}`;
+    const url = `${EXERCISEDB_BASE}/exercises?${new URLSearchParams({ bodyParts: trimmed, limit: '50' }).toString()}`;
     const response = await fetch(url, {
       headers: {
         'X-RapidAPI-Key': settings.rapidApiKey,
