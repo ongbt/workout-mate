@@ -33,8 +33,6 @@ export function useExerciseSearch(): UseExerciseSearchReturn {
   const [error, setError] = useState<string | null>(null);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastActionRef = useRef<() => Promise<void>>(() => Promise.resolve());
-  const mountedRef = useRef(true);
 
   useEffect(() => {
     if (!hasRapidApiKey) return;
@@ -51,12 +49,6 @@ export function useExerciseSearch(): UseExerciseSearchReturn {
       cancelled = true;
     };
   }, [hasRapidApiKey, listBodyParts]);
-
-  useEffect(() => {
-    return () => {
-      mountedRef.current = false;
-    };
-  }, []);
 
   const doFetch = useCallback(async () => {
     if (!hasRapidApiKey) {
@@ -108,23 +100,22 @@ export function useExerciseSearch(): UseExerciseSearchReturn {
     listByBodyPart,
   ]);
 
+  const doFetchRef = useRef(doFetch);
   useEffect(() => {
-    lastActionRef.current = doFetch;
+    doFetchRef.current = doFetch;
   }, [doFetch]);
 
-  const setSearchQuery = useCallback(
-    (query: string) => {
-      setSearchQueryRaw(query);
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        doFetch();
-      }, DEBOUNCE_MS);
-    },
-    [doFetch],
-  );
+  const setSearchQuery = useCallback((query: string) => {
+    setSearchQueryRaw(query);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      doFetchRef.current();
+    }, DEBOUNCE_MS);
+  }, []);
 
   useEffect(() => {
     if (hasRapidApiKey && selectedBodyPart !== null) {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
       queueMicrotask(() => void doFetch());
     }
   }, [selectedBodyPart, hasRapidApiKey, doFetch]);
@@ -136,7 +127,7 @@ export function useExerciseSearch(): UseExerciseSearchReturn {
   }, []);
 
   const retry = useCallback(() => {
-    lastActionRef.current();
+    doFetchRef.current();
   }, []);
 
   return {
