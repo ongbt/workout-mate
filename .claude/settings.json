@@ -49,7 +49,9 @@
       "PowerShell(pnpm exec vitest run 2>&1)",
       "PowerShell(git add src/components/ExerciseSearchModal.tsx src/components/ErrorBoundary.tsx src/hooks/useWorkouts.ts src/screens/WorkoutEditScreen.tsx tests/components/ExerciseSearchModal.test.tsx)",
       "PowerShell(git push)",
-      "PowerShell(pnpm exec prettier --write .claude/settings.json)"
+      "PowerShell(pnpm exec prettier --write .claude/settings.json)",
+      "Bash(git remote *)",
+      "Bash(pnpm prettier *)"
     ],
     "additionalDirectories": ["c:\\Users\\bengt\\Projects\\workout-mate\\docs"]
   }
