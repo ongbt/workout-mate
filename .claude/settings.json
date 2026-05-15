@@ -51,7 +51,8 @@
       "PowerShell(git push)",
       "PowerShell(pnpm exec prettier --write .claude/settings.json)",
       "Bash(git remote *)",
-      "Bash(pnpm prettier *)"
+      "Bash(pnpm prettier *)",
+      "PowerShell(pnpm test --run 2>&1)"
     ],
     "additionalDirectories": ["c:\\Users\\bengt\\Projects\\workout-mate\\docs"]
   }
