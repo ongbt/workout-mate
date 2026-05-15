@@ -9,11 +9,21 @@ export interface Exercise {
   imageUrl?: string;
 }
 
+export interface RestSegment {
+  type: 'rest';
+  id: string;
+  durationSeconds: number;
+}
+
+export interface ExerciseSegment extends Exercise {
+  type: 'exercise';
+}
+
+export type WorkoutSegment = ExerciseSegment | RestSegment;
+
 export interface WorkoutConfig {
   id: string;
   name: string;
-  exercises: Exercise[];
-  restSeconds: number;
-  restBetweenRoundsSeconds: number;
+  segments: WorkoutSegment[];
   rounds: number;
 }

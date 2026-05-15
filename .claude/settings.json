@@ -57,7 +57,17 @@
       "PowerShell(pnpm run typecheck 2>&1)",
       "PowerShell(npx tsc -b --noEmit 2>&1)",
       "PowerShell(npx tsc -b 2>&1)",
-      "PowerShell(pnpm run test -- --reporter=verbose tests/components/ExerciseSearchModal.test.tsx 2>&1)"
+      "PowerShell(pnpm run test -- --reporter=verbose tests/components/ExerciseSearchModal.test.tsx 2>&1)",
+      "PowerShell(pnpm run format 2>&1)",
+      "Bash(Select-Object -First 80)",
+      "PowerShell(pnpm run tsc 2>&1)",
+      "PowerShell(pnpm run 2>&1)",
+      "PowerShell(pnpm run test 2>&1)",
+      "PowerShell(pnpm run build 2>&1)",
+      "Bash(Select-String 'convex|dev|deploy')",
+      "Bash(findstr /C:\"defaultWorkouts\")",
+      "Bash(dir convex\\\\migrate.ts)",
+      "Bash(dir convex\\\\workouts.ts)"
     ],
     "additionalDirectories": [
       "c:\\Users\\bengt\\Projects\\workout-mate\\docs",

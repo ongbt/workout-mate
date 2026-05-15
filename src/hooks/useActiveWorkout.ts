@@ -4,8 +4,29 @@ import { useSpeechSynthesis } from './useSpeechSynthesis';
 import { useBeep } from './useBeep';
 import { useWakeLock } from './useWakeLock';
 import { COUNTDOWN_WARN_THRESHOLD, TEN_SECOND_INTERVAL } from '../constants';
-import type { WorkoutConfig, Exercise, WorkoutCompletion } from '../types';
+import type {
+  WorkoutConfig,
+  WorkoutSegment,
+  ExerciseSegment,
+  WorkoutCompletion,
+} from '../types';
 import type { WorkoutPhase, WorkoutSessionState } from '../types';
+
+function getExercises(segments: WorkoutSegment[]): ExerciseSegment[] {
+  return segments.filter((s) => s.type === 'exercise') as ExerciseSegment[];
+}
+
+function getNextExerciseSegment(
+  segments: WorkoutSegment[],
+  fromIndex: number,
+): { index: number; segment: ExerciseSegment } | null {
+  for (let i = fromIndex; i < segments.length; i++) {
+    if (segments[i]!.type === 'exercise') {
+      return { index: i, segment: segments[i]! as ExerciseSegment };
+    }
+  }
+  return null;
+}
 
 export function useActiveWorkout(
   config: WorkoutConfig,
@@ -13,8 +34,7 @@ export function useActiveWorkout(
 ) {
   const [phase, setPhase] = useState<WorkoutPhase>('idle');
   const [currentRound, setCurrentRound] = useState(1);
-  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-  const [restDurationMs, setRestDurationMs] = useState(0);
+  const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
   const { speak, cancel: cancelSpeech, isSpeaking } = useSpeechSynthesis();
   const beep = useBeep();
   const wakeLock = useWakeLock();
@@ -22,9 +42,8 @@ export function useActiveWorkout(
   const configRef = useRef(config);
   const phaseRef = useRef(phase);
   const roundRef = useRef(currentRound);
-  const idxRef = useRef(currentExerciseIndex);
+  const idxRef = useRef(currentSegmentIndex);
 
-  // Sync refs for use in callbacks that need latest values without re-creating
   useEffect(() => {
     configRef.current = config;
   });
@@ -35,8 +54,8 @@ export function useActiveWorkout(
     roundRef.current = currentRound;
   }, [currentRound]);
   useEffect(() => {
-    idxRef.current = currentExerciseIndex;
-  }, [currentExerciseIndex]);
+    idxRef.current = currentSegmentIndex;
+  }, [currentSegmentIndex]);
 
   const suppressFirstReadoutRef = useRef(false);
   const startTimerRef = useRef<(ms: number) => void>(() => {});
@@ -58,41 +77,133 @@ export function useActiveWorkout(
     [speak],
   );
 
+  const speakRef = useRef(speak);
+  useEffect(() => {
+    speakRef.current = speak;
+  });
+
   const advancePhase = useCallback(() => {
     const p = phaseRef.current;
     const idx = idxRef.current;
     const round = roundRef.current;
     const cfg = configRef.current;
+    const segments = cfg.segments;
+    const cur = segments[idx];
+
+    if (!cur) {
+      setPhase('finished');
+      speak('Workout complete! Great job!');
+      wakeLock.release();
+      onCompleteRef.current?.({
+        completedAt: Date.now(),
+        totalDurationMs: Date.now() - sessionStartRef.current,
+        exerciseCount: getExercises(segments).length,
+        roundsCompleted: cfg.rounds,
+      });
+      return;
+    }
 
     if (p === 'exercise') {
-      const isLastExercise = idx >= cfg.exercises.length - 1;
-      const isLastRound = round >= cfg.rounds;
-      const restSecs =
-        isLastExercise && !isLastRound
-          ? cfg.restBetweenRoundsSeconds
-          : cfg.restSeconds;
-      setRestDurationMs(restSecs * 1000);
-      setPhase('rest');
-      if (isLastExercise) {
-        startTimerAfterSpeech(
-          `Round ${round} complete. Rest for ${restSecs} seconds`,
-          restSecs * 1000,
-        );
+      if (cur.type !== 'exercise') {
+        // Current segment is not an exercise but we're in exercise phase —
+        // skip to next exercise segment
+        const next = getNextExerciseSegment(segments, idx + 1);
+        if (next) {
+          setCurrentSegmentIndex(next.index);
+          setPhase('exercise');
+          startTimerAfterSpeech(
+            `${next.segment.name}. Go!`,
+            next.segment.durationSeconds * 1000,
+          );
+        } else {
+          setPhase('finished');
+          speakRef.current('Workout complete!');
+        }
+        return;
+      }
+
+      // Find the next segment
+      const nextIdx = idx + 1;
+      if (nextIdx < segments.length) {
+        const next = segments[nextIdx]!;
+        if (next.type === 'rest') {
+          const nextEx = getNextExerciseSegment(segments, nextIdx + 1);
+          const isEndOfList = nextEx === null;
+          // Skip end-of-list rest on the last round
+          if (isEndOfList && round >= cfg.rounds) {
+            setPhase('finished');
+            speak('Workout complete! Great job!');
+            wakeLock.release();
+            onCompleteRef.current?.({
+              completedAt: Date.now(),
+              totalDurationMs: Date.now() - sessionStartRef.current,
+              exerciseCount: getExercises(segments).length,
+              roundsCompleted: cfg.rounds,
+            });
+            return;
+          }
+          setCurrentSegmentIndex(nextIdx);
+          setPhase('rest');
+          if (nextEx) {
+            startTimerAfterSpeech(
+              `Rest for ${next.durationSeconds} seconds`,
+              next.durationSeconds * 1000,
+              `Next: ${nextEx.segment.name}`,
+            );
+          } else {
+            startTimerAfterSpeech(
+              `Round ${round} complete. Rest for ${next.durationSeconds} seconds`,
+              next.durationSeconds * 1000,
+            );
+          }
+        } else {
+          // Next is exercise — go directly
+          setCurrentSegmentIndex(nextIdx);
+          setPhase('exercise');
+          startTimerAfterSpeech(
+            `${next.name}. Go!`,
+            next.durationSeconds * 1000,
+          );
+        }
       } else {
-        const nextEx = cfg.exercises[idx + 1]!;
-        startTimerAfterSpeech(
-          `Rest for ${restSecs} seconds`,
-          restSecs * 1000,
-          `Next: ${nextEx.name}`,
-        );
+        // End of segments — move to next round or finish
+        if (round >= cfg.rounds) {
+          setPhase('finished');
+          speak('Workout complete! Great job!');
+          wakeLock.release();
+          onCompleteRef.current?.({
+            completedAt: Date.now(),
+            totalDurationMs: Date.now() - sessionStartRef.current,
+            exerciseCount: getExercises(segments).length,
+            roundsCompleted: cfg.rounds,
+          });
+        } else {
+          setCurrentRound((r) => r + 1);
+          setCurrentSegmentIndex(0);
+          const first = segments[0]!;
+          if (first.type === 'exercise') {
+            setPhase('exercise');
+            startTimerAfterSpeech(
+              `Round ${round + 1}. ${first.name}. Go!`,
+              first.durationSeconds * 1000,
+            );
+          } else {
+            // First segment in list is rest — handle it
+            setPhase('rest');
+            startTimerAfterSpeech(
+              `Rest for ${first.durationSeconds} seconds`,
+              first.durationSeconds * 1000,
+            );
+          }
+        }
       }
       return;
     }
 
-    // Was rest, move to next exercise or round
+    // Was rest, move to next segment
     const nextIdx = idx + 1;
 
-    if (nextIdx >= cfg.exercises.length) {
+    if (nextIdx >= segments.length) {
       if (round >= cfg.rounds) {
         setPhase('finished');
         speak('Workout complete! Great job!');
@@ -100,26 +211,44 @@ export function useActiveWorkout(
         onCompleteRef.current?.({
           completedAt: Date.now(),
           totalDurationMs: Date.now() - sessionStartRef.current,
-          exerciseCount: cfg.exercises.length,
+          exerciseCount: getExercises(segments).length,
           roundsCompleted: cfg.rounds,
         });
         return;
       }
       setCurrentRound((r) => r + 1);
-      setCurrentExerciseIndex(0);
-      setPhase('exercise');
-      const ex = cfg.exercises[0]!;
-      startTimerAfterSpeech(
-        `Round ${round + 1}. ${ex.name}. Go!`,
-        ex.durationSeconds * 1000,
-      );
+      setCurrentSegmentIndex(0);
+      const first = segments[0]!;
+      if (first.type === 'exercise') {
+        setPhase('exercise');
+        startTimerAfterSpeech(
+          `Round ${round + 1}. ${first.name}. Go!`,
+          first.durationSeconds * 1000,
+        );
+      } else {
+        setPhase('rest');
+        startTimerAfterSpeech(
+          `Rest for ${first.durationSeconds} seconds`,
+          first.durationSeconds * 1000,
+        );
+      }
       return;
     }
 
-    setCurrentExerciseIndex(nextIdx);
-    setPhase('exercise');
-    const nextEx = cfg.exercises[nextIdx]!;
-    startTimerAfterSpeech(`${nextEx.name}. Go!`, nextEx.durationSeconds * 1000);
+    const next = segments[nextIdx]!;
+    if (next.type === 'exercise') {
+      setCurrentSegmentIndex(nextIdx);
+      setPhase('exercise');
+      startTimerAfterSpeech(`${next.name}. Go!`, next.durationSeconds * 1000);
+    } else {
+      // Rest followed by rest — just go to rest
+      setCurrentSegmentIndex(nextIdx);
+      setPhase('rest');
+      startTimerAfterSpeech(
+        `Rest for ${next.durationSeconds} seconds`,
+        next.durationSeconds * 1000,
+      );
+    }
   }, [speak, startTimerAfterSpeech, wakeLock]);
 
   const handleTimerComplete = useCallback(() => {
@@ -168,14 +297,25 @@ export function useActiveWorkout(
   const handleStart = useCallback(() => {
     wakeLock.request();
     sessionStartRef.current = Date.now();
-    const firstExercise = config.exercises[0]!;
-    setPhase('exercise');
+    const first = config.segments[0];
+    if (!first) {
+      setPhase('finished');
+      return;
+    }
+    setPhase(first.type === 'exercise' ? 'exercise' : 'rest');
     setCurrentRound(1);
-    setCurrentExerciseIndex(0);
-    startTimerAfterSpeech(
-      `Round 1. ${firstExercise.name}. Go!`,
-      firstExercise.durationSeconds * 1000,
-    );
+    setCurrentSegmentIndex(0);
+    if (first.type === 'exercise') {
+      startTimerAfterSpeech(
+        `Round 1. ${first.name}. Go!`,
+        first.durationSeconds * 1000,
+      );
+    } else {
+      startTimerAfterSpeech(
+        `Rest for ${first.durationSeconds} seconds`,
+        first.durationSeconds * 1000,
+      );
+    }
   }, [config, startTimerAfterSpeech, wakeLock]);
 
   const handlePause = useCallback(() => {
@@ -194,7 +334,7 @@ export function useActiveWorkout(
     stopTimer();
     setPhase('idle');
     setCurrentRound(1);
-    setCurrentExerciseIndex(0);
+    setCurrentSegmentIndex(0);
   }, [stopTimer, wakeLock, cancelSpeech]);
 
   const handleSkip = useCallback(() => {
@@ -206,27 +346,32 @@ export function useActiveWorkout(
     configId: config.id,
     phase,
     currentRound,
-    currentExerciseIndex,
+    currentExerciseIndex: currentSegmentIndex,
     timeRemainingMs,
     totalRounds: config.rounds,
-    totalExercises: config.exercises.length,
+    totalExercises: getExercises(config.segments).length,
   };
 
-  const currentExercise = config.exercises[currentExerciseIndex] ?? null;
+  const currentSegment = config.segments[currentSegmentIndex] ?? null;
+  const currentExercise =
+    currentSegment?.type === 'exercise' ? currentSegment : null;
 
-  const nextExercise = ((): Exercise | null => {
-    const nextIdx = currentExerciseIndex + 1;
-    if (nextIdx < config.exercises.length) return config.exercises[nextIdx]!;
-    if (currentRound < config.rounds) return config.exercises[0]!;
+  const nextExercise = ((): ExerciseSegment | null => {
+    const nextEx = getNextExerciseSegment(
+      config.segments,
+      currentSegmentIndex + 1,
+    );
+    if (nextEx) return nextEx.segment;
+    if (currentRound < config.rounds) {
+      const first = getNextExerciseSegment(config.segments, 0);
+      return first?.segment ?? null;
+    }
     return null;
   })();
 
-  const totalDurationMs =
-    phase === 'exercise'
-      ? (currentExercise?.durationSeconds ?? 0) * 1000
-      : phase === 'rest'
-        ? restDurationMs
-        : 0;
+  const totalDurationMs = currentSegment
+    ? currentSegment.durationSeconds * 1000
+    : 0;
 
   const showExerciseInfo = phase === 'exercise' || phase === 'rest';
 

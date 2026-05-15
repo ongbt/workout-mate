@@ -12,7 +12,9 @@ interface Props {
 
 export function WorkoutSetCard({ workout, onEdit, onPlay }: Props) {
   const { t } = useTranslation();
-  const totalExercises = workout.exercises.length;
+  const totalExercises = workout.segments.filter(
+    (s) => s.type === 'exercise',
+  ).length;
 
   return (
     <Card

@@ -3,6 +3,7 @@ import { v } from 'convex/values';
 import { authTables } from '@convex-dev/auth/server';
 
 const exerciseFields = {
+  type: v.literal('exercise'),
   id: v.string(),
   exerciseId: v.optional(v.string()),
   name: v.string(),
@@ -13,14 +14,23 @@ const exerciseFields = {
   imageUrl: v.optional(v.string()),
 };
 
+const restFields = {
+  type: v.literal('rest'),
+  id: v.string(),
+  durationSeconds: v.number(),
+};
+
+const segmentValidator = v.union(
+  v.object(exerciseFields),
+  v.object(restFields),
+);
+
 export default defineSchema({
   ...authTables,
 
   workouts: defineTable({
     name: v.string(),
-    exercises: v.array(v.object(exerciseFields)),
-    restSeconds: v.number(),
-    restBetweenRoundsSeconds: v.number(),
+    segments: v.array(segmentValidator),
     rounds: v.number(),
     userId: v.id('users'),
   }).index('by_user', ['userId']),
@@ -37,9 +47,7 @@ export default defineSchema({
 
   defaultWorkouts: defineTable({
     name: v.string(),
-    exercises: v.array(v.object(exerciseFields)),
-    restSeconds: v.number(),
-    restBetweenRoundsSeconds: v.number(),
+    segments: v.array(segmentValidator),
     rounds: v.number(),
   }),
 

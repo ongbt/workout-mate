@@ -1,4 +1,10 @@
-export { type Exercise, type WorkoutConfig } from './workout';
+export {
+  type Exercise,
+  type ExerciseSegment,
+  type RestSegment,
+  type WorkoutSegment,
+  type WorkoutConfig,
+} from './workout';
 export {
   type ExerciseSearchResult,
   type ExerciseSearchSelection,

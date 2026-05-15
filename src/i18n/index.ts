@@ -73,10 +73,9 @@ const en = {
     'workoutEdit.pageDescription':
       'Configure your workout exercises, rounds, and rest periods',
     'workoutEdit.namePlaceholder': 'e.g. Upper Body',
-    'workoutEdit.restBetweenRoundsLabel': 'Rest between rounds (sec)',
-    'workoutEdit.restBetweenExercisesLabel': 'Rest between exercises (sec)',
     'workoutEdit.importTemplate': 'Import template',
-    'workoutEdit.addExercise': '+ Add',
+    'workoutEdit.addExercise': '+ Exercise',
+    'workoutEdit.addRest': '+ Rest',
     'workoutEdit.browseLibrary': 'Browse Library',
     'workoutEdit.deleteConfirmTitle': 'Delete Workout?',
     'workoutEdit.deleteConfirmMessage':
@@ -89,8 +88,6 @@ const en = {
     'workoutActive.next': 'Next: {{name}}',
     'workoutActive.upNext': 'Up next: {{name}}',
     'workoutActive.exercisesLabel': 'Exercises',
-    'workoutActive.restBetweenExercises': 'Rest between exercises',
-    'workoutActive.restBetweenRounds': 'Rest between rounds',
     'privacy.pageTitle': 'Privacy Policy | Workout Mate',
     'privacy.pageDescription': 'Privacy Policy for Workout Mate',
     'privacy.title': 'Privacy Policy',
@@ -151,6 +148,8 @@ const en = {
     'exerciseFormRow.placeholder': 'Exercise name',
     'exerciseFormRow.moveUp': 'Move up',
     'exerciseFormRow.moveDown': 'Move down',
+    'restRow.label': 'Rest',
+    'restRow.placeholder': 'Rest duration',
     'consent.message':
       'This app uses analytics to understand usage and improve the experience. No personal data is collected.',
     'consent.accept': 'Accept',

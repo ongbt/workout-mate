@@ -23,110 +23,132 @@ import {
   DEFAULT_EXERCISE_DURATION,
   DEFAULT_REST_DURATION,
   DEFAULT_ROUNDS,
-  DEFAULT_REST_BETWEEN_ROUNDS,
   MIN_EXERCISES,
+  MIN_SEGMENTS,
 } from '../constants';
 import type {
   WorkoutConfig,
-  Exercise,
+  WorkoutSegment,
+  ExerciseSegment,
   ExerciseSearchSelection,
 } from '../types';
 
 interface FormState {
   name: string;
-  exercises: Exercise[];
-  restSeconds: string;
-  restBetweenRoundsSeconds: string;
+  segments: WorkoutSegment[];
   rounds: string;
 }
 
 type FormAction =
   | { type: 'SET_NAME'; name: string }
-  | { type: 'SET_REST'; restSeconds: string }
-  | { type: 'SET_REST_BETWEEN_ROUNDS'; restBetweenRoundsSeconds: string }
   | { type: 'SET_ROUNDS'; rounds: string }
-  | { type: 'SET_EXERCISE'; index: number; exercise: Exercise }
+  | { type: 'SET_SEGMENT'; index: number; segment: WorkoutSegment }
   | { type: 'ADD_EXERCISE' }
-  | { type: 'DELETE_EXERCISE'; index: number }
+  | { type: 'ADD_REST' }
+  | { type: 'DELETE_SEGMENT'; index: number }
   | { type: 'MOVE_UP'; index: number }
   | { type: 'MOVE_DOWN'; index: number }
   | {
       type: 'IMPORT_TEMPLATE';
       name: string;
-      exercises: Exercise[];
-      restSeconds: number;
-      restBetweenRoundsSeconds: number;
+      segments: WorkoutSegment[];
       rounds: number;
     }
   | {
       type: 'ADD_EXERCISE_FROM_LIBRARY';
-      exercise: Exercise;
+      exercise: ExerciseSegment;
     };
+
+function exerciseCount(segments: WorkoutSegment[]): number {
+  return segments.filter((s) => s.type === 'exercise').length;
+}
 
 function formReducer(state: FormState, action: FormAction): FormState {
   switch (action.type) {
     case 'SET_NAME':
       return { ...state, name: action.name };
-    case 'SET_REST':
-      return { ...state, restSeconds: action.restSeconds };
-    case 'SET_REST_BETWEEN_ROUNDS':
-      return {
-        ...state,
-        restBetweenRoundsSeconds: action.restBetweenRoundsSeconds,
-      };
     case 'SET_ROUNDS':
       return { ...state, rounds: action.rounds };
-    case 'SET_EXERCISE': {
-      const exercises = [...state.exercises];
-      exercises[action.index] = action.exercise;
-      return { ...state, exercises };
+    case 'SET_SEGMENT': {
+      const segments = [...state.segments];
+      segments[action.index] = action.segment;
+      return { ...state, segments };
     }
     case 'ADD_EXERCISE':
       return {
         ...state,
-        exercises: [
-          ...state.exercises,
-          { id: uuid(), name: '', durationSeconds: DEFAULT_EXERCISE_DURATION },
+        segments: [
+          ...state.segments,
+          {
+            type: 'exercise' as const,
+            id: uuid(),
+            name: '',
+            durationSeconds: DEFAULT_EXERCISE_DURATION,
+          },
         ],
       };
-    case 'DELETE_EXERCISE': {
-      if (state.exercises.length <= MIN_EXERCISES) return state;
+    case 'ADD_REST':
       return {
         ...state,
-        exercises: state.exercises.filter((_, i) => i !== action.index),
+        segments: [
+          ...state.segments,
+          {
+            type: 'rest' as const,
+            id: uuid(),
+            durationSeconds: DEFAULT_REST_DURATION,
+          },
+        ],
+      };
+    case 'DELETE_SEGMENT': {
+      if (exerciseCount(state.segments) <= MIN_EXERCISES) return state;
+      const deleted = state.segments[action.index];
+      const nextIdx = action.index + 1;
+      if (
+        deleted?.type === 'exercise' &&
+        nextIdx < state.segments.length &&
+        state.segments[nextIdx]?.type === 'rest'
+      ) {
+        return {
+          ...state,
+          segments: state.segments.filter(
+            (_, i) => i !== action.index && i !== nextIdx,
+          ),
+        };
+      }
+      return {
+        ...state,
+        segments: state.segments.filter((_, i) => i !== action.index),
       };
     }
     case 'MOVE_UP': {
       if (action.index <= 0) return state;
-      const exercises = [...state.exercises];
-      [exercises[action.index - 1], exercises[action.index]] = [
-        exercises[action.index]!,
-        exercises[action.index - 1]!,
+      const segments = [...state.segments];
+      [segments[action.index - 1], segments[action.index]] = [
+        segments[action.index]!,
+        segments[action.index - 1]!,
       ];
-      return { ...state, exercises };
+      return { ...state, segments };
     }
     case 'MOVE_DOWN': {
-      if (action.index >= state.exercises.length - 1) return state;
-      const exercises = [...state.exercises];
-      [exercises[action.index], exercises[action.index + 1]] = [
-        exercises[action.index + 1]!,
-        exercises[action.index]!,
+      if (action.index >= state.segments.length - 1) return state;
+      const segments = [...state.segments];
+      [segments[action.index], segments[action.index + 1]] = [
+        segments[action.index + 1]!,
+        segments[action.index]!,
       ];
-      return { ...state, exercises };
+      return { ...state, segments };
     }
     case 'IMPORT_TEMPLATE':
       return {
         ...state,
         name: action.name,
-        exercises: action.exercises.map((e) => ({ ...e })),
-        restSeconds: String(action.restSeconds),
-        restBetweenRoundsSeconds: String(action.restBetweenRoundsSeconds),
+        segments: action.segments.map((s) => ({ ...s, id: uuid() })),
         rounds: String(action.rounds),
       };
     case 'ADD_EXERCISE_FROM_LIBRARY':
       return {
         ...state,
-        exercises: [...state.exercises, action.exercise],
+        segments: [...state.segments, action.exercise],
       };
   }
 }
@@ -135,27 +157,22 @@ function initForm(workout?: WorkoutConfig): FormState {
   if (workout) {
     return {
       name: workout.name,
-      exercises: workout.exercises.map((e) => ({ ...e })),
-      restSeconds: String(workout.restSeconds),
-      restBetweenRoundsSeconds: String(workout.restBetweenRoundsSeconds),
+      segments: workout.segments.map((s) => ({ ...s })),
       rounds: String(workout.rounds),
     };
   }
   return {
     name: '',
-    exercises: [
-      { id: uuid(), name: '', durationSeconds: DEFAULT_EXERCISE_DURATION },
+    segments: [
+      {
+        type: 'exercise' as const,
+        id: uuid(),
+        name: '',
+        durationSeconds: DEFAULT_EXERCISE_DURATION,
+      },
     ],
-    restSeconds: String(DEFAULT_REST_DURATION),
-    restBetweenRoundsSeconds: String(DEFAULT_REST_BETWEEN_ROUNDS),
     rounds: String(DEFAULT_ROUNDS),
   };
-}
-
-function parsePositiveInt(s: string): number | null {
-  const n = parseInt(s, 10);
-  if (isNaN(n) || n < 0 || s.trim() === '') return null;
-  return n;
 }
 
 function parseMinOne(s: string): number | null {
@@ -199,38 +216,21 @@ export function WorkoutEditScreen() {
     if (!form.name.trim()) b.add('name');
     if (form.rounds.trim() === '' || parseMinOne(form.rounds) === null)
       b.add('rounds');
-    if (
-      form.restSeconds.trim() === '' ||
-      parsePositiveInt(form.restSeconds) === null
-    )
-      b.add('restSeconds');
-    if (
-      form.restBetweenRoundsSeconds.trim() === '' ||
-      parsePositiveInt(form.restBetweenRoundsSeconds) === null
-    )
-      b.add('restBetweenRounds');
-    form.exercises.forEach((e, i) => {
-      if (!e.name.trim()) b.add(`ex-${i}`);
-      if (String(e.durationSeconds).trim() === '') b.add(`ex-dur-${i}`);
+    form.segments.forEach((s, i) => {
+      if (s.type === 'exercise' && !s.name.trim()) b.add(`ex-${i}`);
+      if (String(s.durationSeconds).trim() === '') b.add(`dur-${i}`);
     });
     setBlanks(b);
   }, [form]);
 
   const handleSave = async () => {
     const rounds = parseMinOne(form.rounds);
-    const restSec = parsePositiveInt(form.restSeconds);
-    const restRound = parsePositiveInt(form.restBetweenRoundsSeconds);
 
-    if (
-      !form.name.trim() ||
-      rounds === null ||
-      restSec === null ||
-      restRound === null
-    ) {
+    if (!form.name.trim() || rounds === null) {
       markAllBlank();
       return;
     }
-    if (form.exercises.some((e) => !e.name.trim())) {
+    if (form.segments.some((s) => s.type === 'exercise' && !s.name.trim())) {
       markAllBlank();
       return;
     }
@@ -238,9 +238,9 @@ export function WorkoutEditScreen() {
     const config = {
       id: existing?.id ?? uuid(),
       name: form.name.trim(),
-      exercises: form.exercises.map((e) => ({ ...e, name: e.name.trim() })),
-      restSeconds: restSec,
-      restBetweenRoundsSeconds: restRound,
+      segments: form.segments.map((s) =>
+        s.type === 'exercise' ? { ...s, name: s.name.trim() } : { ...s },
+      ),
       rounds,
     };
 
@@ -266,6 +266,7 @@ export function WorkoutEditScreen() {
       dispatch({
         type: 'ADD_EXERCISE_FROM_LIBRARY',
         exercise: {
+          type: 'exercise',
           id: uuid(),
           exerciseId: selection.exerciseId,
           name: selection.name,
@@ -298,17 +299,11 @@ export function WorkoutEditScreen() {
 
   const nameError = blanks.has('name');
   const roundsError = blanks.has('rounds');
-  const restExError = blanks.has('restSeconds');
-  const restRoundError = blanks.has('restBetweenRounds');
-  const exErrors = form.exercises.map((_, i) => blanks.has(`ex-${i}`));
-  const numBlanks =
-    blanks.has('rounds') ||
-    blanks.has('restSeconds') ||
-    blanks.has('restBetweenRounds');
+  const exErrors = form.segments.map((_, i) => blanks.has(`ex-${i}`));
   const hasAnyError =
-    numBlanks ||
+    roundsError ||
     nameError ||
-    form.exercises.some((e) => !e.name.trim()) ||
+    form.segments.some((s) => s.type === 'exercise' && !s.name.trim()) ||
     exErrors.some(Boolean);
 
   return (
@@ -381,54 +376,6 @@ export function WorkoutEditScreen() {
             </span>
           )}
         </label>
-        <label className="flex flex-col gap-1">
-          <span className="text-text-muted text-sm">
-            {t('screens.workoutEdit.restBetweenRoundsLabel')}
-          </span>
-          <Input
-            type="text"
-            inputMode="numeric"
-            value={form.restBetweenRoundsSeconds}
-            onChange={(e) => {
-              dispatch({
-                type: 'SET_REST_BETWEEN_ROUNDS',
-                restBetweenRoundsSeconds: e.target.value,
-              });
-              checkBlank('restBetweenRounds', e.target.value);
-            }}
-            onBlur={(e) => checkBlank('restBetweenRounds', e.target.value)}
-            className="text-center"
-            aria-invalid={restRoundError || undefined}
-          />
-          {restRoundError && (
-            <span className="text-xs text-red-400">
-              {t('validation.valueRequired')}
-            </span>
-          )}
-        </label>
-
-        <label className="flex flex-col gap-1">
-          <span className="text-text-muted text-sm">
-            {t('screens.workoutEdit.restBetweenExercisesLabel')}
-          </span>
-          <Input
-            type="text"
-            inputMode="numeric"
-            value={form.restSeconds}
-            onChange={(e) => {
-              dispatch({ type: 'SET_REST', restSeconds: e.target.value });
-              checkBlank('restSeconds', e.target.value);
-            }}
-            onBlur={(e) => checkBlank('restSeconds', e.target.value)}
-            className="text-center"
-            aria-invalid={restExError || undefined}
-          />
-          {restExError && (
-            <span className="text-xs text-red-400">
-              {t('validation.valueRequired')}
-            </span>
-          )}
-        </label>
 
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
@@ -462,26 +409,44 @@ export function WorkoutEditScreen() {
               >
                 {t('screens.workoutEdit.addExercise')}
               </Button>
+              <Button
+                variant="ghost"
+                size="xs"
+                onClick={() => dispatch({ type: 'ADD_REST' })}
+              >
+                {t('screens.workoutEdit.addRest')}
+              </Button>
             </div>
           </div>
-          {form.exercises.map((ex, i) => (
+          {form.segments.map((seg, i) => (
             <ExerciseFormRow
-              key={ex.id}
-              exercise={ex}
+              key={seg.id}
+              segment={seg}
               error={exErrors[i] ?? false}
               onChange={(updated) => {
-                dispatch({ type: 'SET_EXERCISE', index: i, exercise: updated });
-                checkBlank(`ex-${i}`, updated.name);
+                dispatch({
+                  type: 'SET_SEGMENT',
+                  index: i,
+                  segment: updated,
+                });
+                if (updated.type === 'exercise') {
+                  checkBlank(`ex-${i}`, updated.name);
+                }
               }}
               onBlur={() => {
-                checkBlank(`ex-${i}`, form.exercises[i]?.name ?? '');
+                if (seg.type === 'exercise') {
+                  checkBlank(`ex-${i}`, seg.name ?? '');
+                }
               }}
-              onDelete={() => dispatch({ type: 'DELETE_EXERCISE', index: i })}
-              canDelete={form.exercises.length > MIN_EXERCISES}
+              onDelete={() => dispatch({ type: 'DELETE_SEGMENT', index: i })}
+              canDelete={
+                exerciseCount(form.segments) > MIN_EXERCISES ||
+                form.segments.length > MIN_SEGMENTS
+              }
               onMoveUp={() => dispatch({ type: 'MOVE_UP', index: i })}
               onMoveDown={() => dispatch({ type: 'MOVE_DOWN', index: i })}
               canMoveUp={i > 0}
-              canMoveDown={i < form.exercises.length - 1}
+              canMoveDown={i < form.segments.length - 1}
             />
           ))}
         </div>
@@ -551,9 +516,7 @@ export function WorkoutEditScreen() {
                   dispatch({
                     type: 'IMPORT_TEMPLATE',
                     name: dw.name,
-                    exercises: dw.exercises,
-                    restSeconds: dw.restSeconds,
-                    restBetweenRoundsSeconds: dw.restBetweenRoundsSeconds,
+                    segments: dw.segments,
                     rounds: dw.rounds,
                   });
                   setShowImportModal(false);
@@ -563,7 +526,9 @@ export function WorkoutEditScreen() {
                 <div>
                   <p className="text-sm font-medium">{dw.name}</p>
                   <p className="text-muted-foreground text-xs">
-                    {t('labels.exercises', { count: dw.exercises.length })}{' '}
+                    {t('labels.exercises', {
+                      count: exerciseCount(dw.segments),
+                    })}{' '}
                     &middot; {t('labels.rounds', { count: dw.rounds })}
                   </p>
                 </div>
