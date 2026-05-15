@@ -14,7 +14,7 @@ test.describe('Exercise library integration', () => {
     await page.goto('/#/workout/new');
 
     // "+ Add" button should be visible and functional without any API key
-    const addButton = page.getByRole('button', { name: /\+ Add/i });
+    const addButton = page.getByRole('button', { name: /\+ Exercise/i });
     await expect(addButton).toBeVisible();
     await addButton.click();
 
@@ -54,7 +54,7 @@ test.describe('Exercise library integration', () => {
     await page.goto('/#/workout/new');
 
     // "+ Add" creates a custom exercise row (no image)
-    const addButton = page.getByRole('button', { name: /\+ Add/i });
+    const addButton = page.getByRole('button', { name: /\+ Exercise/i });
     await addButton.click();
 
     // Browse Library button is present
