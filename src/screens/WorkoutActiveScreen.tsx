@@ -420,28 +420,26 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <motion.button
+            <button
               type="button"
               onClick={() => setShowStopConfirm(false)}
               className={cn(
                 buttonVariants({ variant: 'default' }),
-                'flex-1 font-semibold',
+                'flex-1 font-semibold transition-transform active:scale-[0.97]',
               )}
-              whileTap={{ scale: 0.97 }}
             >
               {t('workout.continue')}
-            </motion.button>
-            <motion.button
+            </button>
+            <button
               type="button"
               onClick={confirmStop}
               className={cn(
                 buttonVariants({ variant: 'destructive' }),
-                'flex-1 font-semibold',
+                'flex-1 font-semibold transition-transform active:scale-[0.97]',
               )}
-              whileTap={{ scale: 0.97 }}
             >
               {t('actions.stop')}
-            </motion.button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

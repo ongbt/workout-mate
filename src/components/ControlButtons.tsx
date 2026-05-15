@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
 import type { WorkoutPhase } from '../types';
 import { buttonVariants } from './ui/button';
 import { cn } from '../lib/utils';
@@ -13,8 +12,6 @@ interface Props {
   onSkip: () => void;
   onStop: () => void;
 }
-
-const tapTransition = { type: 'spring' as const, stiffness: 400, damping: 17 };
 
 export function ControlButtons({
   phase,
@@ -31,71 +28,61 @@ export function ControlButtons({
 
   if (phase === 'idle') {
     return (
-      <motion.button
+      <button
         type="button"
         onClick={onStart}
         className={cn(
           buttonVariants({ variant: 'default' }),
-          'w-full py-4 text-lg font-bold',
+          'w-full py-4 text-lg font-bold transition-transform active:scale-[0.97]',
         )}
-        whileTap={{ scale: 0.97 }}
-        transition={tapTransition}
       >
         {t('workout.start')}
-      </motion.button>
+      </button>
     );
   }
 
   return (
     <div className="flex gap-3">
-      <motion.button
+      <button
         type="button"
         onClick={onStop}
         className={cn(
           buttonVariants({ variant: 'destructive' }),
-          'flex-1 py-4 font-semibold',
+          'flex-1 py-4 font-semibold transition-transform active:scale-[0.97]',
         )}
-        whileTap={{ scale: 0.97 }}
-        transition={tapTransition}
       >
         {t('actions.stop')}
-      </motion.button>
+      </button>
       {isRunning ? (
-        <motion.button
+        <button
           type="button"
           onClick={onPause}
-          className="bg-rest flex-1 rounded-full py-4 text-sm font-bold text-white backdrop-blur-xl"
-          whileTap={{ scale: 0.97 }}
-          transition={tapTransition}
+          className="bg-rest flex-1 rounded-full py-4 text-sm font-bold text-white backdrop-blur-xl transition-transform active:scale-[0.97]"
         >
           {t('actions.pause')}
-        </motion.button>
+        </button>
       ) : (
-        <motion.button
+        <button
           type="button"
           onClick={onResume}
           className={cn(
             buttonVariants({ variant: 'default' }),
-            'flex-1 py-4 font-bold',
+            'flex-1 py-4 font-bold transition-transform active:scale-[0.97]',
           )}
-          whileTap={{ scale: 0.97 }}
-          transition={tapTransition}
         >
           {t('actions.resume')}
-        </motion.button>
+        </button>
       )}
-      <motion.button
+      <button
         type="button"
         onClick={onSkip}
         className={cn(
           buttonVariants({ variant: 'secondary' }),
-          'flex-1 py-4 font-semibold',
+          'flex-1 py-4 font-semibold transition-transform active:scale-[0.97]',
         )}
-        whileTap={{ scale: 0.97 }}
-        transition={tapTransition}
       >
         {t('actions.skip')}
-      </motion.button>
+      </button>
     </div>
   );
 }

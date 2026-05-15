@@ -51,8 +51,17 @@
       "PowerShell(git push)",
       "PowerShell(pnpm exec prettier --write .claude/settings.json)",
       "Bash(git remote *)",
-      "Bash(pnpm prettier *)"
+      "Bash(pnpm prettier *)",
+      "PowerShell(pnpm test --run 2>&1)",
+      "PowerShell(pnpm run tsc -b --noEmit 2>&1)",
+      "PowerShell(pnpm run typecheck 2>&1)",
+      "PowerShell(npx tsc -b --noEmit 2>&1)",
+      "PowerShell(npx tsc -b 2>&1)",
+      "PowerShell(pnpm run test -- --reporter=verbose tests/components/ExerciseSearchModal.test.tsx 2>&1)"
     ],
-    "additionalDirectories": ["c:\\Users\\bengt\\Projects\\workout-mate\\docs"]
+    "additionalDirectories": [
+      "c:\\Users\\bengt\\Projects\\workout-mate\\docs",
+      "c:\\Users\\bengt\\.claude"
+    ]
   }
 }

@@ -51,10 +51,9 @@ export function FinishedView() {
         onClick={() => navigate('/')}
         className={cn(
           buttonVariants({ variant: 'default' }),
-          'mt-4 px-8 py-4 text-lg font-bold',
+          'mt-4 px-8 py-4 text-lg font-bold transition-transform active:scale-[0.97]',
         )}
         variants={itemVariants}
-        whileTap={{ scale: 0.97 }}
       >
         {t('actions.backToHome')}
       </motion.button>
