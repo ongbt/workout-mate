@@ -16,16 +16,17 @@ export function WorkoutSetCard({ workout, onEdit, onPlay }: Props) {
 
   return (
     <Card
+      size="sm"
       onClick={onPlay}
-      className="cursor-pointer transition-colors hover:bg-white/[0.12]"
+      className="cursor-pointer rounded-2xl transition-colors hover:bg-white/[0.12]"
     >
-      <CardContent className="flex items-center gap-3">
-        <span className="bg-primary text-primary-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
-          <Play className="ml-0.5 h-5 w-5" fill="currentColor" />
+      <CardContent className="flex items-center gap-2.5">
+        <span className="bg-primary text-primary-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
+          <Play className="ml-0.5 h-4 w-4" fill="currentColor" />
         </span>
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-lg font-semibold">{workout.name}</h3>
-          <p className="text-muted-foreground text-sm">
+          <h3 className="truncate text-base font-semibold">{workout.name}</h3>
+          <p className="text-muted-foreground text-xs">
             {t('labels.exercises', { count: totalExercises })}
             {' · '}
             {t('labels.rounds', { count: workout.rounds })}

@@ -464,16 +464,6 @@ export function WorkoutEditScreen() {
               </Button>
             </div>
           </div>
-          <div className="flex items-center gap-1 px-0.5">
-            <span className="w-[72px] shrink-0" />
-            <span className="text-text-muted min-w-0 flex-1 text-xs">
-              {t('labels.name')}
-            </span>
-            <span className="text-text-muted w-16 text-center text-xs">
-              {t('labels.seconds')}
-            </span>
-            <span className="w-10 shrink-0" />
-          </div>
           {form.exercises.map((ex, i) => (
             <ExerciseFormRow
               key={ex.id}

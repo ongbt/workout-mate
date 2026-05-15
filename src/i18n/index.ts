@@ -29,6 +29,9 @@ const en = {
     'actions.dismiss': 'Dismiss',
     'labels.name': 'Name',
     'labels.seconds': 'Sec',
+    'labels.bodyParts': 'Body Parts',
+    'labels.targetMuscles': 'Target Muscles',
+    'labels.equipments': 'Equipment',
     'labels.rounds': 'Rounds',
     'labels.exercises': 'Exercises',
     'labels.exercises_one': '{{count}} exercise',
@@ -162,7 +165,7 @@ const en = {
       'Select a body part or search to find exercises',
     'exerciseSearch.needsKey': 'Enter your RapidAPI key to browse exercises',
     'exerciseSearch.retry': 'Try Again',
-    'exerciseSearch.add': 'Add',
+    'exerciseSearch.add': '+',
     'exerciseSearch.done': 'Done',
     'exerciseSearch.saved': 'Saved',
     'exerciseSearch.keyPrompt':

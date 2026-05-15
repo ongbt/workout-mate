@@ -168,8 +168,11 @@ describe('ExerciseSearchModal', () => {
           imageUrl: 'https://example.com/pushups.gif',
         },
       ];
-      const { getByText } = renderModal();
-      expect(getByText('components.exerciseSearch.add')).toBeDefined();
+      renderModal();
+      const addBtn = document.querySelector(
+        'button:not([disabled]) .lucide-plus',
+      );
+      expect(addBtn).toBeTruthy();
     });
   });
 
@@ -197,15 +200,19 @@ describe('ExerciseSearchModal', () => {
       mockNeedsApiKey = false;
       mockResults = [testResult];
       const onSelect = vi.fn();
-      const { getByText, queryByText } = renderModal(onSelect);
+      renderModal(onSelect);
 
-      const addBtn = getByText('components.exerciseSearch.add');
+      const addBtn = document
+        .querySelector('button:not([disabled]) .lucide-plus')
+        ?.closest('button') as HTMLButtonElement;
       fireEvent.click(addBtn);
 
       expect(onSelect).toHaveBeenCalledTimes(1);
       expect(onSelect).toHaveBeenCalledWith(testResult);
-      // Button should now show checkmark, not "+ Add" text
-      expect(queryByText('components.exerciseSearch.add')).toBeNull();
+      // Button should now show checkmark, not Plus icon
+      expect(
+        document.querySelector('button[disabled] .lucide-check'),
+      ).toBeTruthy();
     });
 
     it('keeps checkmark after add — no timeout reversion', () => {
@@ -213,13 +220,17 @@ describe('ExerciseSearchModal', () => {
       mockNeedsApiKey = false;
       mockResults = [testResult];
       const onSelect = vi.fn();
-      const { getByText } = renderModal(onSelect);
+      renderModal(onSelect);
 
-      fireEvent.click(getByText('components.exerciseSearch.add'));
+      const addBtn = document
+        .querySelector('button:not([disabled]) .lucide-plus')
+        ?.closest('button') as HTMLButtonElement;
+      fireEvent.click(addBtn);
 
-      // The button should show checkmark, not "+ Add"
-      // (previously a setTimeout reverted this after 1500ms)
-      expect(() => getByText('components.exerciseSearch.add')).toThrow();
+      // The button should show checkmark, not Plus icon
+      expect(
+        document.querySelector('button:not([disabled]) .lucide-plus'),
+      ).toBeNull();
     });
 
     it('resets added state when modal reopens', () => {
@@ -228,7 +239,7 @@ describe('ExerciseSearchModal', () => {
       mockResults = [testResult];
       const onSelect = vi.fn();
       const onOpenChange = vi.fn();
-      const { getByText, rerender } = render(
+      const { rerender } = render(
         <ExerciseSearchModal
           key={1}
           open={true}
@@ -238,7 +249,10 @@ describe('ExerciseSearchModal', () => {
       );
 
       // Add the exercise
-      fireEvent.click(getByText('components.exerciseSearch.add'));
+      const addBtn = document
+        .querySelector('button:not([disabled]) .lucide-plus')
+        ?.closest('button') as HTMLButtonElement;
+      fireEvent.click(addBtn);
 
       // Remount with a new key — simulates closing and reopening
       rerender(
@@ -250,8 +264,10 @@ describe('ExerciseSearchModal', () => {
         />,
       );
 
-      // "+ Add" should be back because the component was remounted
-      expect(getByText('components.exerciseSearch.add')).toBeDefined();
+      // Plus icon should be back because the component was remounted
+      expect(
+        document.querySelector('button:not([disabled]) .lucide-plus'),
+      ).toBeTruthy();
     });
   });
 });
