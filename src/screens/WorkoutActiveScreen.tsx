@@ -13,7 +13,6 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { ProgressBar } from '../components/ProgressBar';
 import { ControlButtons } from '../components/ControlButtons';
 import { FinishedView } from '../components/FinishedView';
-import { useFeatureFlag } from '../hooks/useFeatureFlag';
 import { Button } from '../components/ui/button';
 import { buttonVariants } from '../components/ui/button';
 import { ExerciseDetailDialog } from '../components/ExerciseDetailDialog';
@@ -26,7 +25,11 @@ import {
   DialogTitle,
 } from '../components/ui/dialog';
 import { cn } from '../lib/utils';
-import type { WorkoutConfig, WorkoutCompletion, Exercise } from '../types';
+import type {
+  WorkoutConfig,
+  WorkoutCompletion,
+  ExerciseSegment,
+} from '../types';
 
 const activeExit = {
   opacity: 0,
@@ -99,13 +102,13 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
     currentExerciseIndex,
     timeRemainingMs,
     totalRounds,
-    totalExercises,
   } = sessionState;
 
   const [showStopConfirm, setShowStopConfirm] = useState(false);
-  const [detailExercise, setDetailExercise] = useState<Exercise | null>(null);
+  const [detailExercise, setDetailExercise] = useState<ExerciseSegment | null>(
+    null,
+  );
   const isActive = phase !== 'idle' && phase !== 'finished';
-  const controlsAbove = useFeatureFlag('workout-controls-above-exercises');
 
   const requestStop = () => setShowStopConfirm(true);
 
@@ -123,7 +126,7 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
     }
   };
 
-  const getExerciseStatus = (
+  const getSegmentStatus = (
     round: number,
     index: number,
   ): 'done' | 'current' | 'upcoming' => {
@@ -131,8 +134,7 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
     if (round > currentRound) return 'upcoming';
     if (phase === 'idle') return 'upcoming';
     if (index < currentExerciseIndex) return 'done';
-    if (index === currentExerciseIndex && phase === 'exercise')
-      return 'current';
+    if (index === currentExerciseIndex) return 'current';
     return 'upcoming';
   };
 
@@ -206,7 +208,7 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
                 </motion.div>
               )}
 
-              {phase === 'rest' && currentExercise && (
+              {phase === 'rest' && (
                 <motion.div
                   key="rest"
                   className="flex flex-col items-center gap-3"
@@ -252,51 +254,46 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
                       {t('labels.rounds', { count: config.rounds })}
                     </p>
                     <ul className="space-y-1">
-                      {config.exercises.map((ex) => (
+                      {config.segments.map((seg) => (
                         <li
-                          key={ex.id}
-                          className="flex items-center justify-between gap-2 py-0.5"
+                          key={seg.id}
+                          className={`flex items-center justify-between gap-2 py-0.5 ${
+                            seg.type === 'rest'
+                              ? 'text-rest border-rest/20 border-t pt-1.5'
+                              : ''
+                          }`}
                         >
-                          {ex.imageUrl && (
+                          {seg.type === 'exercise' && seg.imageUrl && (
                             <img
-                              src={ex.imageUrl}
-                              alt={ex.name}
+                              src={seg.imageUrl}
+                              alt={seg.name}
                               className="h-6 w-6 shrink-0 rounded-md object-cover"
                               loading="lazy"
                             />
                           )}
-                          {ex.exerciseId ? (
+                          {seg.type === 'exercise' && seg.exerciseId ? (
                             <button
                               type="button"
-                              onClick={() => setDetailExercise(ex)}
+                              onClick={() => setDetailExercise(seg)}
                               className="flex-1 truncate text-left text-sm"
                             >
-                              {ex.name}
+                              {seg.name}
                             </button>
-                          ) : (
+                          ) : seg.type === 'exercise' ? (
                             <span className="flex-1 truncate text-sm">
-                              {ex.name}
+                              {seg.name}
+                            </span>
+                          ) : (
+                            <span className="flex-1 truncate text-sm font-medium">
+                              {t('components.phaseIndicator.rest')}
                             </span>
                           )}
                           <span className="text-text-muted text-xs">
-                            {ex.durationSeconds}s
+                            {seg.durationSeconds}s
                           </span>
                         </li>
                       ))}
                     </ul>
-                    <hr className="border-white/10" />
-                    <div className="flex justify-between text-sm">
-                      <span className="text-text-muted">
-                        {t('screens.workoutActive.restBetweenExercises')}
-                      </span>
-                      <span>{config.restSeconds}s</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-text-muted">
-                        {t('screens.workoutActive.restBetweenRounds')}
-                      </span>
-                      <span>{config.restBetweenRoundsSeconds}s</span>
-                    </div>
                   </div>
                 </motion.div>
               )}
@@ -304,19 +301,17 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
 
             {phase !== 'idle' && (
               <>
-                {controlsAbove && (
-                  <div className="w-full pt-2">
-                    <ControlButtons
-                      phase={phase}
-                      isRunning={isRunning}
-                      onStart={handleStart}
-                      onPause={handlePause}
-                      onResume={handleResume}
-                      onSkip={handleSkip}
-                      onStop={requestStop}
-                    />
-                  </div>
-                )}
+                <div className="w-full pt-2">
+                  <ControlButtons
+                    phase={phase}
+                    isRunning={isRunning}
+                    onStart={handleStart}
+                    onPause={handlePause}
+                    onResume={handleResume}
+                    onSkip={handleSkip}
+                    onStop={requestStop}
+                  />
+                </div>
                 <motion.div
                   className="w-full space-y-3"
                   initial={{ opacity: 0 }}
@@ -326,15 +321,16 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
                     currentRound={currentRound}
                     totalRounds={totalRounds}
                     currentExerciseIndex={currentExerciseIndex}
-                    totalExercises={totalExercises}
+                    totalExercises={config.segments.length}
                   />
 
                   <div className="bg-surface/80 space-y-0.5 rounded-2xl p-2 backdrop-blur-xl">
-                    {config.exercises.map((ex, idx) => {
-                      const status = getExerciseStatus(currentRound, idx);
+                    {config.segments.map((seg, idx) => {
+                      const status = getSegmentStatus(currentRound, idx);
+                      const isEx = seg.type === 'exercise';
                       return (
                         <div
-                          key={ex.id}
+                          key={seg.id}
                           className={`flex items-center gap-3 rounded-lg px-2 py-1 transition-colors ${
                             status === 'current'
                               ? 'ring-primary/30 bg-white/[0.04] ring-1'
@@ -344,18 +340,22 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
                           <span
                             className={`h-2.5 w-2.5 shrink-0 rounded-full ${
                               status === 'done'
-                                ? 'bg-primary'
+                                ? isEx
+                                  ? 'bg-primary'
+                                  : 'bg-rest'
                                 : status === 'current'
                                   ? phase === 'exercise'
                                     ? 'bg-primary animate-pulse'
                                     : 'bg-rest animate-pulse'
-                                  : 'bg-text-muted/30'
+                                  : isEx
+                                    ? 'bg-text-muted/30'
+                                    : 'bg-rest/20'
                             }`}
                           />
-                          {ex.exerciseId ? (
+                          {isEx && seg.exerciseId ? (
                             <button
                               type="button"
-                              onClick={() => setDetailExercise(ex)}
+                              onClick={() => setDetailExercise(seg)}
                               className={`flex-1 truncate text-left text-sm ${
                                 status === 'current'
                                   ? 'font-semibold'
@@ -364,9 +364,9 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
                                     : 'text-text-muted'
                               }`}
                             >
-                              {ex.name}
+                              {seg.name}
                             </button>
-                          ) : (
+                          ) : isEx ? (
                             <span
                               className={`flex-1 truncate text-sm ${
                                 status === 'current'
@@ -376,16 +376,31 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
                                     : 'text-text-muted'
                               }`}
                             >
-                              {ex.name}
+                              {seg.name}
+                            </span>
+                          ) : (
+                            <span
+                              className={`flex-1 truncate text-sm ${
+                                status === 'current'
+                                  ? 'text-rest font-semibold'
+                                  : status === 'done'
+                                    ? 'text-text-muted'
+                                    : 'text-text-muted'
+                              }`}
+                            >
+                              {t('components.phaseIndicator.rest')} (
+                              {seg.durationSeconds}s)
                             </span>
                           )}
-                          <span className="text-text-muted shrink-0 text-xs">
-                            {ex.durationSeconds}s
-                          </span>
-                          {totalRounds > 1 && (
+                          {isEx && (
+                            <span className="text-text-muted shrink-0 text-xs">
+                              {seg.durationSeconds}s
+                            </span>
+                          )}
+                          {totalRounds > 1 && isEx && (
                             <div className="flex shrink-0 gap-1">
                               {Array.from({ length: totalRounds }, (_, r) => {
-                                const rs = getExerciseStatus(r + 1, idx);
+                                const rs = getSegmentStatus(r + 1, idx);
                                 return (
                                   <span
                                     key={r}
@@ -425,7 +440,7 @@ function WorkoutActiveContent({ config }: { config: WorkoutConfig }) {
         )}
       </AnimatePresence>
 
-      {(!controlsAbove || phase === 'idle') && phase !== 'finished' && (
+      {phase === 'idle' && (
         <div className="py-4">
           <ControlButtons
             phase={phase}

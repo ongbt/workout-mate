@@ -22,12 +22,22 @@ vi.mock('react-router-dom', async () => {
 const mockWorkout = {
   id: 'workout-1',
   name: 'Test Workout',
-  exercises: [
-    { id: 'e1', name: 'Push-ups', durationSeconds: 30 },
-    { id: 'e2', name: 'Squats', durationSeconds: 45 },
+  segments: [
+    {
+      type: 'exercise' as const,
+      id: 'e1',
+      name: 'Push-ups',
+      durationSeconds: 30,
+    },
+    { type: 'rest' as const, id: 'r1', durationSeconds: 10 },
+    {
+      type: 'exercise' as const,
+      id: 'e2',
+      name: 'Squats',
+      durationSeconds: 45,
+    },
+    { type: 'rest' as const, id: 'r2', durationSeconds: 30 },
   ],
-  restSeconds: 10,
-  restBetweenRoundsSeconds: 30,
   rounds: 2,
 };
 
@@ -95,11 +105,8 @@ describe('WorkoutActiveScreen', () => {
     );
   });
 
-  it('shows rest between exercises info', () => {
+  it('shows rest segment info in idle phase', () => {
     const { getByText } = renderActive();
-    expect(
-      getByText('screens.workoutActive.restBetweenExercises'),
-    ).toBeDefined();
     expect(getByText('10s')).toBeDefined();
   });
 });

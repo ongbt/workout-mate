@@ -18,9 +18,14 @@ vi.mock('react-router-dom', async () => {
 const workoutA = {
   id: 'w1',
   name: 'Full Body',
-  exercises: [{ id: 'e1', name: 'Push-ups', durationSeconds: 30 }],
-  restSeconds: 10,
-  restBetweenRoundsSeconds: 60,
+  segments: [
+    {
+      type: 'exercise' as const,
+      id: 'e1',
+      name: 'Push-ups',
+      durationSeconds: 30,
+    },
+  ],
   rounds: 2,
 };
 

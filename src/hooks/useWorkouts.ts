@@ -12,9 +12,7 @@ function toWorkoutConfig(
   return {
     id: doc._id,
     name: doc.name,
-    exercises: doc.exercises,
-    restSeconds: doc.restSeconds,
-    restBetweenRoundsSeconds: doc.restBetweenRoundsSeconds,
+    segments: doc.segments ?? [],
     rounds: doc.rounds,
   };
 }

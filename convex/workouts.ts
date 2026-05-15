@@ -1,13 +1,11 @@
 import { v } from 'convex/values';
-import { mutation, query } from './_generated/server';
+import { mutation, query, type MutationCtx } from './_generated/server';
 import { getAuthUserId } from '@convex-dev/auth/server';
-import { checkNameLength, exerciseValidator } from './validators';
+import { checkNameLength, segmentValidator } from './validators';
 
 const workoutFields = {
   name: v.string(),
-  exercises: v.array(exerciseValidator),
-  restSeconds: v.number(),
-  restBetweenRoundsSeconds: v.number(),
+  segments: v.array(segmentValidator),
   rounds: v.number(),
 };
 
@@ -28,7 +26,11 @@ export const create = mutation({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error('Not authenticated');
     checkNameLength(args.name, 'Workout name');
-    args.exercises.forEach((ex) => checkNameLength(ex.name, 'Exercise name'));
+    for (const seg of args.segments) {
+      if (seg.type === 'exercise') {
+        checkNameLength(seg.name, 'Exercise name');
+      }
+    }
     return ctx.db.insert('workouts', { ...args, userId });
   },
 });
@@ -37,9 +39,7 @@ export const update = mutation({
   args: {
     id: v.id('workouts'),
     name: v.string(),
-    exercises: v.array(exerciseValidator),
-    restSeconds: v.number(),
-    restBetweenRoundsSeconds: v.number(),
+    segments: v.array(segmentValidator),
     rounds: v.number(),
   },
   handler: async (ctx, args) => {
@@ -48,7 +48,11 @@ export const update = mutation({
     const workout = await ctx.db.get(args.id);
     if (!workout || workout.userId !== userId) throw new Error('Not found');
     checkNameLength(args.name, 'Workout name');
-    args.exercises.forEach((ex) => checkNameLength(ex.name, 'Exercise name'));
+    for (const seg of args.segments) {
+      if (seg.type === 'exercise') {
+        checkNameLength(seg.name, 'Exercise name');
+      }
+    }
     const { id, ...fields } = args;
     return ctx.db.replace(id, { ...fields, userId });
   },
@@ -71,143 +75,122 @@ export const getDefaults = query({
   },
 });
 
+function randomId() {
+  return Array.from({ length: 4 }, () =>
+    Math.random().toString(36).substring(2),
+  ).join('-');
+}
+
+function mkExercise(name: string, durationSeconds: number) {
+  return {
+    type: 'exercise' as const,
+    id: randomId(),
+    name,
+    durationSeconds,
+  };
+}
+
+function mkRest(durationSeconds: number) {
+  return {
+    type: 'rest' as const,
+    id: randomId(),
+    durationSeconds,
+  };
+}
+
 export const seedDefaults = mutation({
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error('Not authenticated');
     const existing = await ctx.db.query('defaultWorkouts').collect();
     if (existing.length > 0) return;
-
-    await ctx.db.insert('defaultWorkouts', {
-      name: 'Full Body',
-      exercises: [
-        {
-          id: crypto.randomUUID(),
-          name: 'Chest - Push-ups',
-          durationSeconds: 45,
-        },
-        {
-          id: crypto.randomUUID(),
-          name: 'Shoulder - Dumbbell - Right',
-          durationSeconds: 25,
-        },
-        {
-          id: crypto.randomUUID(),
-          name: 'Shoulder - Dumbbell - Left',
-          durationSeconds: 25,
-        },
-        {
-          id: crypto.randomUUID(),
-          name: 'Bicep - Dumbbell - Right',
-          durationSeconds: 25,
-        },
-        {
-          id: crypto.randomUUID(),
-          name: 'Bicep - Dumbbell - Left',
-          durationSeconds: 25,
-        },
-        {
-          id: crypto.randomUUID(),
-          name: 'Tricep - Dumbbell - Right',
-          durationSeconds: 25,
-        },
-        {
-          id: crypto.randomUUID(),
-          name: 'Tricep - Dumbbell - Left',
-          durationSeconds: 25,
-        },
-        { id: crypto.randomUUID(), name: 'Abs - Plank', durationSeconds: 45 },
-        {
-          id: crypto.randomUUID(),
-          name: 'Abs - Power Over',
-          durationSeconds: 45,
-        },
-        {
-          id: crypto.randomUUID(),
-          name: 'Abs - Reverse Corkscrew',
-          durationSeconds: 45,
-        },
-        {
-          id: crypto.randomUUID(),
-          name: 'Abs - Bicycle Crunches',
-          durationSeconds: 45,
-        },
-        { id: crypto.randomUUID(), name: 'Legs - Squats', durationSeconds: 45 },
-        { id: crypto.randomUUID(), name: 'Legs - Lunges', durationSeconds: 45 },
-        {
-          id: crypto.randomUUID(),
-          name: 'Back - Overheads - Right',
-          durationSeconds: 25,
-        },
-        {
-          id: crypto.randomUUID(),
-          name: 'Back - Overheads - Left',
-          durationSeconds: 25,
-        },
-      ],
-      restSeconds: 45,
-      restBetweenRoundsSeconds: 60,
-      rounds: 3,
-    });
-    await ctx.db.insert('defaultWorkouts', {
-      name: 'Upper Body',
-      exercises: [
-        { id: crypto.randomUUID(), name: 'Push-ups', durationSeconds: 30 },
-        { id: crypto.randomUUID(), name: 'Shoulder Taps', durationSeconds: 30 },
-        {
-          id: crypto.randomUUID(),
-          name: 'Diamond Push-ups',
-          durationSeconds: 30,
-        },
-        { id: crypto.randomUUID(), name: 'Tricep Dips', durationSeconds: 30 },
-      ],
-      restSeconds: 45,
-      restBetweenRoundsSeconds: 60,
-      rounds: 3,
-    });
-    await ctx.db.insert('defaultWorkouts', {
-      name: 'Core Crusher',
-      exercises: [
-        { id: crypto.randomUUID(), name: 'Plank', durationSeconds: 30 },
-        { id: crypto.randomUUID(), name: 'Crunches', durationSeconds: 30 },
-        { id: crypto.randomUUID(), name: 'Leg Raises', durationSeconds: 30 },
-        {
-          id: crypto.randomUUID(),
-          name: 'Bicycle Crunches',
-          durationSeconds: 30,
-        },
-      ],
-      restSeconds: 30,
-      restBetweenRoundsSeconds: 60,
-      rounds: 3,
-    });
-    await ctx.db.insert('defaultWorkouts', {
-      name: 'Lower Body',
-      exercises: [
-        { id: crypto.randomUUID(), name: 'Squats', durationSeconds: 30 },
-        { id: crypto.randomUUID(), name: 'Lunges', durationSeconds: 30 },
-        { id: crypto.randomUUID(), name: 'Wall Sit', durationSeconds: 30 },
-        { id: crypto.randomUUID(), name: 'Glute Bridges', durationSeconds: 30 },
-      ],
-      restSeconds: 45,
-      restBetweenRoundsSeconds: 60,
-      rounds: 3,
-    });
-    await ctx.db.insert('defaultWorkouts', {
-      name: 'HIIT Cardio',
-      exercises: [
-        { id: crypto.randomUUID(), name: 'Burpees', durationSeconds: 20 },
-        {
-          id: crypto.randomUUID(),
-          name: 'Mountain Climbers',
-          durationSeconds: 20,
-        },
-        { id: crypto.randomUUID(), name: 'High Knees', durationSeconds: 20 },
-        { id: crypto.randomUUID(), name: 'Jump Squats', durationSeconds: 20 },
-      ],
-      restSeconds: 15,
-      restBetweenRoundsSeconds: 45,
-      rounds: 4,
-    });
+    await seedDefaultWorkouts(ctx);
   },
 });
+
+async function seedDefaultWorkouts(ctx: MutationCtx) {
+  await ctx.db.insert('defaultWorkouts', {
+    name: 'Full Body',
+    segments: [
+      mkExercise('Chest - Push-ups', 45),
+      mkRest(45),
+      mkExercise('Shoulder - Dumbbell - Right', 25),
+      mkExercise('Shoulder - Dumbbell - Left', 25),
+      mkRest(45),
+      mkExercise('Bicep - Dumbbell - Right', 25),
+      mkExercise('Bicep - Dumbbell - Left', 25),
+      mkRest(45),
+      mkExercise('Tricep - Dumbbell - Right', 25),
+      mkExercise('Tricep - Dumbbell - Left', 25),
+      mkRest(45),
+      mkExercise('Abs - Plank', 45),
+      mkExercise('Abs - Power Over', 45),
+      mkExercise('Abs - Reverse Corkscrew', 45),
+      mkExercise('Abs - Bicycle Crunches', 45),
+      mkRest(45),
+      mkExercise('Legs - Squats', 45),
+      mkExercise('Legs - Lunges', 45),
+      mkRest(45),
+      mkExercise('Back - Overheads - Right', 25),
+      mkExercise('Back - Overheads - Left', 25),
+      mkRest(60),
+    ],
+    rounds: 3,
+  });
+  await ctx.db.insert('defaultWorkouts', {
+    name: 'Upper Body',
+    segments: [
+      mkExercise('Push-ups', 30),
+      mkRest(45),
+      mkExercise('Shoulder Taps', 30),
+      mkRest(45),
+      mkExercise('Diamond Push-ups', 30),
+      mkRest(45),
+      mkExercise('Tricep Dips', 30),
+      mkRest(60),
+    ],
+    rounds: 3,
+  });
+  await ctx.db.insert('defaultWorkouts', {
+    name: 'Core Crusher',
+    segments: [
+      mkExercise('Plank', 30),
+      mkRest(30),
+      mkExercise('Crunches', 30),
+      mkRest(30),
+      mkExercise('Leg Raises', 30),
+      mkRest(30),
+      mkExercise('Bicycle Crunches', 30),
+      mkRest(60),
+    ],
+    rounds: 3,
+  });
+  await ctx.db.insert('defaultWorkouts', {
+    name: 'Lower Body',
+    segments: [
+      mkExercise('Squats', 30),
+      mkRest(45),
+      mkExercise('Lunges', 30),
+      mkRest(45),
+      mkExercise('Wall Sit', 30),
+      mkRest(45),
+      mkExercise('Glute Bridges', 30),
+      mkRest(60),
+    ],
+    rounds: 3,
+  });
+  await ctx.db.insert('defaultWorkouts', {
+    name: 'HIIT Cardio',
+    segments: [
+      mkExercise('Burpees', 20),
+      mkRest(15),
+      mkExercise('Mountain Climbers', 20),
+      mkRest(15),
+      mkExercise('High Knees', 20),
+      mkRest(15),
+      mkExercise('Jump Squats', 20),
+      mkRest(45),
+    ],
+    rounds: 4,
+  });
+}

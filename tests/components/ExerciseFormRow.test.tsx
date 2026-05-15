@@ -1,13 +1,18 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
 import { ExerciseFormRow } from '../../src/components/ExerciseFormRow';
-import type { Exercise } from '../../src/types';
+import type { ExerciseSegment } from '../../src/types';
 
-const exercise: Exercise = { id: 'e1', name: 'Push-ups', durationSeconds: 30 };
+const segment: ExerciseSegment = {
+  type: 'exercise',
+  id: 'e1',
+  name: 'Push-ups',
+  durationSeconds: 30,
+};
 
 function setup(overrides = {}) {
   const props = {
-    exercise,
+    segment,
     error: false,
     onChange: vi.fn(),
     onBlur: vi.fn(),
@@ -43,7 +48,7 @@ describe('ExerciseFormRow', () => {
     const inputs = container.querySelectorAll('input');
     const nameInput = inputs[0]!;
     fireEvent.change(nameInput, { target: { value: 'Squats' } });
-    expect(onChange).toHaveBeenCalledWith({ ...exercise, name: 'Squats' });
+    expect(onChange).toHaveBeenCalledWith({ ...segment, name: 'Squats' });
   });
 
   it('calls onDelete when delete button clicked', () => {

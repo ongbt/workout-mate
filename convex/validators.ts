@@ -8,7 +8,8 @@ export function checkNameLength(name: string, label: string): void {
   }
 }
 
-export const exerciseValidator = v.object({
+export const exerciseSegmentValidator = v.object({
+  type: v.literal('exercise'),
   id: v.string(),
   exerciseId: v.optional(v.string()),
   name: v.string(),
@@ -18,3 +19,14 @@ export const exerciseValidator = v.object({
   equipments: v.optional(v.array(v.string())),
   imageUrl: v.optional(v.string()),
 });
+
+export const restSegmentValidator = v.object({
+  type: v.literal('rest'),
+  id: v.string(),
+  durationSeconds: v.number(),
+});
+
+export const segmentValidator = v.union(
+  exerciseSegmentValidator,
+  restSegmentValidator,
+);

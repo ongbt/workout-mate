@@ -68,7 +68,7 @@ describe('WorkoutEditScreen', () => {
     const { container } = renderEdit();
     const inputs = container.querySelectorAll('input');
     // Fill in exercise name to clear the blank exercise validation
-    const exerciseNameInput = inputs[4];
+    const exerciseNameInput = inputs[2];
     if (exerciseNameInput) {
       fireEvent.change(exerciseNameInput, {
         target: { value: 'Test Exercise' },
@@ -87,8 +87,8 @@ describe('WorkoutEditScreen', () => {
 
     // Fill workout name
     fireEvent.change(inputs[0]!, { target: { value: 'My Workout' } });
-    // Fill first exercise name (inputs: name, rounds, restRound, restEx, exName, exDur, ...)
-    const exerciseNameInput = inputs[4];
+    // Fill first exercise name (inputs: name, rounds, exName, exDur)
+    const exerciseNameInput = inputs[2];
     if (exerciseNameInput) {
       fireEvent.change(exerciseNameInput, {
         target: { value: 'Test Exercise' },
@@ -105,7 +105,7 @@ describe('WorkoutEditScreen', () => {
     expect(passedWorkout).not.toHaveProperty('id');
     expect(passedWorkout).toMatchObject({
       name: 'My Workout',
-      exercises: expect.arrayContaining([
+      segments: expect.arrayContaining([
         expect.objectContaining({ name: 'Test Exercise' }),
       ]),
     });

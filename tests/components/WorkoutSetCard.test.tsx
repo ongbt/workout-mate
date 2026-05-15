@@ -6,12 +6,20 @@ import type { WorkoutConfig } from '../../src/types';
 const mockWorkout: WorkoutConfig = {
   id: '1',
   name: 'Test Workout',
-  exercises: [
-    { id: 'e1', name: 'Push-ups', durationSeconds: 30 },
-    { id: 'e2', name: 'Squats', durationSeconds: 45 },
+  segments: [
+    {
+      type: 'exercise' as const,
+      id: 'e1',
+      name: 'Push-ups',
+      durationSeconds: 30,
+    },
+    {
+      type: 'exercise' as const,
+      id: 'e2',
+      name: 'Squats',
+      durationSeconds: 45,
+    },
   ],
-  restSeconds: 10,
-  restBetweenRoundsSeconds: 30,
   rounds: 2,
 };
 
